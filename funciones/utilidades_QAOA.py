@@ -1,3 +1,25 @@
+"""
+Qudit QAOA: the fixed-ansatz baseline that Qudit-ADAPT is compared against.
+
+The ansatz alternates p layers of the cost and mixer Hamiltonians,
+
+    |psi(gamma, beta)> = prod_k exp(-i beta_k H_M) exp(-i gamma_k H_C) |phi_g>,
+
+so it carries 2p variational parameters. Both Hamiltonians are reused from
+`utilidades.py`, which is what makes the comparison fair: the two algorithms
+solve the same problem with the same operators and differ only in how the
+ansatz is chosen.
+
+`scan_qaoa_p` sweeps the depth p and, at each one, optimizes from a warm start
+expanded from p-1 plus `num_restarts` random initializations, keeping the best.
+The paper uses p up to 20 with 25 restarts, and reports the median over
+restarts with the interquartile range as a band, because QAOA is far more
+sensitive to initialization than the adaptive construction.
+
+The section at the end (`curva_qaoa_con_banda_desde_all_runs` and friends) is
+what `cuadernillos/comparacion_QAOA.ipynb` uses to draw Figs. 1-3.
+"""
+
 import ast
 import time
 import json

@@ -1,0 +1,40 @@
+Archivo: grafo_completo_n6.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)]
+Salida (se guarda en cada iteración): k6_l2_bp100.json
+n = 6 | aristas = 15 | l = 2 | base = angular | pool = 2724 operadores
+E0 (exacta) = -24.0000000000 | degeneración = 90
+E inicial <psi_0|H_f|psi_0> = -20.0000000000
+------------------------------------------------------------------------------
+k= 1 | reciclada=3.594e+00 | fría=3.594e+00 | aleatorias (100): mejor=3.594e+00 mediana=3.594e+00 peor=3.594e+00 | únicas=1 | t=0.9min
+k= 2 | reciclada=2.705e+00 | fría=2.705e+00 | aleatorias (100): mejor=2.705e+00 mediana=2.705e+00 peor=2.705e+00 | únicas=1 | t=1.4min
+k= 3 | reciclada=2.499e+00 | fría=2.499e+00 | aleatorias (100): mejor=2.499e+00 mediana=2.499e+00 peor=2.499e+00 | únicas=1 | t=2.7min
+k= 4 | reciclada=2.340e+00 | fría=2.340e+00 | aleatorias (100): mejor=2.340e+00 mediana=2.340e+00 peor=2.340e+00 | únicas=1 | t=4.0min
+k= 5 | reciclada=1.876e+00 | fría=1.876e+00 | aleatorias (100): mejor=1.876e+00 mediana=1.876e+00 peor=2.778e+00 | únicas=2 | t=5.5min
+k= 6 | reciclada=1.098e+00 | fría=1.098e+00 | aleatorias (100): mejor=1.098e+00 mediana=1.098e+00 peor=1.098e+00 | únicas=1 | t=7.2min
+k= 7 | reciclada=8.533e-01 | fría=8.533e-01 | aleatorias (100): mejor=8.533e-01 mediana=8.533e-01 peor=1.823e+00 | únicas=4 | t=9.4min
+k= 8 | reciclada=6.732e-01 | fría=6.732e-01 | aleatorias (100): mejor=6.732e-01 mediana=6.732e-01 peor=1.911e+00 | únicas=6 | t=12.2min
+k= 9 | reciclada=5.259e-01 | fría=5.259e-01 | aleatorias (100): mejor=5.259e-01 mediana=5.259e-01 peor=1.787e+00 | únicas=7 | t=16.0min
+k=10 | reciclada=3.983e-01 | fría=3.983e-01 | aleatorias (100): mejor=3.983e-01 mediana=3.983e-01 peor=1.771e+00 | únicas=5 | t=20.4min
+k=11 | reciclada=1.794e-01 | fría=1.794e-01 | aleatorias (100): mejor=1.794e-01 mediana=1.794e-01 peor=1.381e+00 | únicas=7 | t=29.6min
+k=12 | reciclada=1.373e-01 | fría=1.373e-01 | aleatorias (100): mejor=1.373e-01 mediana=3.130e-01 peor=1.544e+00 | únicas=10 | t=40.5min
+Archivo: grafo_completo_n6.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (2, 3), (2, 4), (2, 5), (2, 6), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (5, 6)]
+Salida (se guarda en cada iteración): k6_l2_bp100.json
+n = 6 | aristas = 15 | l = 2 | base = angular | pool = 2724 operadores
+E0 (exacta) = -24.0000000000 | degeneración = 90
+E inicial <psi_0|H_f|psi_0> = -20.0000000000
+------------------------------------------------------------------------------
+Reanudando desde k6_l2_bp100.json: 12 operadores ya hechos, siguen hasta 35.
+------------------------------------------------------------------------------
+k=13 | reciclada=1.229e-01 | fría=1.229e-01 | aleatorias (100): mejor=1.229e-01 mediana=1.244e-01 peor=1.358e+00 | únicas=20 | t=3.0min
+k=14 | reciclada=1.167e-01 | fría=1.167e-01 | aleatorias (100): mejor=1.167e-01 mediana=2.776e-01 peor=2.113e+00 | únicas=19 | t=6.0min
+k=15 | reciclada=1.080e-01 | fría=1.080e-01 | aleatorias (100): mejor=1.080e-01 mediana=2.417e-01 peor=1.519e+00 | únicas=22 | t=9.2min
+k=16 | reciclada=1.068e-02 | fría=1.068e-02 | aleatorias (100): mejor=9.853e-03 mediana=1.068e-02 peor=1.047e+00 | únicas=21 | t=13.6min
+k=17 | reciclada=4.475e-03 | fría=4.475e-03 | aleatorias (100): mejor=3.725e-03 mediana=5.380e-03 peor=9.231e-01 | únicas=32 | t=18.8min
+k=18 | reciclada=1.066e-14 | fría=7.105e-15 | aleatorias (100): mejor=3.553e-15 mediana=2.132e-14 peor=1.260e+00 | únicas=18 | t=23.8min
+------------------------------------------------------------------------------
+Operadores en el ansatz: 18 | razón de parada: gradient_norm_below_epsilon
+Error final (reciclada): 1.065814e-14
+Tiempo total: 23.80 min
+
+Resultado guardado en: /home/hd/Qudit-ADAPT/resultados/json/k6_l2_bp100.json

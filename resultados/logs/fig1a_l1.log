@@ -1,0 +1,31 @@
+Archivo: grafos_comparacion.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (2, 4), (2, 6), (3, 4), (3, 6), (4, 5), (5, 6)]
+Salida (se guarda en cada iteración): fig1a_l1_bp100.json
+n = 6 | aristas = 10 | l = 1 | base = angular | pool = 46 operadores
+E0 (exacta) = -20.0000000000 | degeneración = 12
+E inicial <psi_0|H_f|psi_0> = -13.3333333333
+------------------------------------------------------------------------------
+Reanudando desde fig1a_l1_bp100.json: 20 operadores ya hechos, siguen hasta 35.
+------------------------------------------------------------------------------
+k=21 | reciclada=1.313e-01 | fría=2.438e-01 | aleatorias (100): mejor=1.313e-01 mediana=2.712e-01 peor=2.942e+00 | únicas=88 | t=29.6min
+------------------------------------------------------------------------------
+Operadores en el ansatz: 21 | razón de parada: gradient_norm_below_epsilon
+Error final (reciclada): 1.312650e-01
+Tiempo total: 29.61 min
+
+Resultado guardado en: /home/hd/workspace/Qudit-ADAPT/resultados/json/fig1a_l1_bp100.json
+Archivo: grafos_comparacion.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (2, 4), (2, 6), (3, 4), (3, 6), (4, 5), (5, 6)]
+Salida (se guarda en cada iteración): fig1a_l1_bp100.json
+n = 6 | aristas = 10 | l = 1 | base = angular | pool = 46 operadores
+E0 (exacta) = -20.0000000000 | degeneración = 12
+E inicial <psi_0|H_f|psi_0> = -13.3333333333
+------------------------------------------------------------------------------
+Reanudando desde fig1a_l1_bp100.json: 21 operadores ya hechos, siguen hasta 35.
+------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Operadores en el ansatz: 21 | razón de parada: gradient_norm_below_epsilon
+Error final (reciclada): 1.312650e-01
+Tiempo total: 0.06 min
+
+Resultado guardado en: /home/hd/Qudit-ADAPT/resultados/json/fig1a_l1_bp100.json

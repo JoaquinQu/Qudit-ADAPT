@@ -18,3 +18,13 @@ __pycache__/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+# LaTeX (compilacion de figuras y de los .tex del manuscrito)
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
+# Salidas temporales de pruebas
+resultados/**/_prueba_*

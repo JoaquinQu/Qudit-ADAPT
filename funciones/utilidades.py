@@ -1,3 +1,35 @@
+"""
+Core of the codebase: qutrit operators, Hamiltonians and the CD-ADAPT loop.
+
+Everything else builds on this module. It has three layers, in order of
+appearance:
+
+1. **Qutrit operators and Hamiltonians.** `Jx1`, `Jy1`, `Jz1` are the spin-1
+   angular-momentum matrices; `X_site`, `Jz_site` embed a local operator into
+   the n-qutrit tensor product. `Hp_qutip(n, edges)` builds the Max 3-Cut cost
+   Hamiltonian and `Hi_qutip(n)` the mixer, whose ground state is the uniform
+   superposition used as the reference state.
+
+2. **Symbolic algebra for the operator pool.** A monomial is a tuple of
+   `(site, axis)` pairs and an expression is a dict {monomial: coefficient}.
+   `nested_commutators(H, dH, order)` computes the O_k of the AGP expansion
+   symbolically, so the pool is derived exactly before ever touching a matrix;
+   `expr_dict_to_qutip` maps the result back to operators.
+
+3. **The algorithm.** `cd_adapt_vqe_algorithm_profundo` is the ADAPT loop:
+   evaluate the gradient of every pool operator at theta = 0, append the
+   largest, re-optimize all parameters warm-starting from the previous optimum,
+   repeat until the gradient norm falls below epsilon.
+
+Two conventions that are easy to trip over: sites are numbered from 1, and the
+pool is sorted by the string form of each monomial so that operator indices are
+reproducible across runs.
+
+A faster reimplementation of the same algorithm, with analytic gradients and
+sparse linear algebra, lives in `utilidades_bp.py`. Both agree on the energy
+traces; use this one to read what the algorithm does, that one to run it.
+"""
+
 from collections import defaultdict
 from functools import lru_cache
 import sympy as sp
