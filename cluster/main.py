@@ -1,3 +1,22 @@
+"""
+The 300-random-graph ensemble behind Fig. 4.
+
+Generates M random six-vertex graphs with a fixed seed and runs Qudit-ADAPT on
+each with both pool truncations, so the two can be compared over a population
+of instances rather than on hand-picked examples.
+
+The paper reports the common-budget variant: every instance is capped at
+k_max = 50 ADAPT iterations instead of running to its own convergence
+threshold. That is deliberate. Stopping each run at its own convergence point
+would compare the two pools at different ansatz sizes, and the interesting
+question is what l = 2 buys you at equal ansatz growth -- which turns out to be
+nothing for the first ~30 iterations, and everything after.
+
+    python cluster/main.py
+
+Set MAX_ITERATION to None to run each instance to convergence instead.
+"""
+
 from pathlib import Path
 import sys
 

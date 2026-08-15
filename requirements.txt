@@ -1,0 +1,28 @@
+# Direct dependencies, pinned to the versions the published results were
+# produced with. Transitive dependencies are resolved by pip.
+#
+#     python -m venv .venv && source .venv/bin/activate
+#     pip install -r requirements.txt
+
+# Numerics. scipy provides BFGS and the matrix exponential; qutip builds the
+# angular-momentum operators and the tensor products.
+numpy==2.5.1
+scipy==1.18.0
+qutip==5.3.0
+
+# Symbolic algebra for the nested-commutator expansion of the AGP: the pool is
+# derived symbolically first and only then mapped to matrices.
+sympy==1.14.0
+
+# Figures and tabulation.
+matplotlib==3.11.1
+pandas==3.0.5
+networkx==3.6.1
+pillow==12.3.0
+
+# Progress bars in the long unattended runs.
+tqdm==4.67.1
+
+# Only needed to run the notebooks in examples/ and cuadernillos/.
+jupyterlab==4.4.9
+nbformat==5.10.4

@@ -1,200 +1,123 @@
-# Qudit-Adapt
+# Qudit-ADAPT
 
-Codebase numérica que implementa y compara dos algoritmos variacionales para
-**Max-3-Cut sobre qutrits** (sistemas de dimensión 3, representación de espín
-1): **CD-ADAPT-VQE** (Counterdiabatic Adaptive-VQE) y **QAOA/QOAO** (versión
-qudit de QAOA). Es el companion numérico de una tesis de B.Sc. en Física
-sobre CD-ADAPT-VQE aplicado a qutrits.
+Reference implementation and data for
 
-## Contenido
+> **Qudit-ADAPT-VQE: an adaptive variational algorithm with counterdiabatic-inspired improvements for qudits**
+> J. Molina, H. Díaz-Moraga, D. Goyeneche, D. Tancara
+> Facultad de Física, Pontificia Universidad Católica de Chile
 
-- [Arquitectura](#arquitectura)
-- [Estructura de carpetas](#estructura-de-carpetas)
-- [Entorno y dependencias](#entorno-y-dependencias)
-- [`funciones/` — motor de los algoritmos](#funciones--motor-de-los-algoritmos)
-- [`cluster/` — scripts para correr experimentos](#cluster--scripts-para-correr-experimentos)
-- [`cuadernillos/` — notebooks de análisis](#cuadernillos--notebooks-de-análisis)
-- [`datos/` y `resultados/`](#datos-y-resultados)
-- [`papers/`](#papers)
-- [Convenciones importantes](#convenciones-importantes)
-- [Nota sobre `funciones/utilidades.py`](#nota-sobre-funcionesutilidadespy)
+The code solves **Max 3-Cut** on qutrits ($d=3$, spin-1 representation) with two
+algorithms and compares them:
 
-## Arquitectura
+- **Qudit-ADAPT** — ADAPT-VQE whose operator pool comes from an approximate
+  adiabatic gauge potential, built from nested commutators of the mixer and
+  cost Hamiltonians and truncated at order $\ell$.
+- **Qudit QAOA** — the fixed-ansatz baseline.
 
-El flujo de trabajo del proyecto es siempre el mismo, en tres etapas:
+Every figure and table in the paper can be regenerated from this repository.
+See [`REPRODUCING.md`](REPRODUCING.md) for the exact command behind each one,
+and [`DATA.md`](DATA.md) for where each dataset was produced and by whom.
 
-1. **Generar/definir grafos** de entrada en `datos/*.txt`.
-2. **Correr el algoritmo** (CD-ADAPT-VQE o QAOA) sobre esos grafos con un
-   script de `cluster/`, pensado para ejecutarse en un servidor o cluster
-   sin supervisión. Los resultados (CSV resumen + JSON completo con trazas)
-   quedan en `resultados/csv/` y `resultados/json/`.
-3. **Analizar los resultados** en un notebook de `cuadernillos/`, que lee
-   esos CSV/JSON y genera las figuras y estadísticas.
+*(Versión en español: [`README.es.md`](README.es.md).)*
 
-Toda la lógica de los algoritmos (Hamiltonianos, construcción del pool de
-operadores, el loop ADAPT, QAOA) vive en `funciones/`, no en los scripts ni
-en los notebooks — estos solo la importan y la orquestan.
+---
 
-```
-datos/*.txt  →  cluster/*.py  (usa funciones/*.py)  →  resultados/{csv,json}/  →  cuadernillos/*.ipynb
-```
+## Start here
 
-## Estructura de carpetas
+New to the codebase? The `examples/` notebooks are the intended entry point.
+They run in seconds on a laptop, each one is self-contained, and together they
+cover the whole pipeline:
 
-```
-Qudit-Adapt/
-├── funciones/          Motor: Hamiltonianos, algoritmos CD-ADAPT-VQE y QAOA
-├── cluster/             Scripts para correr experimentos (pensados para HPC)
-├── cuadernillos/         Notebooks de análisis de resultados
-├── datos/               Grafos de entrada (.txt) e imágenes por grafo
-├── resultados/          Resultados generados: csv/, json/, images/
-├── papers/              PDFs de referencia teórica
-├── Tesis_Joaquín_Molina.pdf   Tesis de B.Sc. que este código acompaña
-├── requirements_venv.txt
-└── .venv/               Entorno virtual (no se sube al repo)
-```
-
-## Entorno y dependencias
-
-Python 3.11, entorno virtual en `.venv/`. Para crearlo desde cero:
+| Notebook | What it shows |
+|---|---|
+| [`01_max3cut_and_hamiltonians`](examples/01_max3cut_and_hamiltonians.ipynb) | The problem: ternary variables, $H_C$, $H_M$, and the exact solution of a six-vertex graph by brute force |
+| [`02_operator_pool`](examples/02_operator_pool.ipynb) | Where the pool comes from: nested commutators, why Hermitization is needed, $\ell=1$ vs $\ell=2$ |
+| [`03_running_qudit_adapt`](examples/03_running_qudit_adapt.ipynb) | One full ADAPT run on $G_1$: operator selection, warm start, convergence |
+| [`04_native_gate_count`](examples/04_native_gate_count.ipynb) | Appendix B: compiling the ansatz to trapped-ion native gates, and the QAOA comparison |
 
 ```bash
-py -3.11 -m venv .venv
-.venv/Scripts/pip install -r requirements_venv.txt   # Windows
-# source .venv/bin/activate && pip install -r requirements_venv.txt   # Unix
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+jupyter lab examples/
 ```
 
-Dependencias principales: `numpy`, `scipy`, `pandas`, `qutip` (álgebra de
-operadores cuánticos), `matplotlib`, `sympy` (álgebra simbólica de
-conmutadores), `jupyter`/`ipykernel`.
+## Layout
 
-## `funciones/` — motor de los algoritmos
-
-### `utilidades.py` — CD-ADAPT-VQE
-
-- **Dos bases operatoriales distintas, no intercambiables:**
-  - `Jx1, Jy1, Jz1` (`qt.jmat(1, 'x'|'y'|'z')`): momento angular real (spin-1).
-  - `X_local()`: matriz custom de qutrit `[[1,1,0],[1,0,1],[0,1,1]]`
-    (`= Jz² + √2·Jx`), la base "computacional" del qutrit.
-- `Hi_qutip(n, omega0=1) = -omega0 · Σⱼ X_local_j` — Hamiltoniano inicial,
-  el mismo en todo el proyecto (CD-ADAPT-VQE y QAOA por igual).
-- `Hp_qutip(n, edges)` — Hamiltoniano del problema Max-3-Cut.
-- Álgebra simbólica de conmutadores (`nested_commutators`, `comm_expr_expr`,
-  etc.) construye el pool de operadores CD a partir de
-  `Had(n, edges, lam) = (1-lam)·Hi + lam·Hp` y su derivada `dHad_dlam`.
-  `l=1` usa solo el sector $O_1$; `l=2` usa $O_1 \cup O_3$.
-- `cd_adapt_vqe_algorithm` / `cd_adapt_vqe_algorithm_profundo`: el loop
-  ADAPT completo (selecciona el operador de mayor gradiente, reoptimiza con
-  BFGS). La versión "profunda" además guarda trazas completas (gradientes
-  top-k, orden exacto de operadores) para análisis y reconstrucción del
-  circuito.
-- `generar_m_grafos` / `ejecutar_grafos`: generación de grafos aleatorios y
-  ejecución en lote, con guardado automático en `datos/` y `resultados/`.
-- `compute_error_stats`, `truncate_result_to_budget`, `save_json`,
-  `save_csv`, etc.: utilidades de post-procesamiento usadas por los
-  notebooks de análisis (estadísticas de convergencia, truncamiento a un
-  "presupuesto común" de iteraciones).
-
-### `utilidades_QAOA.py` — QAOA/QOAO
-
-- Dos mixers: `mixer="jx"` → $H_M = \sum_j J_{x,j}$ (momento angular real,
-  **default**); `mixer="custom"` → $H_M = \sum_j X_{\text{local},j}$ (misma
-  base que `Hi_qutip`).
-- El estado inicial (`psi0`) es **siempre** el estado fundamental de
-  `Hi_qutip(n, 1)` (la superposición uniforme), independientemente del
-  mixer elegido — así QAOA y CD-ADAPT-VQE parten del mismo punto.
-- `scan_qaoa_p`: barre profundidad $p=1,\dots,p_{\max}$ con warm-start
-  entre capas. `optimize_qaoa_for_p`: multi-start (reinicios aleatorios +
-  warm-start), L-BFGS-B por defecto.
-- Funciones de comparación (usadas en `cuadernillos/comparacion_QAOA.ipynb`):
-  carga de resultados, construcción de curvas de error con banda
-  estadística, superposición de la imagen del grafo sobre los gráficos.
-
-## `cluster/` — scripts para correr experimentos
-
-| Script | Qué hace |
-|---|---|
-| `main.py` | CD-ADAPT-VQE sobre `datos/grafos_n6.txt` ($n=6$, $M=300$), para un rango de grafos y un $\ell$ dado |
-| `main_n5.py` | Igual que `main.py` pero para $n=5$, con guardado incremental y resume desde checkpoint |
-| `main_comparaciones.py` | CD-ADAPT-VQE sobre un archivo de grafos arbitrario (por defecto `grafos_comparacion.txt`); el nombre de salida se deriva automáticamente del archivo de entrada |
-| `main_QAOA.py` | QAOA/QOAO sobre un archivo de grafos, con mixer, profundidad y reinicios configurables por línea de comandos |
-| `run_kn.py` | CD-ADAPT-VQE sobre grafos completos $K_n$ ($n=4,\dots,10$), generados internamente (no usa `datos/`) |
-
-Todos siguen la misma convención de rutas: resuelven
-`PROJECT_ROOT = Path(__file__).resolve().parent.parent` e insertan ese
-directorio en `sys.path` antes de importar `funciones`, así funcionan sin
-importar desde qué directorio se invoquen. Ejemplos de uso:
-
-```bash
-python cluster/main.py 1 20 1                 # grafos 1-20, l=1
-python cluster/main_comparaciones.py 2         # l=2, grafos_comparacion.txt
-python cluster/main_comparaciones.py 1 grafos_regulares.txt
-python cluster/main_QAOA.py --n 6 --p_max 20 --num_restarts 25 --mixer jx \
-    --input_file datos/grafos_comparacion.txt
-python cluster/run_kn.py --l 2 --n_min 4 --n_max 10
+```
+funciones/      algorithms — all the physics lives here
+cluster/        runnable scripts: one experiment or one figure each
+examples/       annotated notebooks, start here
+cuadernillos/   the analysis notebooks that produced the paper figures
+datos/          input graphs
+resultados/     outputs: json (full traces), csv (summaries), images, logs
+papers/         background literature
 ```
 
-## `cuadernillos/` — notebooks de análisis
+Nothing in `cluster/` or `cuadernillos/` implements physics — they import from
+`funciones/` and orchestrate. The dependency graph is a tree, no cycles:
 
-| Notebook | Contenido |
+```
+utilidades.py  ──────────┬──> utilidades_QAOA.py
+                         └──> utilidades_bp.py ──┬──> utilidades_gellmann.py
+                                                 └──> utilidades_ringbauer.py
+```
+
+### `funciones/` — the engine
+
+| Module | Contents |
 |---|---|
-| `analisis_kn.ipynb` | CD-ADAPT-VQE sobre grafos completos $K_n$ ($n=4$–$10$), $\ell=1$ vs $\ell=2$ |
-| `comparacion_QAOA.ipynb` | CD-ADAPT-VQE vs QAOA sobre $n=6$: grafos de referencia y grafos regulares (grado 2–5) |
-| `grafos_aleatorios_n6.ipynb` | Ensemble de 300 grafos aleatorios $n=6$: $\ell=1$ vs $\ell=2$, con y sin presupuesto común de iteraciones |
-| `analisis_localidad.ipynb` | Localidad de los operadores seleccionados por el ansatz (estructura del pool, contribución energética por localidad) |
+| `utilidades.py` | Qutrit operators, $H_C$ and $H_M$, symbolic nested commutators, the original CD-ADAPT loop |
+| `utilidades_QAOA.py` | Qudit QAOA: layer construction, energy, depth scan with warm start |
+| `utilidades_bp.py` | Vectorized ADAPT engine with analytic gradients, the local-minimum landscape scan, and native gate counting |
+| `utilidades_gellmann.py` | The same pool rebuilt in the $\mathfrak{su}(3)$ Gell-Mann basis (Appendix B) |
+| `utilidades_ringbauer.py` | Decomposition of a single-qudit unitary into two-level rotations, following Ringbauer *et al.* |
 
-Cada notebook parte con una sección `0. Set-up` (imports, estilo,
-constantes) y, cuando aplica, una sección `0. Carga de datos` dentro de
-cada bloque de análisis. Las rutas dentro de los notebooks son relativas
-con prefijo `../` porque viven un nivel bajo la raíz del proyecto.
+### `cluster/` — experiments
 
-## `datos/` y `resultados/`
+| Script | Produces |
+|---|---|
+| `main_comparaciones.py` | Qudit-ADAPT on the benchmark graphs → Figs. 1–3, Table I |
+| `main_QAOA.py` | QAOA baseline on the same graphs → Figs. 1–3, Table I |
+| `main.py` | The 300-random-graph ensemble → Fig. 4 |
+| `main_bp.py` | Warm/cold/random-restart landscape scan → Figs. 5–6 |
+| `figuras_paper.py` | Renders Figs. 5–6 in the manuscript's typography |
+| `tablas_apendice.py` | Tables II and III |
+| `conteo_qaoa.py` | Table IV |
+| `lanzar_bp.sh` | Launcher for long unattended runs |
 
-- `datos/grafos_n6.txt` — 300 grafos aleatorios $n=6$.
-- `datos/grafos_comparacion.txt` — 4 grafos de referencia usados para
-  comparar CD-ADAPT-VQE contra QAOA.
-- `datos/grafos_regulares.txt` — 4 grafos regulares (grado 2, 3, 4 y 5).
-- `datos/imagenes/` — imágenes de los grafos de referencia y regulares,
-  usadas para ilustrar los gráficos de comparación.
-- `resultados/csv/` y `resultados/json/` — salida de los scripts de
-  `cluster/`: un CSV resumen y un JSON completo (con trazas de energía y
-  gradiente) por cada corrida.
-- `resultados/images/` — figuras ya generadas por los notebooks de `K_n`.
+## Conventions
 
-## `papers/`
+Three things are easy to get wrong when reading the code:
 
-Papers de referencia teórica: ADAPT-VQE y ADAPT-QAOA originales,
-counterdiabatic driving (Sels & Polkovnikov, y su aplicación a qudits),
-QAOA para sistemas qudit, barren plateaus, shortcuts to adiabaticity vía
-espacio de Krylov, y circuitos comprimidos para AQC.
+**Sites are 1-indexed.** Graph edges are `(1,2)`, not `(0,1)`. Levels inside a
+qutrit are 0-indexed, so `lambda_1` acts on the pair `(0,1)`.
 
-## Convenciones importantes
+**Operator labels are canonical strings.** A pool operator is identified by a
+string like `"((1, 'y'), (3, 'x'), (4, 'z'))"` for angular momentum or
+`"((2, 2), (3, 8), (4, 6))"` for Gell-Mann. The pool is sorted by that string,
+so operator indices are reproducible across runs.
 
-1. **Qutrits = dimensión 3 fija (spin-1)**, sitios indexados de 1 a $n$
-   (no de 0 a $n-1$).
-2. **No mezclar las dos bases operatoriales** (`Jx1/Jy1/Jz1` vs
-   `X_local()`) sin verificar cuál corresponde en cada Hamiltoniano.
-3. **Estado inicial siempre uniforme**: tanto CD-ADAPT-VQE como QAOA parten
-   del estado fundamental de `Hi_qutip(n, 1)`, independientemente del
-   mixer o algoritmo.
-4. **Exponenciación repetida**: diagonalizar una sola vez
-   (`precompute_operator_spectra_numpy`) y reusar la base espectral — nunca
-   `expm` dentro del loop de un optimizador.
-5. Cualquier script nuevo en `cluster/` debe seguir el mismo patrón de
-   `PROJECT_ROOT` + `sys.path.insert` antes de importar `funciones`.
-   Cualquier notebook nuevo en `cuadernillos/` debe usar rutas relativas
-   con prefijo `../`.
+**The ansatz applies right to left.** `ansatz_op_labels[0]` is the operator
+closest to the reference state $|\phi_g\rangle$, i.e. applied first.
 
-## Nota sobre `funciones/utilidades.py`
+Gradients are analytic (adjoint/backpropagation), not finite differences:
+$\partial E/\partial\theta_j = 2\,\mathrm{Im}\langle\sigma_j|A_j|\varphi_j\rangle$.
+This is what lets the $\ell=2$ runs reach machine precision.
 
-Se hizo una limpieza de `utilidades.py` para sacar código muerto (funciones
-duplicadas y nunca usadas) y ordenarlo. Se verificó cuidadosamente que
-ninguna función realmente usada se haya eliminado, y se dejó
-`funciones/utilidades_original.py` como respaldo intacto del archivo antes
-de la limpieza, por si algo llegara a fallar.
+## Language
 
-**Si algo se rompe después de este cambio**, la solución es simple: borrar
-`funciones/utilidades.py` y renombrar `funciones/utilidades_original.py` a
-`funciones/utilidades.py`. Con eso todo vuelve a funcionar exactamente
-como antes de la limpieza.
+Code comments are in Spanish, matching the authors. Documentation, examples and
+scripts added for the public release are in English. Both READMEs are kept in
+sync; the English one is authoritative.
 
+## Citation
+
+```bibtex
+@article{molina2026quditadapt,
+  title   = {Qudit-ADAPT-VQE: an adaptive variational algorithm with
+             counterdiabatic-inspired improvements for qudits},
+  author  = {Molina, Joaqu\'in and D\'iaz-Moraga, Herbert and
+             Goyeneche, Dardo and Tancara, Diego},
+  year    = {2026}
+}
+```

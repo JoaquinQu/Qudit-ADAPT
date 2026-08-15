@@ -1,3 +1,21 @@
+"""
+Qudit-ADAPT on the benchmark graphs: Figs. 1-3 and the ADAPT columns of Table I.
+
+Runs the algorithm on the four irregular instances G_1..G_4 of
+`datos/grafos_comparacion.txt` and on the regular ones of
+`datos/grafos_regulares.txt`, for both pool truncations l = 1 and l = 2.
+
+Writes a summary CSV and a full JSON with the energy trace, the selected
+operators and the optimal parameters of every run, into `resultados/`. The
+figures themselves are drawn later by `cuadernillos/comparacion_QAOA.ipynb`,
+which overlays these curves with the QAOA baseline from `main_QAOA.py`.
+
+Configuration is the block of constants below rather than command-line flags:
+this is meant to be launched once and left alone.
+
+    python cluster/main_comparaciones.py
+"""
+
 from pathlib import Path
 import sys
 import ast
