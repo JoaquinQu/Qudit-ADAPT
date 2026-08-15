@@ -1,0 +1,3 @@
+grafo_id,base,n,num_edges,l,pool_size,num_ansatz_ops,stop_reason,ground_energy,error_final,costo_compuertas,costo_mediciones,k_1e-2,med_1e-2,comp_1e-2,k_1e-4,med_1e-4,comp_1e-4,peso_medio,runtime_min
+1,angular,6,6,1,30,6,max_iteration_reached,-12.0,0.5461172594096695,10,180,,,,,,,1.8333333333333333,0.252
+1,gellmann,6,6,1,36,6,max_iteration_reached,-12.0,2.104447859069637,12,216,,,,,,,2.0,0.207

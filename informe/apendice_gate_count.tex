@@ -1,0 +1,163 @@
+% =====================================================================
+% Appendix section: gate count and an alternative encoding.
+%
+% Sent by the user, with (i) typographical corrections only --- the wording,
+% structure and style are untouched --- and (ii) a new block comparing the
+% native gate count against QAOA at a matched parameter budget.
+%
+% Corrections made to the original text:
+%   - "in the previous section f the appendix" -> "of the appendix"
+%   - "that is machine precision" -> "that is, machine precision"
+%   - "both ansatzes" -> "both ans\"atze"
+%   - "$2$ of the $16$ generators selected in the angular momentum run and for
+%     none of the $30$" -> comma added before "and"
+%
+% New material (marked with %%% NEW below):
+%   - one paragraph + Table~\ref{tab:qaoa_comparison} on the QAOA gate count
+%   - the QAOA reference line added to the caption of Fig.~\ref{fig:native_gates}
+%
+% All numbers are produced by cluster/conteo_qaoa.py and cluster/figuras_apendice.py.
+% =====================================================================
+
+\section{Gate count and an alternative encoding}
+\label{sec:gell_mann}
+
+%\subsection{Motivation and Algebraic Structure}
+As discussed in the previous section of the appendix~\ref{appendix1}, the operator pool constructed via the counterdiabatic ansatz relies on nested commutators of the cost and mixer Hamiltonians. In the standard angular momentum basis this procedure generates non-Hermitian monomial terms, such as $L_y^{(i)} L_z^{(i)}$ on a single site, requiring explicit Hermitization via $(O + O^\dagger)/2$.
+
+To bypass this Hermitization and to align the pool with the native operations of the hardware, we reformulate the operator pool using the $\mathfrak{su}(d)$ Gell-Mann basis ($\{\lambda_a\}_{a=1}^{d^2-1}$ for $d=3$). Because the Gell-Mann generators close linearly under the commutation relations $[\lambda_a, \lambda_b] = 2i \sum_{c} f_{abc} \lambda_c$, every term produced by the nested-commutator expansion is a product of $\lambda$ operators acting on \emph{distinct} sites. Such products commute factor by factor and are therefore Hermitian without any symmetrization. In this representation the Max-3-Cut cost Hamiltonian simplifies to
+\begin{equation}
+\label{eq:hc_gellmann}
+H_C\big|_{(i,j)} = \lambda_3^{(i)}\lambda_3^{(j)} + \lambda_8^{(i)}\lambda_8^{(j)} - \frac{4}{3}I,
+\end{equation}
+which follows from the decomposition $L_z = \tfrac{1}{2}\lambda_3 + \tfrac{\sqrt{3}}{2}\lambda_8$. This eliminates the single-site terms and reduces the number of interaction terms from four to two per edge.
+
+%\subsection{Expressivity versus measurement overhead}
+A first advantage of the Gell-Mann construction is a reduction in pool size. For the $l=2$ counterdiabatic expansion on $n=6$ qutrits, the Gell-Mann pool contains $1292$ operators compared to $1600$ in the angular momentum basis. Since the measurement cost per ADAPT iteration scales as $\mathcal{O}(|\mathcal{V}|)$, a smaller pool directly lowers the cumulative gradient-evaluation burden.
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig_ap_pools.pdf}
+\caption{Convergence of the counterdiabatic ansatz for $n=6$ qutrits (instance $G_2$, $l=2$ pool), comparing the angular momentum pool ($1600$ operators) with the Gell-Mann pool ($1292$ operators) under three cost measures: relative error against the number of variational parameters, against the accumulated number of two-qutrit entangling gates, and against the cumulative number of gradient measurements.}
+\label{fig:pool_convergence}
+\end{figure*}
+
+However, as shown in Fig.~\ref{fig:pool_convergence} and summarized in Table~\ref{tab:pool_comparison}, the Gell-Mann basis converges more slowly per parameter. The angular momentum pool reaches $\epsilon_{\mathrm{rel}} = 3.6\times10^{-15}$, that is, machine precision, after $16$ parameters, at which point the gradient-norm criterion terminates the run. The Gell-Mann pool reaches $\epsilon_{\mathrm{rel}} = 4.3\times10^{-7}$ after $30$ parameters; this run was stopped by the maximum-iteration bound rather than by the convergence criterion, so the value should be read as an upper bound rather than as a plateau. The performance gap originates in operator expressivity: a symmetrized angular momentum monomial such as $\{L_y^{(i)},L_z^{(i)}\}(L_z^{(j)})^2$ is a \emph{composite} object, equal to a sum of several Gell-Mann strings, whereas each Gell-Mann string is an elementary transition between a single pair of levels. A finer decomposition yields a smaller pool whose elements individually accomplish less per ADAPT step.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison between the angular momentum and Gell-Mann operator pools ($n=6$ qutrits, instance $G_2$, $l=2$). The relative error is $\epsilon_{\mathrm{rel}}=|E-E_0|/|E_0|$ as defined in Eq.~(\ref{eq:relative_error}).}
+\label{tab:pool_comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline\hline
+Pool basis & Pool size & Parameters & $\epsilon_{\mathrm{rel}}$ & Entangling gates & Gradient measurements \\
+\hline
+Angular momentum & 1600 & 16 & $3.6\times10^{-15}$ & 44 & 25\,600 \\
+Gell-Mann & 1292 & 30 & $4.3\times10^{-7}$ & 68 & 38\,760 \\
+\hline\hline
+\end{tabular}%
+}
+\end{table}
+
+%\subsection{Compilation to native trapped-ion hardware}
+To establish a hardware-level metric, we compile both ans\"atze into the native gate set of a universal trapped-ion qudit processor~\cite{RingbauerNatPhys2022}, consisting of single-qudit two-level rotations $R^{(i,j)}(\theta,\varphi)$ and pairwise M\o{}lmer-S\o{}rensen gates $\mathrm{MS}^{(i,j)}(\theta,\varphi)$:
+\begin{equation}
+R^{(i,j)}(\theta,\varphi) = e^{-i \frac{\theta}{2} \sigma_{\varphi}^{(i,j)}}, \quad
+\mathrm{MS}^{(i,j)}(\theta,\varphi) = e^{-i \frac{\theta}{4} \left( \sigma_{\varphi}^{(i,j)} \otimes I + I \otimes \sigma_{\varphi}^{(i,j)} \right)^2}.
+\end{equation}
+
+Every single-qutrit unitary appearing below is compiled with the decomposition algorithm given in the appendix of Ref.~\cite{RingbauerNatPhys2022}, so that the single-qudit part of the count is not a model of ours but the routine of the reference platform itself. That algorithm proceeds in two stages: a Givens elimination of the lower triangle, one rotation per non-zero entry, followed by the residual diagonal phases, each independent relative phase costing \emph{three} physical pulses, $R(\pi/2,\pi)\,R(\gamma_i,\pi/2)\,R(\pi/2,0)$. Both stages act on adjacent level pairs only. The second stage is easy to overlook and is not negligible: a diagonal generator is not free, and $e^{-i\theta\lambda_3}$, $e^{-i\theta\lambda_8}$ and $e^{-i\theta L_z}$ cost three, six and six pulses respectively.
+
+For a generator supported on $w>1$ sites we then use the standard ladder construction: each local factor is diagonalized, the resulting diagonal phase is applied with $2(w-1)$ entangling gates, and the local diagonalizations are undone. Only the first stage of the algorithm is charged to those diagonalizations, because the diagonal part of $V$ commutes with the already diagonal $M$ and cancels against $V^\dagger$ in the conjugation. A generator supported on a single site needs no conjugation at all, since $e^{-i\theta G}$ is then itself a single-qutrit unitary and is compiled directly, both stages included. The $2(w-1)$ M\o{}lmer-S\o{}rensen gates of the ladder, and the diagonal phase they enclose, are on the other hand a \emph{model}: the ladder is the qubit construction carried over unchanged. The closest anchor Ref.~\cite{RingbauerNatPhys2022} provides is its controlled-exchange gate, which decomposes into two two-level MS gates independently of the qudit dimension and thus matches the $w=2$ case exactly; the extension to $w>2$ is ours and does not correspond to an explicitly compiled circuit. We charge that phase its worst case, the six pulses of a generic diagonal; charging three instead widens the margin reported below from $9\,\%$ to $15\,\%$, so the comparison does not rest on that choice.
+
+%%% NEW ---------------------------------------------------------------
+\paragraph{The counting rule.} Every pool operator is a product of local factors, $G=\bigotimes_{s\in S} M_s$, over its support $S$ with $w=|S|$. Diagonalizing each factor as $M_s = U_s D_s U_s^\dagger$ turns the exponential into
+\begin{equation}
+\label{eq:ladder}
+e^{-i\theta G}=\Big(\bigotimes_{s} U_s\Big)\,
+e^{-i\theta \bigotimes_{s} D_s}\,
+\Big(\bigotimes_{s} U_s^\dagger\Big),
+\end{equation}
+whose middle factor is diagonal and is realized by a ladder of $2(w-1)$ M\o{}lmer-S\o{}rensen gates enclosing a single parametrized rotation. Writing $g(M)$ for the number of two-level rotations that diagonalize a local factor, one generator therefore costs
+\begin{equation}
+\label{eq:gate_rule}
+R = 2\sum_{s\in S} g(M_s) + 1,
+\qquad
+\mathrm{MS} = 2(w-1),
+\qquad (w>1),
+\end{equation}
+the factor of two accounting for $U_s$ and $U_s^\dagger$. For $w=1$ no conjugation is needed and the cost is $R=g(M)$ with no entangling gate.
+
+The entire comparison between the two bases is therefore contained in $g$. For $d=3$ it takes the values
+\begin{equation}
+\label{eq:givens_rule}
+g=0 \ \ (\lambda_3,\ \lambda_8,\ L_z,\ L_z^2),
+\qquad
+g=1 \ \ (\lambda_1,\lambda_2,\lambda_6,\lambda_7),
+\qquad
+g=2 \ \ (\lambda_4,\lambda_5),
+\qquad
+g=3 \ \ (L_x,\ L_y,\ \{L_y,L_z\}),
+\end{equation}
+the two diagonal Gell-Mann generators requiring no rotation and the remaining six acting within a single pair of levels. The intermediate value is a consequence of the algorithm using adjacent pairs only: $\lambda_4$ and $\lambda_5$ live on the pair $(0,2)$ and must be routed through level $1$. The angular momentum generators, by contrast, drive two transitions at once --- $L_x=(\lambda_1+\lambda_6)/\sqrt2$ --- and are never native. Two operators actually selected by the algorithm make the gap concrete. The Gell-Mann string $\lambda_2^{(2)}\lambda_8^{(3)}\lambda_6^{(4)}$ has $g=1,0,1$ and costs $R=10$; the angular momentum monomial $L_y^{(1)}L_x^{(3)}L_z^{(4)}$ has the same support and the same $\mathrm{MS}=4$, but $g=3,3,0$ and costs $R=18$.
+%%% END NEW -----------------------------------------------------------
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig_ap_native.pdf}
+\caption{Accumulated gate counts on a universal trapped-ion qudit processor~\cite{RingbauerNatPhys2022} ($n=6$ qutrits, instance $G_2$, $l=2$ pool), separated into single-qudit two-level rotations $R^{(i,j)}$, two-qudit M\o{}lmer-S\o{}rensen gates, and the total. The star marks the target precision $\epsilon_{\mathrm{rel}} = 10^{-3}$ and the dotted line the corresponding threshold. The dash-dotted vertical line is the cost of a QAOA circuit offering the same $16$ variational parameters, compiled into the same gate set; it is drawn as a vertical reference because that cost is fixed by the circuit structure alone and carries no associated energy. The horizontal axis is logarithmic so that both scales remain legible.}
+\label{fig:native_gates}
+\end{figure*}
+
+At a moderate target precision of $\epsilon_{\mathrm{rel}} \le 10^{-3}$ the Gell-Mann basis reverses its deficit. As detailed in Table~\ref{tab:native_gate_counts}, it requires $21$ parameters against $16$ for angular momentum, but reduces the total native gate count from $262$ to $238$, a reduction of about $9\,\%$.
+
+\begin{table}[htbp]
+\centering
+\caption{Native gate decomposition at the target precision $\epsilon_{\mathrm{rel}} = 10^{-3}$.}
+\label{tab:native_gate_counts}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline\hline
+Pool basis & Parameters & Single-qudit $R^{(i,j)}$ & Two-qudit $\mathrm{MS}$ & Total native gates & Gradient measurements \\
+\hline
+Angular momentum & 16 & 218 & 44 & 262 & 25\,600 \\
+Gell-Mann & 21 & 192 & 46 & \textbf{238} & 27\,132 \\
+\hline\hline
+\end{tabular}%
+}
+\end{table}
+
+This advantage arises because the Gell-Mann operators align naturally with the physical driving fields: $\lambda_3$ and $\lambda_8$ are diagonal and require no rotation at all, while the remaining six generators each address a single pair of levels and are therefore already native. Averaged over the selected ansatz, a Gell-Mann generator requires $9.03$ two-level rotations, against $13.62$ for the symmetrized angular momentum monomials. A second, hidden cost affects the angular momentum pool: when two or more sites carry a non-Hermitian local factor, the symmetrized generator $(O+O^\dagger)/2$ is not a tensor product but a sum of two non-commuting products, so the ladder construction no longer applies and Trotterization is required. This occurs for $2$ of the $16$ generators selected in the angular momentum run, and for none of the $30$ selected in the Gell-Mann run; the associated overhead is not included in the counts above.
+
+%%% NEW ---------------------------------------------------------------
+%\subsection{Comparison with QAOA at a matched parameter budget}
+The same compilation applied to QAOA quantifies what the adaptive construction buys in hardware terms. This comparison requires no variational data: the native gate count of a QAOA circuit is fixed by the graph and by the number of layers, so no optimization is performed and no optimal angles are needed. Both layers factorize exactly, with no Trotter error, since $H_M=\sum_j L_x^{(j)}$ is a sum of single-site terms and $H_C$ is a sum of mutually commuting diagonal terms. We compile its cost layer in the Gell-Mann form of Eq.~(\ref{eq:hc_gellmann}), which needs two terms per edge instead of the four of the angular momentum form and halves the cost of that layer, so that QAOA is counted in its most favourable encoding. A circuit of $p$ layers carries $2p$ parameters; an odd budget is matched by appending a trailing cost half-layer.
+
+The result is reported in Table~\ref{tab:qaoa_comparison} for the two instances used in this work, at each of the parameter budgets at which Qudit-ADAPT terminates. At an equal number of variational parameters, QAOA requires between $5.2$ and $8.9$ times more native gates, and between $6.7$ and $12.2$ times more M\o{}lmer-S\o{}rensen gates, which are the dominant source of error on the reference hardware. The origin of the gap is structural rather than numerical: every QAOA layer reapplies the mixer and the full cost Hamiltonian in their entirety, at a cost of $150$ single-qudit rotations and $44$ entangling gates per layer for $G_2$, irrespective of whether those terms contribute to lowering the energy. The adaptive construction instead admits one generator at a time, and only when its gradient warrants it. We stress that the comparison is one of circuit cost at a matched parameter count, and does not assert that QAOA attains any particular precision at those depths.
+
+\begin{table}[htbp]
+\centering
+\caption{Native gate count of QAOA against Qudit-ADAPT at a matched number of variational parameters, for the instance of Fig.~1a ($G_1$, ten edges) and the instance of this appendix ($G_2$, eleven edges). The parameter budgets are those at which Qudit-ADAPT terminates. The QAOA cost layer is compiled in the Gell-Mann form of Eq.~(\ref{eq:hc_gellmann}), its cheaper representation.}
+\label{tab:qaoa_comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llccccc}
+\hline\hline
+Instance & Method & Parameters & Single-qudit $R^{(i,j)}$ & Two-qudit $\mathrm{MS}$ & Total native gates & Ratio \\
+\hline
+$G_1$ & Qudit-ADAPT ($l=1$) & 21 & 225 & 36 & \textbf{261} & --- \\
+$G_1$ & QAOA ($p=10$, plus half-layer) & 21 & 1500 & 440 & 1940 & $7.4\times$ \\
+$G_1$ & Qudit-ADAPT ($l=2$) & 40 & 562 & 120 & \textbf{682} & --- \\
+$G_1$ & QAOA ($p=20$) & 40 & 2760 & 800 & 3560 & $5.2\times$ \\
+\hline
+$G_2$ & Qudit-ADAPT (angular, $l=2$) & 16 & 218 & 44 & \textbf{262} & --- \\
+$G_2$ & QAOA ($p=8$) & 16 & 1200 & 352 & 1552 & $5.9\times$ \\
+$G_2$ & Qudit-ADAPT (Gell-Mann, $l=2$) & 21 & 192 & 46 & \textbf{238} & --- \\
+$G_2$ & QAOA ($p=10$, plus half-layer) & 21 & 1632 & 484 & 2116 & $8.9\times$ \\
+\hline\hline
+\end{tabular}%
+}
+\end{table}
+%%% END NEW -----------------------------------------------------------
+
+These results indicate that operator pool design for qudit VQAs should not be guided solely by the convergence rate per parameter, but must also account for measurement overhead and for the cost of compilation into native hardware operations.

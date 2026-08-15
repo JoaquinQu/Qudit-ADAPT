@@ -1,0 +1,191 @@
+% =====================================================================
+%  Bloque para pegar en \subsection{Local minima and barren plateau}
+%  (línea ~619 de main.tex, justo antes de \section{Conclusions})
+%
+%  Figuras que hay que subir a la carpeta del manuscrito:
+%     fig_bp_1a_l1.pdf   fig_bp_1a_l2.pdf
+%     fig_bp_k6_l1.pdf   fig_bp_k6_l2.pdf   (estas dos sólo si se incluye K6)
+%
+%  Usa el mismo estilo de figura del manuscrito (subfigure + overpic), así
+%  que las etiquetas a) y b) las pone LaTeX y NO vienen dentro del PDF.
+% =====================================================================
+
+\subsection{Local minima and barren plateau}
+
+A recurring concern for variational algorithms is whether the cost landscape
+can be navigated at all. Two distinct obstructions are usually invoked: barren
+plateaus, where the gradient variance vanishes exponentially with system size
+and the landscape becomes featureless~\cite{LaroccaNatRevPhys2025,
+HolmesPRXQuantum2022}, and rough landscapes densely populated with local
+minima, in which the optimizer stalls even though gradients remain sizable.
+The distinction matters here because the enlarged local Hilbert space of qudits
+has been argued to amplify barren plateaus relative to the qubit
+case~\cite{FriedrichQMI2025}, so the trainability of a qudit ansatz cannot be
+taken for granted.
+
+Qudit-ADAPT addresses these obstructions through its warm-start construction
+rather than through the expressivity of a fixed ansatz. To quantify this, we
+isolate the contribution of the warm start while keeping everything else fixed.
+At every ADAPT iteration $k$ we re-optimize the \emph{same} $k$-parameter
+ansatz from three different initial points:
+%
+\begin{enumerate}
+    \item the warm start actually used by the algorithm,
+          $\boldsymbol{\theta}_k = (\boldsymbol{\theta}_{k-1}^{\,*}, 0)$, where
+          $\boldsymbol{\theta}_{k-1}^{\,*}$ are the optimized parameters of the
+          previous iteration;
+    \item a cold restart at the origin, $\boldsymbol{\theta}_k = \boldsymbol{0}_k$,
+          which resets the state to $\ket{\phi_g}$ at every step;
+    \item $100$ independent random initializations,
+          $\theta_j \sim \mathcal{U}(-\pi,\pi)$.
+\end{enumerate}
+%
+The operator sequence is in all three cases the one selected by the gradient
+criterion, so the only variable is the starting point of the optimization. For
+the random initializations we record only the converged optimum, so that each
+mark in Fig.~\ref{fig5} is a minimum in which an optimization actually
+terminated, and each column reveals the local-minimum structure seen by an
+ansatz of that size.
+
+% ---------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_1a_l1.pdf}
+            \put(2,88){a)}
+        \end{overpic}
+    \end{subfigure}
+
+    \vspace{0.4em}
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_1a_l2.pdf}
+            \put(2,88){b)}
+        \end{overpic}
+    \end{subfigure}
+
+    \caption{Relative error as a function of the number of variational
+    parameters for instance 1, using operator pools obtained from the
+    a) $l=1$ and b) $l=2$ truncations of the approximate AGP. Each horizontal
+    mark is the converged optimum of one of $100$ independent random parameter
+    initializations of the same ansatz, colored by its relative error. The blue
+    curve is the warm-start strategy used by Qudit-ADAPT and the red curve a
+    cold restart at $\boldsymbol{\theta}_k=\boldsymbol{0}_k$. The graph
+    instance is shown as an inset.}
+    \label{fig5}
+\end{figure}
+% ---------------------------------------------------------------------
+
+Figure~\ref{fig5} shows the result for instance 1. The landscape is manifestly
+rough: for $l=2$ the $100$ random initializations converge to $100$ distinct
+minima spanning more than two orders of magnitude in relative error, from
+$8\times10^{-3}$ to $1.3\times10^{-1}$. This is not a landscape in which an
+uninformed optimizer succeeds by chance. Nonetheless the warm-start curve
+descends monotonically below the entire cloud, reaching
+$\epsilon_{\rm rel}=3.1\times10^{-4}$ against a median of $5.5\times10^{-2}$
+over the random restarts, an improvement of more than two orders of magnitude
+with respect to the typical outcome of an uninformed optimization of the very
+same ansatz. For $l=1$ the algorithm converges at $k=21$ with
+$\epsilon_{\rm rel}=6.6\times10^{-3}$, against a median of $1.4\times10^{-2}$
+and a worst case of $1.5\times10^{-1}$ among $88$ distinct minima.
+
+The cold restart isolates the mechanism. It uses the same operator sequence and
+the same pool, and differs from the warm start only in discarding the
+parameters of the previous iteration. For $l=2$ the two curves coincide up to
+$k\simeq22$ and separate afterwards, with the cold restart saturating near
+$3.3\times10^{-3}$ while the warm start continues to improve by an additional
+order of magnitude. The advantage therefore does not originate in the
+counterdiabatic pool alone, but in the combination of that pool with parameter
+recycling.
+
+The reason is structural. Because $\theta_{k+1}=0$ leaves the state unchanged,
+the enlarged landscape satisfies
+$E_{k+1}(\boldsymbol{\theta},0) = E_k(\boldsymbol{\theta})$, so the warm start
+inherits the value of the previous optimum. At that point all derivatives with
+respect to the inherited parameters vanish, while the derivative along the new
+direction is precisely the gradient maximized by the selection criterion in
+Eq.~(\ref{eq:adapt_gradient}), which is nonzero by construction unless the
+convergence threshold has been met. A configuration that was a local minimum in
+$k$ dimensions is therefore a saddle point in $k+1$ dimensions, with a
+guaranteed descent direction. Rather than escaping local traps by climbing over
+them, the algorithm bypasses them through the dimension it has just added,
+which is the burrowing behaviour reported for the qubit
+case~\cite{GrimsleynpjQuantumInf2023}. Two consequences follow: the optimized
+energy is monotonically non-increasing in $k$, and the local minima of the
+fixed-size landscape are never visited, because the optimization is never
+initialized at an arbitrary point of that landscape.
+
+We stress that this argument concerns the roughness of the landscape and not
+the expressivity of the pool. Burrowing guarantees monotonic improvement and
+escape from the minima of the previous ansatz, but it does not prevent the
+algorithm from terminating at a suboptimal point when the gradients of the
+entire pool become small, which is what limits the $l=1$ results. Consistently,
+the gradient variance evaluated at random parameter points shows no exponential
+flattening with ansatz depth over the range explored, indicating that what traps
+the random restarts are local minima rather than a barren plateau.
+
+% ---------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_k6_l1.pdf}
+            \put(2,88){a)}
+        \end{overpic}
+    \end{subfigure}
+
+    \vspace{0.4em}
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_k6_l2.pdf}
+            \put(2,88){b)}
+        \end{overpic}
+    \end{subfigure}
+
+    \caption{Same analysis as in Fig.~\ref{fig5} for the complete graph $K_6$,
+    using the a) $l=1$ and b) $l=2$ operator pools. The larger connectivity
+    increases the pool size from $66$ to $2724$ operators, and with the $l=2$
+    pool the algorithm converges to machine precision after $18$ parameters,
+    where all three initialization strategies become indistinguishable.}
+    \label{fig6}
+\end{figure}
+% ---------------------------------------------------------------------
+
+The size of the advantage depends on how expressive the pool is relative to the
+instance. Figure~\ref{fig6} repeats the analysis for the complete graph $K_6$,
+whose larger connectivity increases the pool from $66$ operators at $l=1$ to
+$2724$ at $l=2$.
+
+For $l=1$ the landscape remains rough: the $100$ random initializations still
+converge to $99$ distinct minima spanning two orders of magnitude, and the warm
+start improves on their median by a factor of about four ($1.5\times10^{-4}$
+against $5.4\times10^{-4}$). The comparison is nevertheless less clean than for
+instance~1: $14$ of the $100$ random restarts terminate below the warm-start
+value, and the cold restart itself ends slightly lower. This is not in conflict
+with the burrowing argument, which guarantees monotonic improvement and the
+existence of a descent direction at every step, but not global optimality of
+the $k$-parameter landscape. Starting from
+$(\boldsymbol{\theta}_{k-1}^{\,*},0)$ confines the optimization to the basin
+containing the previous optimum, so a deeper basin located elsewhere is
+unreachable without first increasing the energy, whereas a random
+initialization may land in it directly. The relevant point is that this is a
+low-probability event that costs a full optimization each time it is attempted:
+recovering the best of $100$ restarts requires two orders of magnitude more
+optimizations than the single one performed by the warm start, and identifying
+which restart is best requires prior knowledge of $E_0$.
+
+For $l=2$ the picture changes qualitatively. The algorithm reaches machine
+precision after $18$ parameters and warm, cold and random initializations all
+converge to the same solution, with the residual differences at the level of
+numerical noise. Once the ansatz is sufficiently expressive the landscape no
+longer presents competing minima and the initialization becomes irrelevant.
+Taken together, Figs.~\ref{fig5} and~\ref{fig6} indicate that the benefit of the
+warm start is largest precisely in the regime of practical interest, where the
+pool is deliberately kept compact in order to limit circuit depth, and that it
+becomes immaterial only when the operator pool is large enough that the
+optimization problem is no longer difficult.

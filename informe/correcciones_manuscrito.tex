@@ -1,0 +1,273 @@
+% =====================================================================
+%  CORRECCIONES AL MANUSCRITO
+%
+%  Tres bloques, para reemplazar en main.tex:
+%    (A) \subsection{Local minima and barren plateaus}
+%    (B) Apéndice: Gell-Mann Basis Reformulation ...
+%    (C) Apéndice: Graphs utilized
+%
+%  Figuras nuevas que hay que subir:
+%    fig_bp_1a_l1.pdf   fig_bp_1a_l2.pdf
+%    fig_bp_k6_l1.pdf   fig_bp_k6_l2.pdf
+%    fig_ap_pools.pdf   fig_ap_native.pdf     <- reemplazan a
+%                                                bp_pools_n6_l2_grafo2.pdf y
+%                                                bp_compuertas_nativas.pdf
+%
+%  NOTA sobre \put: las figuras se generan con figsize=(8,7), es decir
+%  proporción 0.875, así que el borde superior está en y=87.5 en las
+%  coordenadas de overpic. Usar \put(2,88) en TODAS (en la Fig. 5 actual
+%  quedó \put(2,80), que deja la etiqueta dentro del panel).
+% =====================================================================
+
+
+% =====================================================================
+% (A)  \subsection{Local minima and barren plateaus}
+%
+% Correcciones respecto de la versión actual:
+%   1. La versión actual afirma que "both cold and warm initializations
+%      descend monotonically ... reaching eps_rel = 3.1e-4". El cold restart
+%      NO llega a 3.1e-4: satura en 3.3e-3, como dice el propio párrafo
+%      siguiente. Además la monotonía sólo está garantizada para el warm
+%      start. Contradicción corregida.
+%   2. "the two curves overlap up to k ~ 22": se separan en k = 17.
+%   3. Rango de la nube: la versión actual dice "from 8e-3 to 1.3e-1", que
+%      es 1.2 órdenes y contradice el "more than two orders". El rango real
+%      es 2.8e-4 a 1.3e-1, que sí son 2.7 órdenes.
+%   4. Se agregan las fracciones de reinicios que superan al warm start
+%      (1/100 y 6/100 en la instancia 1), que es el dato que sostiene el
+%      argumento y faltaba.
+%   5. Se cuantifica la varianza del gradiente, antes sólo afirmada.
+%   6. K6, l=1: el cold restart no termina "slightly lower" sino 4.6 veces
+%      más abajo.
+%   7. Se reescribe el párrafo final sobre la rugosidad, que estaba
+%      incompleto, y se eliminan los marcadores "(poner ref)".
+% =====================================================================
+
+\subsection{Local minima and barren plateaus}
+
+A fundamental question in the design of Variational Quantum Algorithms (VQAs) is whether the ansatz is \textit{trainable}, meaning that the variance of the cost function gradients decays at most polynomially with the system size, allowing an optimizer to converge efficiently~\cite{LaroccaNatRevPhys2025}. Recent analytical and numerical studies have shown that under certain conditions, VQAs suffer from \textit{barren plateaus} (BPs)~\cite{LaroccaNatRevPhys2025, HolmesPRXQuantum2022}, where the gradient variance vanishes exponentially and the optimization landscape becomes exponentially concentrated and thus flat. Even in the absence of BPs, the landscape can be highly rugged and densely populated with local minima, causing optimizers to stall despite sizable initial gradients, since training these algorithms is, in general, NP-hard~\cite{BittelPRL2021}.
+
+The extension of VQAs to qudit architectures has deepened our understanding of how the Lie algebra of the operators involved in constructing the ansatz, and the estimation of the cost function and its gradients, influence optimization landscapes. Crucially, expanding the local Hilbert space dimension $d$ amplifies the barren plateau phenomenon. For instance, in qudit VQAs that form an approximate 2-design, the gradient variance scales as $\mathrm{Var}\{\partial_{\theta} C(\boldsymbol{\theta})\} \propto d^{-n}$~\cite{FriedrichQMI2025}, where $n$ is the number of qudits. Consequently, trainability is severely hindered in high-dimensional qudit systems unless specific mitigation strategies are employed. Qudit-ADAPT inherits the property that initial iterations correspond to shallow circuits, which therefore do not approximate 2-designs, avoiding barren plateaus at initialization and ensuring a resolvable gradient.
+
+As previously established for qubit systems~\cite{GrimsleynpjQuantumInf2023}, the ADAPT-VQE framework inherently mitigates these trainability obstructions through its iterative ansatz construction. To quantify this effect in Qudit-ADAPT, we isolate the specific contribution of the warm-start initialization. At every ADAPT iteration $k$, we re-optimize the \emph{same} $k$-parameter ansatz from three distinct initial conditions:
+
+\begin{enumerate}
+    \item the \emph{warm start} naturally provided by the algorithm, $\boldsymbol{\theta}_k = (\boldsymbol{\theta}_{k-1}^{\,*}, 0)$, where $\boldsymbol{\theta}_{k-1}^{\,*}$ are the optimized parameters from the previous iteration;
+    \item a \emph{cold restart}, $\boldsymbol{\theta}_k = \boldsymbol{0}_k$, which resets the system to the reference state $\ket{\phi_g}$ at every step;
+    \item a set of $100$ independent random initializations, where each parameter is sampled uniformly as $\theta_j \sim \mathcal{U}(-\pi,\pi)$.
+\end{enumerate}
+
+In all three cases the operator sequence is identically fixed to the one selected by the Qudit-ADAPT gradient criterion, so the optimization starting point is the only variable. For the random initializations we record only the converged energy of the optimizer. As a result, each data point in Fig.~\ref{fig5} represents a genuine local minimum where an optimization terminated, and each column provides a cross-sectional view of the local-minimum landscape characterizing an ansatz of that specific depth.
+
+\begin{figure}[htb]
+    \centering
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_1a_l1.pdf}
+            \put(2,88){a)}
+        \end{overpic}
+    \end{subfigure}
+
+    \vspace{0.4em}
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_1a_l2.pdf}
+            \put(2,88){b)}
+        \end{overpic}
+    \end{subfigure}
+
+    \caption{Relative error as a function of the number of variational
+    parameters for instance $G_1$, using operator pools obtained from the
+    a) $l=1$ and b) $l=2$ truncations of the approximate AGP. Each horizontal
+    mark is the converged optimum of one of $100$ independent random parameter
+    initializations of the same ansatz, colored by its relative error. The blue
+    curve is the warm-start strategy used by Qudit-ADAPT and the red curve a
+    cold restart at $\boldsymbol{\theta}_k=\boldsymbol{0}_k$. The edge set of
+    $G_1$ is given in Appendix~\ref{appendix_graphs}.}
+    \label{fig5}
+\end{figure}
+
+We first analyze the instance $G_1$, shown in Fig.~\ref{fig5}. For $l=2$ the $100$ random initializations converge to $100$ distinct minima spanning more than two orders of magnitude in relative error, from $2.8\times10^{-4}$ to $1.3\times10^{-1}$. This is not a landscape in which an uninformed optimizer succeeds by chance; the landscape is genuinely rough. The warm start nevertheless descends monotonically throughout the run and reaches $\epsilon_{\mathrm{rel}} = 3.1\times10^{-4}$, against a median of $5.5\times10^{-2}$ over the random restarts, an improvement of more than two orders of magnitude with respect to the typical outcome of an uninformed optimization of the very same ansatz. Only $1$ of the $100$ restarts terminates below the warm-start value, and by a margin of about $10\,\%$. For $l=1$ the algorithm converges at $k=21$ with $\epsilon_{\mathrm{rel}} = 6.6\times10^{-3}$, against a median of $1.4\times10^{-2}$ and a worst case of $1.5\times10^{-1}$ among $88$ distinct minima, with $6$ of the $100$ restarts falling below the warm-start value.
+
+The cold restart isolates the governing mechanism, since it employs identical operator sequences and pool choices and differs from the warm start solely in the parameter initialization. For $l=2$ the two curves overlap up to $k\simeq17$ and separate thereafter, with the cold restart saturating at approximately $3.3\times10^{-3}$ while the warm start improves by a further order of magnitude. For $l=1$ the separation appears already at $k\simeq8$, and the cold restart ends a factor of two above the warm start. This demonstrates that the advantage of the algorithm arises from combining the counterdiabatic pool with parameter recycling, rather than from the pool structure in isolation.
+
+We stress that this argument concerns the roughness of the landscape and not the expressivity of the pool. Burrowing guarantees monotonic improvement and escape from the minima of the previous ansatz, but it does not prevent the algorithm from terminating at a suboptimal point when the gradients of the entire pool become small, which is what limits the $l=1$ results. Consistently, the variance of $\partial_\theta C$ evaluated at random parameter points is essentially constant with ansatz depth over the range explored, varying between $1.8\times10^{-1}$ and $2.0\times10^{-1}$ from $k=1$ to $k=35$, with a log-linear fit of $\mathrm{Var}\propto e^{-0.02k}$. What traps the random restarts are therefore local minima rather than a barren plateau.
+
+% ---------------------------------------------------------------------
+\begin{figure}[htb]
+    \centering
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_k6_l1.pdf}
+            \put(2,88){a)}
+        \end{overpic}
+    \end{subfigure}
+
+    \vspace{0.4em}
+
+    \begin{subfigure}
+        \centering
+        \begin{overpic}[width=0.99\linewidth]{fig_bp_k6_l2.pdf}
+            \put(2,88){b)}
+        \end{overpic}
+    \end{subfigure}
+
+    \caption{Same analysis as in Fig.~\ref{fig5} for the complete graph $K_6$,
+    using the a) $l=1$ and b) $l=2$ operator pools. The larger connectivity
+    increases the pool size from $66$ to $2724$ operators, and with the $l=2$
+    pool the algorithm converges to machine precision after $18$ parameters,
+    where all three initialization strategies become indistinguishable.}
+    \label{fig6}
+\end{figure}
+% ---------------------------------------------------------------------
+
+The size of the advantage depends on how expressive the pool is relative to the instance, and modifying the operator pool therefore changes the roughness of the parameter landscape itself. Figure~\ref{fig6} repeats the analysis for the complete graph $K_6$, whose larger connectivity increases the pool from $66$ operators at $l=1$ to $2724$ at $l=2$.
+
+For $l=1$ the landscape remains rough: the $100$ random initializations converge to $99$ distinct minima spanning almost five orders of magnitude, and the warm start improves on their median by a factor of about four, $1.5\times10^{-4}$ against $5.4\times10^{-4}$. The comparison is nevertheless less clean than for $G_1$: $14$ of the $100$ random restarts terminate below the warm-start value, and the cold restart ends a factor of $4.6$ lower. This is not in conflict with the burrowing argument, which guarantees monotonic improvement and the existence of a descent direction at every step, but not global optimality of the $k$-parameter landscape. Starting from $(\boldsymbol{\theta}_{k-1}^{\,*},0)$ confines the optimization to the basin containing the previous optimum, so a deeper basin located elsewhere is unreachable without first increasing the energy, whereas a random initialization may land in it directly. The relevant point is that this is a low-probability event that costs a full optimization each time it is attempted: recovering the best of $100$ restarts requires two orders of magnitude more optimizations than the single one performed by the warm start, and identifying which restart is best requires prior knowledge of $E_0$.
+
+For $l=2$ the picture changes qualitatively. The algorithm reaches machine precision after $18$ parameters and warm, cold and random initializations all converge to the same solution, with the residual differences at the level of numerical noise. Once the ansatz is sufficiently expressive the landscape no longer presents competing minima and the initialization becomes irrelevant. Taken together, Figs.~\ref{fig5} and~\ref{fig6} indicate that the benefit of the warm start is largest precisely in the regime of practical interest, where the pool is deliberately kept compact in order to limit circuit depth, and that it becomes immaterial only when the operator pool is large enough that the optimization problem is no longer difficult.
+
+
+% =====================================================================
+% (B)  Apéndice: Gell-Mann Basis Reformulation and Native Hardware
+%      Benchmarking
+%
+% Correcciones respecto de la versión actual:
+%   1. ERROR PRINCIPAL: las tablas y el texto reportan el error ABSOLUTO
+%      |E - E0| etiquetado como eps_rel. Con E0 = -18, los valores relativos
+%      son 3.55e-15 (angular) y 4.32e-7 (Gell-Mann), no 6.4e-14 y 7.8e-6.
+%   2. El umbral de la tabla de compuertas se había evaluado con |E-E0|<1e-3
+%      en vez de eps_rel<1e-3. Las compuertas coinciden (138 vs 127), pero
+%      las mediciones de Gell-Mann son 27132, no 38760.
+%   3. "the Gell-Mann pool plateaus": no se estancó, la corrida se detuvo por
+%      max_iteration = 30 con el gradiente aún por encima del umbral.
+%   4. "3.87 two-level rotations per site" -> por GENERADOR.
+%   5. Se declara qué parte del conteo es exacta y cuál es un modelo.
+%   6. Se cuantifica la Trotterización: 2/16 frente a 0/30.
+%   7. Figuras nuevas: fig_ap_pools.pdf y fig_ap_native.pdf, en inglés y en
+%      error relativo.
+% =====================================================================
+
+\section{Gell-Mann Basis Reformulation and Native Hardware Benchmarking}
+\label{sec:gell_mann}
+
+\subsection{Motivation and Algebraic Structure}
+As discussed in the previous section, the operator pool constructed via the counterdiabatic ansatz relies on nested commutators of the cost and mixer Hamiltonians. In the standard angular momentum basis this procedure generates non-Hermitian monomial terms, such as $L_y^{(i)} L_z^{(i)}$ on a single site, requiring explicit Hermitization via $(O + O^\dagger)/2$.
+
+To bypass this Hermitization and to align the pool with the native operations of the hardware, we reformulate the operator pool using the $\mathfrak{su}(d)$ Gell-Mann basis ($\{\lambda_a\}_{a=1}^{d^2-1}$ for $d=3$). Because the Gell-Mann generators close linearly under the commutation relations $[\lambda_a, \lambda_b] = 2i \sum_{c} f_{abc} \lambda_c$, every term produced by the nested-commutator expansion is a product of $\lambda$ operators acting on \emph{distinct} sites. Such products commute factor by factor and are therefore Hermitian without any symmetrization. In this representation the Max-3-Cut cost Hamiltonian simplifies to
+\begin{equation}
+H_C\big|_{(i,j)} = \lambda_3^{(i)}\lambda_3^{(j)} + \lambda_8^{(i)}\lambda_8^{(j)} - \frac{4}{3}I,
+\end{equation}
+which follows from the decomposition $L_z = \tfrac{1}{2}\lambda_3 + \tfrac{\sqrt{3}}{2}\lambda_8$. This eliminates the single-site terms and reduces the number of interaction terms from four to two per edge.
+
+\subsection{Expressivity versus measurement overhead}
+A first advantage of the Gell-Mann construction is a reduction in pool size. For the $l=2$ counterdiabatic expansion on $n=6$ qutrits, the Gell-Mann pool contains $1292$ operators compared to $1600$ in the angular momentum basis. Since the measurement cost per ADAPT iteration scales as $\mathcal{O}(|\mathcal{V}|)$, a smaller pool directly lowers the cumulative gradient-evaluation burden.
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig_ap_pools.pdf}
+\caption{Convergence of the counterdiabatic ansatz for $n=6$ qutrits (instance $G_2$, $l=2$ pool), comparing the angular momentum pool ($1600$ operators) with the Gell-Mann pool ($1292$ operators) under three cost measures: relative error against the number of variational parameters, against the accumulated number of two-qutrit entangling gates, and against the cumulative number of gradient measurements.}
+\label{fig:pool_convergence}
+\end{figure*}
+
+However, as shown in Fig.~\ref{fig:pool_convergence} and summarized in Table~\ref{tab:pool_comparison}, the Gell-Mann basis converges more slowly per parameter. The angular momentum pool reaches $\epsilon_{\mathrm{rel}} = 3.6\times10^{-15}$, that is machine precision, after $16$ parameters, at which point the gradient-norm criterion terminates the run. The Gell-Mann pool reaches $\epsilon_{\mathrm{rel}} = 4.3\times10^{-7}$ after $30$ parameters; this run was stopped by the maximum-iteration bound rather than by the convergence criterion, so the value should be read as an upper bound rather than as a plateau. The performance gap originates in operator expressivity: a symmetrized angular momentum monomial such as $\{L_y^{(i)},L_z^{(i)}\}(L_z^{(j)})^2$ is a \emph{composite} object, equal to a sum of several Gell-Mann strings, whereas each Gell-Mann string is an elementary transition between a single pair of levels. A finer decomposition yields a smaller pool whose elements individually accomplish less per ADAPT step.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison between the angular momentum and Gell-Mann operator pools ($n=6$ qutrits, instance $G_2$, $l=2$). The relative error is $\epsilon_{\mathrm{rel}}=|E-E_0|/|E_0|$ as defined in Eq.~(\ref{eq:relative_error}).}
+\label{tab:pool_comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline\hline
+Pool basis & Pool size & Parameters & $\epsilon_{\mathrm{rel}}$ & Entangling gates & Gradient measurements \\
+\hline
+Angular momentum & 1600 & 16 & $3.6\times10^{-15}$ & 44 & 25\,600 \\
+Gell-Mann & 1292 & 30 & $4.3\times10^{-7}$ & 68 & 38\,760 \\
+\hline\hline
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Compilation to native trapped-ion hardware}
+To establish a hardware-level metric, we compile both ansatzes into the native gate set of a universal trapped-ion qudit processor~\cite{RingbauerNatPhys2022}, consisting of single-qudit two-level rotations $R^{(i,j)}(\theta,\varphi)$ and pairwise Mølmer-Sørensen gates $\mathrm{MS}^{(i,j)}(\theta,\varphi)$:
+\begin{equation}
+R^{(i,j)}(\theta,\varphi) = e^{-i \frac{\theta}{2} \sigma_{\varphi}^{(i,j)}}, \quad
+\mathrm{MS}^{(i,j)}(\theta,\varphi) = e^{-i \frac{\theta}{4} \left( \sigma_{\varphi}^{(i,j)} \otimes I + I \otimes \sigma_{\varphi}^{(i,j)} \right)^2}.
+\end{equation}
+
+For a generator supported on $w$ sites we use the standard ladder construction: each local factor is diagonalized, the resulting diagonal phase is applied with $2(w-1)$ entangling gates, and the local diagonalizations are undone. Two aspects of this count should be distinguished. The number of two-level rotations required by each local factor is obtained \emph{exactly} from its matrix, by counting how many level pairs it connects; an arbitrary single-qutrit unitary needs at most three such rotations through a Givens decomposition. The $2(w-1)$ Mølmer-Sørensen gates of the ladder, on the other hand, are a \emph{model}, extrapolated from the qubit construction and from the $2(d-1)$ scaling reported in Ref.~\cite{RingbauerNatPhys2022}; they do not correspond to an explicitly compiled circuit.
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{fig_ap_native.pdf}
+\caption{Accumulated native gate counts on a universal trapped-ion qudit processor~\cite{RingbauerNatPhys2022} ($n=6$ qutrits, instance $G_2$, $l=2$ pool), separated into single-qudit two-level rotations $R^{(i,j)}$, two-qudit Mølmer-Sørensen gates, and the total. The star marks the target precision $\epsilon_{\mathrm{rel}} = 10^{-3}$ and the dotted line the corresponding threshold.}
+\label{fig:native_gates}
+\end{figure*}
+
+At a moderate target precision of $\epsilon_{\mathrm{rel}} \le 10^{-3}$ the Gell-Mann basis reverses its deficit. As detailed in Table~\ref{tab:native_gate_counts}, it requires $21$ parameters against $16$ for angular momentum, but reduces the total native gate count from $138$ to $127$, a reduction of about $8\,\%$.
+
+\begin{table}[htbp]
+\centering
+\caption{Native gate decomposition at the target precision $\epsilon_{\mathrm{rel}} = 10^{-3}$.}
+\label{tab:native_gate_counts}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline\hline
+Pool basis & Parameters & Single-qudit $R^{(i,j)}$ & Two-qudit $\mathrm{MS}$ & Total native gates & Gradient measurements \\
+\hline
+Angular momentum & 16 & 94 & 44 & 138 & 25\,600 \\
+Gell-Mann & 21 & 81 & 46 & \textbf{127} & 27\,132 \\
+\hline\hline
+\end{tabular}%
+}
+\end{table}
+
+This advantage arises because the Gell-Mann operators align naturally with the physical driving fields: $\lambda_3$ and $\lambda_8$ are diagonal and require no rotation at all, while the remaining six generators each address a single pair of levels and are therefore already native. Averaged over the selected ansatz, a Gell-Mann generator requires $3.87$ two-level rotations, against $5.88$ for the symmetrized angular momentum monomials. A second, hidden cost affects the angular momentum pool: when two or more sites carry a non-Hermitian local factor, the symmetrized generator $(O+O^\dagger)/2$ is not a tensor product but a sum of two non-commuting products, so the ladder construction no longer applies and Trotterization is required. This occurs for $2$ of the $16$ generators selected in the angular momentum run and for none of the $30$ selected in the Gell-Mann run; the associated overhead is not included in the counts above.
+
+These results indicate that operator pool design for qudit VQAs should not be guided solely by the convergence rate per parameter, but must also account for measurement overhead and for the cost of compilation into native hardware operations.
+
+
+% =====================================================================
+% (C)  Apéndice: Graphs utilized
+%      Se completan los dos grafos regulares que faltaban (marcados en la
+%      versión actual con "poner los otros!!"): $G_5$ es el regular de grado
+%      4 y $G_6 = K_6$ el de grado 5.
+% =====================================================================
+
+\section{Graphs utilized}
+\label{appendix_graphs}
+
+The edge sets of the graphs used in this manuscript are
+
+\begin{align}
+\begin{split}
+    G_1 = \{ & (1,2), (1,3), (1,4), (1,5), (2,4), \\
+             & (2,6), (3,4), (3,6), (4,5), (5,6) \}
+\end{split} \\[0.5em]
+\begin{split}
+    G_2 = \{ & (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), \\
+             & (2,5), (3,4), (3,5), (4,5), (5,6) \}
+\end{split} \\[0.5em]
+\begin{split}
+    G_3 = \{ & (1,2), (1,3), (1,5), (2,3), (2,4), (2,6), \\
+             & (3,4), (3,5), (3,6), (4,5), (5,6) \}
+\end{split} \\[0.5em]
+\begin{split}
+    G_4 = \{ & (1,2), (1,3), (1,4), (1,6), (2,3), (2,4), \\
+             & (2,5), (3,4), (3,5), (4,6), (5,6) \}
+\end{split} \\[0.5em]
+\begin{split}
+    G_5 = \{ & (1,2), (1,3), (1,4), (1,5), (2,3), (2,4), \\
+             & (2,6), (3,5), (3,6), (4,5), (4,6), (5,6) \}
+\end{split} \\[0.5em]
+\begin{split}
+    K_6 = \{ & (1,2), (1,3), (1,4), (1,5), (1,6), (2,3), \\
+             & (2,4), (2,5), (2,6), (3,4), (3,5), (3,6), \\
+             & (4,5), (4,6), (5,6) \}
+\end{split}
+\end{align}
+
+Instances $G_1$ to $G_4$ are the benchmark graphs of Figs.~\ref{Fig1} and~\ref{Fig2}. The graph $G_5$ is $4$-regular and $K_6$ is the complete, $5$-regular graph on six vertices; both are shown in Fig.~\ref{fig3}.

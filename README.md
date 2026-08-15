@@ -95,6 +95,37 @@ conmutadores), `jupyter`/`ipykernel`.
   notebooks de análisis (estadísticas de convergencia, truncamiento a un
   "presupuesto común" de iteraciones).
 
+### `utilidades_bp.py` — robustez frente a barren plateaus
+
+Módulo para el estudio de barren plateaus / paisajes rugosos. Reimplementa el
+loop de CD-ADAPT-VQE en `numpy`/`scipy.sparse` con **gradiente analítico**
+(retropropagación sobre el producto de exponenciales, `energy_and_grad`) en vez
+de las diferencias finitas de `utilidades.py`: es ~$k$ veces más barato y evita
+que el optimizador se detenga por ruido numérico, algo importante justamente
+en un estudio de gradientes. Los Hamiltonianos y el pool CD se construyen
+llamando a `utilidades.py`, así que son idénticos a los del algoritmo original.
+
+- `adapt_bp_scan`: corre ADAPT y, en cada iteración, re-optimiza el **mismo**
+  ansatz desde tres puntos iniciales — reciclado (warm start, el algoritmo
+  real), frío ($\theta=0$, análogo de la curva "HF") y `n_random` instancias
+  con parámetros uniformes en $[-\pi,\pi]$ (por defecto 100). De cada instancia
+  se guarda sólo el **óptimo final**, que es lo que revela la estructura de
+  mínimos locales del paisaje; con `store_history=True` guarda además todos los
+  valores visitados.
+- `gate_expression`, `ansatz_gates`, `ansatz_latex`: forma explícita de cada
+  compuerta $e^{-i\theta_k G_k}$ del ansatz, con los $L_x,L_y,L_z$ actuando
+  sobre cada sitio. Distingue el caso hermítico directo (factores en sitios
+  distintos, que conmutan) del que requiere simetrización
+  ($G=\tfrac12\{L_a^{(s)},L_b^{(s)}\}$ cuando hay dos ejes en el mismo sitio).
+  `verificar_gate_expressions` chequea la reconstrucción contra qutip.
+- `gradient_stats_at_random_inits`: reevalúa el gradiente exacto en los mismos
+  $\theta^0$ aleatorios guardados, para medir si el paisaje se aplana al crecer
+  el ansatz (el diagnóstico de barren plateau propiamente tal). Es post-hoc:
+  no requiere volver a optimizar.
+- `plot_bp_landscape`, `plot_bp_gradients`: las figuras.
+- `verificar_gradiente`: chequeo del gradiente analítico contra diferencias
+  finitas.
+
 ### `utilidades_QAOA.py` — QAOA/QOAO
 
 - Dos mixers: `mixer="jx"` → $H_M = \sum_j J_{x,j}$ (momento angular real,
@@ -119,6 +150,7 @@ conmutadores), `jupyter`/`ipykernel`.
 | `main_comparaciones.py` | CD-ADAPT-VQE sobre un archivo de grafos arbitrario (por defecto `grafos_comparacion.txt`); el nombre de salida se deriva automáticamente del archivo de entrada |
 | `main_QAOA.py` | QAOA/QOAO sobre un archivo de grafos, con mixer, profundidad y reinicios configurables por línea de comandos |
 | `run_kn.py` | CD-ADAPT-VQE sobre grafos completos $K_n$ ($n=4,\dots,10$), generados internamente (no usa `datos/`) |
+| `main_bp.py` | Estudio de barren plateaus sobre un grafo: ADAPT + reinicios aleatorios por iteración (usa `funciones/utilidades_bp.py`) |
 
 Todos siguen la misma convención de rutas: resuelven
 `PROJECT_ROOT = Path(__file__).resolve().parent.parent` e insertan ese
@@ -132,6 +164,7 @@ python cluster/main_comparaciones.py 1 grafos_regulares.txt
 python cluster/main_QAOA.py --n 6 --p_max 20 --num_restarts 25 --mixer jx \
     --input_file datos/grafos_comparacion.txt
 python cluster/run_kn.py --l 2 --n_min 4 --n_max 10
+python cluster/main_bp.py --grafo 2 --l 2 --max_iteration 30 --n_random 100
 ```
 
 ## `cuadernillos/` — notebooks de análisis
@@ -142,6 +175,7 @@ python cluster/run_kn.py --l 2 --n_min 4 --n_max 10
 | `comparacion_QAOA.ipynb` | CD-ADAPT-VQE vs QAOA sobre $n=6$: grafos de referencia y grafos regulares (grado 2–5) |
 | `grafos_aleatorios_n6.ipynb` | Ensemble de 300 grafos aleatorios $n=6$: $\ell=1$ vs $\ell=2$, con y sin presupuesto común de iteraciones |
 | `analisis_localidad.ipynb` | Localidad de los operadores seleccionados por el ansatz (estructura del pool, contribución energética por localidad) |
+| `barren_plateaus.ipynb` | Robustez frente a barren plateaus: curva de ADAPT (parámetros reciclados) contra la nube de reinicios aleatorios sobre el mismo ansatz |
 
 Cada notebook parte con una sección `0. Set-up` (imports, estilo,
 constantes) y, cuando aplica, una sección `0. Carga de datos` dentro de

@@ -1,0 +1,37 @@
+Archivo: grafos_comparacion.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (2, 4), (2, 6), (3, 4), (3, 6), (4, 5), (5, 6)]
+Salida (se guarda en cada iteración): fig1a_l2_bp100.json
+n = 6 | aristas = 10 | l = 2 | base = angular | pool = 1184 operadores
+E0 (exacta) = -20.0000000000 | degeneración = 12
+E inicial <psi_0|H_f|psi_0> = -13.3333333333
+------------------------------------------------------------------------------
+Reanudando desde fig1a_l2_bp100.json: 22 operadores ya hechos, siguen hasta 35.
+------------------------------------------------------------------------------
+k=23 | reciclada=1.694e-01 | fría=1.688e-01 | aleatorias (100): mejor=1.745e-01 mediana=7.320e-01 peor=3.378e+00 | únicas=100 | t=24.9min
+Archivo: grafos_comparacion.txt | grafo 1 | n = 6
+Aristas: [(1, 2), (1, 3), (1, 4), (1, 5), (2, 4), (2, 6), (3, 4), (3, 6), (4, 5), (5, 6)]
+Salida (se guarda en cada iteración): fig1a_l2_bp100.json
+n = 6 | aristas = 10 | l = 2 | base = angular | pool = 1184 operadores
+E0 (exacta) = -20.0000000000 | degeneración = 12
+E inicial <psi_0|H_f|psi_0> = -13.3333333333
+------------------------------------------------------------------------------
+Reanudando desde fig1a_l2_bp100.json: 23 operadores ya hechos, siguen hasta 35.
+------------------------------------------------------------------------------
+k=24 | reciclada=1.649e-01 | fría=1.669e-01 | aleatorias (100): mejor=1.906e-01 mediana=1.473e+00 peor=3.091e+00 | únicas=98 | t=8.1min
+k=25 | reciclada=1.330e-01 | fría=1.658e-01 | aleatorias (100): mejor=1.739e-01 mediana=1.393e+00 peor=4.105e+00 | únicas=100 | t=16.7min
+k=26 | reciclada=1.270e-01 | fría=1.654e-01 | aleatorias (100): mejor=1.666e-01 mediana=1.673e+00 peor=3.381e+00 | únicas=100 | t=25.9min
+k=27 | reciclada=1.200e-01 | fría=1.199e-01 | aleatorias (100): mejor=1.954e-01 mediana=1.412e+00 peor=3.259e+00 | únicas=100 | t=34.1min
+k=28 | reciclada=9.317e-02 | fría=1.141e-01 | aleatorias (100): mejor=1.732e-01 mediana=1.386e+00 peor=3.329e+00 | únicas=100 | t=43.1min
+k=29 | reciclada=8.425e-02 | fría=1.120e-01 | aleatorias (100): mejor=2.344e-01 mediana=1.482e+00 peor=3.297e+00 | únicas=100 | t=52.9min
+k=30 | reciclada=8.227e-02 | fría=1.118e-01 | aleatorias (100): mejor=1.775e-01 mediana=1.255e+00 peor=3.395e+00 | únicas=100 | t=63.5min
+k=31 | reciclada=5.464e-02 | fría=1.015e-01 | aleatorias (100): mejor=2.042e-01 mediana=1.212e+00 peor=2.724e+00 | únicas=100 | t=75.9min
+k=32 | reciclada=5.263e-02 | fría=1.015e-01 | aleatorias (100): mejor=1.861e-01 mediana=1.148e+00 peor=2.254e+00 | únicas=100 | t=88.9min
+k=33 | reciclada=3.385e-02 | fría=7.147e-02 | aleatorias (100): mejor=9.866e-02 mediana=1.145e+00 peor=2.743e+00 | únicas=100 | t=105.2min
+k=34 | reciclada=3.013e-02 | fría=7.195e-02 | aleatorias (100): mejor=5.469e-02 mediana=1.124e+00 peor=2.304e+00 | únicas=100 | t=122.9min
+k=35 | reciclada=6.213e-03 | fría=6.627e-02 | aleatorias (100): mejor=5.585e-03 mediana=1.091e+00 peor=2.511e+00 | únicas=100 | t=139.3min
+------------------------------------------------------------------------------
+Operadores en el ansatz: 35 | razón de parada: max_iteration_reached
+Error final (reciclada): 6.212723e-03
+Tiempo total: 139.29 min
+
+Resultado guardado en: /home/hd/Qudit-ADAPT/resultados/json/fig1a_l2_bp100.json
