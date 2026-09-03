@@ -51,7 +51,9 @@ single backward sweep.
 from __future__ import annotations
 
 import ast
+import json
 import time
+from pathlib import Path
 
 import numpy as np
 from scipy.optimize import minimize
@@ -137,22 +139,63 @@ def bloque_local(label):
     return sitios, 0.5 * (B + B.conj().T)
 
 
+CACHE_POOL = Path(__file__).resolve().parent.parent / "resultados" / "cache_pools"
+
+
+def etiquetas_pool(n, l):
+    """
+    Etiquetas del pool contradiabático de K_n, con caché en disco.
+
+    Dos diferencias con `utilidades_bp.obtener_pool`, y ambas importan al
+    crecer n:
+
+    1. Sólo se expanden los conmutadores anidados que el orden l realmente
+       necesita. `build_cd_pool` pide siempre `order=3` y descarta O_2 y O_3
+       cuando l = 1, que son justo los caros: cada conmutador multiplica el
+       número de monomios. Con l = 1 basta O_1.
+
+    2. El resultado se guarda en disco. La expansión es simbólica y no depende
+       de los pesos a_i, sólo de (n, l), así que se paga una vez por tamaño y
+       todas las instancias de ese n la reutilizan.
+    """
+    import sympy as sp
+
+    CACHE_POOL.mkdir(parents=True, exist_ok=True)
+    ruta = CACHE_POOL / f"kn_{n}_l{l}.json"
+    if ruta.exists():
+        with open(ruta, encoding="utf-8") as f:
+            return json.load(f)
+
+    from funciones.utilidades import Had, dHad_dlam, canonical_op, nested_commutators
+
+    edges = [(i, j) for i in range(1, n + 1) for j in range(i + 1, n + 1)]
+    lam = sp.symbols("lam", real=True)
+    orden = 1 if l == 1 else 3
+    res = nested_commutators(Had(n, edges, lam), dHad_dlam(n, edges), order=orden)
+
+    ordenes = [1] if l == 1 else [1, 3]
+    labels = []
+    for k in ordenes:
+        labels += sorted({str(canonical_op(op)) for op in res[k].keys()})
+
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(labels, f)
+    return labels
+
+
 def preparar_pool(n, l, mostrar=False):
     """
     Pool contradiabático de K_n, con cada operador ya listo para aplicarse.
 
-    Cada entrada es (sitios0, evals, V) con `sitios0` 0-indexado y V la base
-    propia del bloque. Diagonalizar un bloque de 81x81 es instantáneo, y con
+    Cada entrada trae los sitios (0-indexados) y la base propia del bloque de
+    3^w x 3^w. Diagonalizar un bloque de a lo más 81x81 es instantáneo, y con
     (evals, V) la exponencial exp(-i theta A) sale sin exponenciar nada.
     """
-    from funciones.utilidades_bp import obtener_pool
-
-    edges = [(i, j) for i in range(1, n + 1) for j in range(i + 1, n + 1)]
     t0 = time.time()
-    crudo = obtener_pool(n, edges, l)
+    labels = etiquetas_pool(n, l)
 
     ops = []
-    for label in crudo["labels"]:
+    for label in labels:
         sitios, B = bloque_local(label)
         w, V = np.linalg.eigh(B)
         ops.append({"sitios": [s - 1 for s in sitios], "evals": w, "V": V,
