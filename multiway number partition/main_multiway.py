@@ -1,7 +1,7 @@
 """
 main_multiway.py
 
-Corre CD-ADAPT-VQE (ver utilidades_multiway.py, formulacion_qubo.tex) sobre
+Corre CD-ADAPT-VQE (ver utilidades/utilidades_multiway.py, formulacion_qubo.tex) sobre
 una lista de instancias de multiway number partitioning (k=3), una por
 linea de un archivo generado con generar_instancias_multiway (ver
 datos/casos_n5.txt, datos/casos_n6.txt). Guarda un CSV con lo mas
@@ -42,7 +42,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from funciones.utilidades import to_jsonable  # noqa: E402
-from utilidades_multiway import (  # noqa: E402
+from utilidades.utilidades_multiway import (  # noqa: E402
     Hp_multiway,
     build_pool_multiway,
     initial_state,

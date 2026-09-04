@@ -1,7 +1,7 @@
 """
 main_multiway_qaoa.py
 
-Corre QAOA (ver utilidades_multiway.py) sobre una lista de instancias de
+Corre QAOA (ver utilidades/utilidades_multiway.py) sobre una lista de instancias de
 multiway number partitioning (k=3), una por linea de un archivo generado con
 generar_instancias_multiway (ver datos/casos_n5.txt, datos/casos_n6.txt).
 Barre profundidad p=1..p_max, guarda un CSV resumen y un JSON con la traza
@@ -52,7 +52,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from funciones.utilidades import to_jsonable  # noqa: E402
-from utilidades_multiway import (  # noqa: E402
+from utilidades.utilidades_multiway import (  # noqa: E402
     Hp_multiway,
     scan_qaoa_p_multiway,
     leer_instancias_multiway,

@@ -1,6 +1,6 @@
 """
 Motor de CD-ADAPT-VQE y QAOA para multiway number partitioning (k=3) con
-qutrits. Sigue la formulacion de formulacion_qubo.tex (misma carpeta):
+qutrits. Sigue la formulacion de formulacion_qubo.tex (carpeta padre):
 operador digito d_j = J_{z,j} + I (autovalores {0,1,2}, ya definido en
 funciones/utilidades_factorizacion.py), proyectores de etiqueta Pi_i(d_j)
 via interpolacion de Lagrange, Sigma_i = sum_j a_j Pi_i(d_j), y
@@ -25,7 +25,7 @@ import qutip as qt
 import sympy as sp
 from scipy.optimize import minimize
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
