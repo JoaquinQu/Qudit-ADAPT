@@ -16,19 +16,19 @@ independientes). Ahi se probo primero L-BFGS-B y rendia mal -- paisaje de
 cambio a CMA-ES siguiendo la recomendacion de Deller et al. (arXiv:2204.00340,
 Ap. B.2) para este tipo de paisaje multimodal.
 
-Uso tipico desde esta carpeta ("multiway number partition/"):
+Uso tipico desde "multiway number partition/":
 
-    python main_multiway_qaoa.py --instancias_file datos/casos_n5.txt --p_max 10
+    python cluster/main_multiway_qaoa.py --instancias_file datos/casos_n5.txt --p_max 10
 
 Para correr solo una instancia (1-indexado, inclusive) -- util para paralelizar
 lanzando un proceso por instancia:
 
-    python main_multiway_qaoa.py --instancias_file datos/casos_n6.txt --p_max 10 \
+    python cluster/main_multiway_qaoa.py --instancias_file datos/casos_n6.txt --p_max 10 \
         --start_idx 3 --end_idx 3
 
 Para correr en background en el cluster:
 
-    nohup python3 main_multiway_qaoa.py --instancias_file datos/casos_n6.txt --p_max 10 \
+    nohup python3 cluster/main_multiway_qaoa.py --instancias_file datos/casos_n6.txt --p_max 10 \
         > logs/qaoa_n6.log 2>&1 &
 """
 
@@ -42,14 +42,16 @@ from pathlib import Path
 import numpy as np
 
 # ============================================================
-# Asegurar que el proyecto (y esta carpeta) esten en el path
+# Asegurar que el proyecto, "multiway number partition/" (utilidades/) y
+# esta carpeta esten en el path
 # ============================================================
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
+MULTIWAY_ROOT = SCRIPT_DIR.parent
+PROJECT_ROOT = MULTIWAY_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
+if str(MULTIWAY_ROOT) not in sys.path:
+    sys.path.insert(0, str(MULTIWAY_ROOT))
 
 from funciones.utilidades import to_jsonable  # noqa: E402
 from utilidades.utilidades_multiway import (  # noqa: E402
@@ -109,7 +111,7 @@ def parse_args():
 def read_instancias(args):
     path = Path(args.instancias_file)
     if not path.is_absolute():
-        path = SCRIPT_DIR / args.instancias_file
+        path = MULTIWAY_ROOT / args.instancias_file
 
     if not path.exists():
         raise FileNotFoundError(f"No se encontro el archivo de instancias: {path}")
@@ -136,7 +138,7 @@ def select_instance_range(instancias, start_idx, end_idx):
 
 
 def build_default_output_paths(args, instancias_seleccionadas):
-    resultados_dir = SCRIPT_DIR / "resultados"
+    resultados_dir = MULTIWAY_ROOT / "resultados"
     csv_dir = resultados_dir / "csv"
     json_dir = resultados_dir / "json"
     csv_dir.mkdir(parents=True, exist_ok=True)

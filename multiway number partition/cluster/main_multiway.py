@@ -8,14 +8,14 @@ datos/casos_n5.txt, datos/casos_n6.txt). Guarda un CSV con lo mas
 importante y un JSON con la traza completa por cada instancia -- mismo
 patron que cluster/main_factorizacion.py en la raiz del proyecto.
 
-Uso tipico desde esta carpeta ("multiway number partition/"):
+Uso tipico desde "multiway number partition/":
 
-    python main_multiway.py --instancias_file datos/casos_n5.txt --l 1
-    python main_multiway.py --instancias_file datos/casos_n6.txt --l 2
+    python cluster/main_multiway.py --instancias_file datos/casos_n5.txt --l 1
+    python cluster/main_multiway.py --instancias_file datos/casos_n6.txt --l 2
 
 Para correr en background en el cluster:
 
-    nohup python3 main_multiway.py --instancias_file datos/casos_n6.txt --l 1 \
+    nohup python3 cluster/main_multiway.py --instancias_file datos/casos_n6.txt --l 1 \
         > logs/multiway_n6_l1.log 2>&1 &
 
 Aviso sobre --l 2: el pool O1+O3 crece muy rapido. Para n=5 ya da 1755
@@ -32,14 +32,16 @@ import time
 from pathlib import Path
 
 # ============================================================
-# Asegurar que el proyecto (y esta carpeta) esten en el path
+# Asegurar que el proyecto, "multiway number partition/" (utilidades/) y
+# esta carpeta esten en el path
 # ============================================================
 SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
+MULTIWAY_ROOT = SCRIPT_DIR.parent
+PROJECT_ROOT = MULTIWAY_ROOT.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-if str(SCRIPT_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPT_DIR))
+if str(MULTIWAY_ROOT) not in sys.path:
+    sys.path.insert(0, str(MULTIWAY_ROOT))
 
 from funciones.utilidades import to_jsonable  # noqa: E402
 from utilidades.utilidades_multiway import (  # noqa: E402
@@ -89,7 +91,7 @@ def parse_args():
 def read_instancias(args):
     path = Path(args.instancias_file)
     if not path.is_absolute():
-        path = SCRIPT_DIR / args.instancias_file
+        path = MULTIWAY_ROOT / args.instancias_file
 
     if not path.exists():
         raise FileNotFoundError(f"No se encontro el archivo de instancias: {path}")
@@ -98,7 +100,7 @@ def read_instancias(args):
 
 
 def build_default_output_paths(args, instancias):
-    resultados_dir = SCRIPT_DIR / "resultados"
+    resultados_dir = MULTIWAY_ROOT / "resultados"
     csv_dir = resultados_dir / "csv"
     json_dir = resultados_dir / "json"
     csv_dir.mkdir(parents=True, exist_ok=True)
