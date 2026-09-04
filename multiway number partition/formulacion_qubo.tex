@@ -1,0 +1,196 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\newcommand{\ket}[1]{\left|#1\right\rangle}
+\newcommand{\bra}[1]{\left\langle#1\right|}
+\newcommand{\braket}[2]{\left\langle#1\middle|#2\right\rangle}
+\newcommand{\op}[1]{\hat{#1}}
+\newcommand{\Jz}{\op{J}_z}
+\newcommand{\Jx}{\op{J}_x}
+
+\title{Multiway Number Partitioning en qutrits:}
+\author{Qudit-Adapt}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{El problema}
+
+Dado un conjunto de $N$ n\'umeros positivos $\{a_1,\dots,a_N\}$, el problema
+de \emph{multiway number partitioning} (o \emph{$k$-way partitioning})
+consiste en repartirlos en $k$ subconjuntos disjuntos $S_1,\dots,S_k$ tales
+que las sumas parciales
+\[
+  \Sigma_i \;=\; \sum_{j \,:\, a_j \in S_i} a_j , \qquad i=1,\dots,k
+\]
+sean lo m\'as parejas posible entre s\'i. Es NP-hard para todo $k\geq 2$ fijo
+(el caso $k=2$ es el \emph{number partitioning} cl\'asico, NP-complete en su
+versi\'on de decisi\'on \cite{mertens2003}).
+
+\paragraph{Ejemplo.} Para $S=\{1,2,3,4,5,6\}$ y $k=3$, la partici\'on
+$S_0=\{1,6\}$, $S_1=\{2,5\}$, $S_2=\{3,4\}$ es \'optima: la suma total es
+$21=3\times7$, y esta asignaci\'on la reparte exactamente parejo,
+$\Sigma_0=\Sigma_1=\Sigma_2=7$.
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, minimum width=2.4cm, minimum height=1.2cm}
+]
+  \node[box] (b0) at (0,0)   {$1,\ 6$};
+  \node[box] (b1) at (3,0)   {$2,\ 5$};
+  \node[box] (b2) at (6,0)   {$3,\ 4$};
+  \node[above=2pt of b0] {$S_0$};
+  \node[above=2pt of b1] {$S_1$};
+  \node[above=2pt of b2] {$S_2$};
+  \node[below=2pt of b0] {\footnotesize $\Sigma_0=7$};
+  \node[below=2pt of b1] {\footnotesize $\Sigma_1=7$};
+  \node[below=2pt of b2] {\footnotesize $\Sigma_2=7$};
+\end{tikzpicture}
+\end{center}
+
+\paragraph{Por qu\'e qudits y no qubits.} Con qubits, una etiqueta de $k$
+valores necesita \emph{one-hot} ($k$ qubits por elemento m\'as una
+penalizaci\'on para forzar exactamente un $1$). Con un \emph{qudit} de
+dimensi\'on $d=k$ alcanza un solo qudit por elemento, sin restricci\'on
+auxiliar: su estado \emph{es} la etiqueta.
+
+\section{Planteamiento del problema}
+
+\subsection{Variables y notaci\'on}
+
+Sea $z=(z_1,\dots,z_N)$ con $z_j\in\{0,1,2\}$ la etiqueta (parte) asignada
+al elemento $j$, y
+\[
+  \Sigma_i(z) \;=\; \sum_{j=1}^{N} a_j\,\delta_{i,z_j}, \qquad i=0,1,2,
+\]
+la suma acumulada de la parte $i$.
+
+\subsection{Costo de referencia: Deller et al.}
+
+La funci\'on de costo t\'ipica en la literatura, propuesta por Deller et
+al.\ \cite{deller2023} (Ap\'endice B.2) para multiway number partitioning,
+penaliza la diferencia entre cada par de partes:
+\[
+  C_{\text{Deller}}(z) \;=\; \sum_{a<b} \big[\Sigma_a(z)-\Sigma_b(z)\big]^2 .
+\]
+El cuadrado --en vez del valor absoluto-- hace que el costo sea siempre
+$\geq0$, valga $0$ exactamente en balance perfecto, y sea diferenciable,
+lo cual importa para el optimizador cl\'asico dentro del ADAPT.
+
+\subsection{Equivalencia con la desviaci\'on respecto del promedio}
+
+Como cada elemento $a_j$ cae en exactamente una parte, la suma de las tres
+$\Sigma_i(z)$ es siempre el total del conjunto, sin importar $z$:
+\[
+  \Sigma_0(z)+\Sigma_1(z)+\Sigma_2(z) \;=\; \sum_{j=1}^N a_j \;=:\; 3\mu,
+  \qquad \forall z.
+\]
+Es decir, $\mu=\tfrac13\sum_j a_j$ es tambi\'en el promedio de las tres
+sumas parciales, para cualquier reparto. Expandiendo $C_{\text{Deller}}$:
+\begin{align*}
+  C_{\text{Deller}}(z)
+  &= \sum_{a<b}(\Sigma_a-\Sigma_b)^2
+  \;=\; 2\sum_{i}\Sigma_i^2 \,-\, 2\sum_{a<b}\Sigma_a\Sigma_b \\
+  &= 2\sum_i\Sigma_i^2 \,-\, \Big[\big(\textstyle\sum_i\Sigma_i\big)^2 - \sum_i\Sigma_i^2\Big]
+  \;=\; 3\sum_i\Sigma_i^2 \,-\, (3\mu)^2,
+\end{align*}
+donde en el segundo rengl\'on usamos
+$(\sum_i\Sigma_i)^2=\sum_i\Sigma_i^2+2\sum_{a<b}\Sigma_a\Sigma_b$ y luego
+$\sum_i\Sigma_i=3\mu$. Por otro lado,
+\[
+  3\sum_i(\Sigma_i-\mu)^2 \;=\; 3\sum_i\Sigma_i^2 - 6\mu\sum_i\Sigma_i + 9\mu^2
+  \;=\; 3\sum_i\Sigma_i^2 - 18\mu^2+9\mu^2 \;=\; 3\sum_i\Sigma_i^2-9\mu^2,
+\]
+id\'entico al resultado anterior. Concluimos:
+\[
+  \boxed{\; C_{\text{Deller}}(z) \;=\; 3\sum_{i=0}^{2}\big[\Sigma_i(z)-\mu\big]^2 \;}
+\]
+misma f\'isica, mismo argm\'in, solo cambia la normalizaci\'on de energ\'ia
+por un factor $3$.
+
+\subsection{El problema a resolver}
+
+Usamos la forma sin el factor $3$ porque generaliza sin cambios
+notacionales a m\'as de 3 partes y porque es la misma estructura que ya
+usa el resto del proyecto (penalizaci\'on cuadr\'atica tipo Burges, igual
+que \texttt{Hp\_factorizacion}):
+\[
+  z^\ast \;=\; \operatorname*{argmin}_{z\in\{0,1,2\}^N} C(z),
+  \qquad
+  \boxed{\; C(z) \;=\; \sum_{i=0}^{2} \big[\Sigma_i(z)-\mu\big]^2 \;}.
+\]
+
+\section{La codificaci\'on}
+
+\subsection{Operador d\'igito por sitio}
+
+Reciclamos la convenci\'on de \texttt{funciones/utilidades\_factorizacion.py}:
+para el sitio (qutrit) $j$ definimos el \textbf{operador d\'igito}
+\[
+  \op{d}_j \;=\; \Jz^{(j)} + \op{I}, \qquad \text{autovalores } \{0,1,2\},
+\]
+que ya existe en el c\'odigo como \texttt{digit\_operator(n, site)}. El
+autovalor de $\op{d}_j$ en un estado de la base computacional \emph{es} la
+etiqueta (parte) a la que qued\'o asignado el elemento $j$.
+
+\subsection{Proyectores de etiqueta v\'ia interpolaci\'on de Lagrange}
+
+Para promover $\Sigma_i(z)$ a operador necesitamos, para cada parte
+$i\in\{0,1,2\}$, el \textbf{proyector} $\op\Pi_i^{(j)}$ que vale $1$ si el
+elemento $j$ tiene etiqueta $i$ y $0$ en caso contrario -es decir, la
+versi\'on operatorial de $\delta_{i,z_j}$. Como $\op{d}_j$ tiene espectro
+finito $\{0,1,2\}$, cualquier funci\'on de sus autovalores --en particular
+la funci\'on indicadora-- es exactamente un polinomio de grado $\leq2$ en
+$\op{d}_j$, dado por el polinomio interpolador de Lagrange sobre esos tres
+puntos:
+\[
+  \op\Pi_i(\op{d}) \;=\; \prod_{m\neq i} \frac{\op{d}-m\,\op{I}}{i-m}.
+\]
+Expl\'icitamente:
+\begin{align}
+  \op\Pi_0(\op{d}) &= \tfrac12(\op{d}-\op{I})(\op{d}-2\op{I})
+    = \tfrac12\op{d}^2 - \tfrac32\op{d} + \op{I}, \\
+  \op\Pi_1(\op{d}) &= -\op{d}(\op{d}-2\op{I})
+    = -\op{d}^2 + 2\op{d}, \\
+  \op\Pi_2(\op{d}) &= \tfrac12\op{d}(\op{d}-\op{I})
+    = \tfrac12\op{d}^2 - \tfrac12\op{d}.
+\end{align}
+
+\subsection{Hamiltoniano de costo}
+
+Con $a_1,\dots,a_N$ los n\'umeros a repartir, promovemos $\Sigma_i(z)$ a
+operador diagonal
+\[
+  \op\Sigma_i \;=\; \sum_{j=1}^{N} a_j\, \op\Pi_i(\op{d}_j),
+  \qquad i = 0,1,2,
+\]
+y promovemos $C(z)$ de la \S2 al Hamiltoniano de costo:
+\[
+  \boxed{\;H_p \;=\; \sum_{i=0}^{2} \big(\op\Sigma_i - \mu\op{I}\big)^2\;}
+  \qquad \mu = \tfrac13\sum_j a_j .
+\]
+
+\begin{thebibliography}{9}
+
+\bibitem{deller2023}
+Y.~Deller, S.~Schmitt, M.~Lewenstein, S.~Lenk, M.~Federer,
+F.~Jendrzejewski, P.~Hauke, V.~Kasper, \emph{Quantum approximate
+optimization algorithm for qudit systems}, arXiv:2204.00340 (2023).
+Ap\'endice B.2 (Multiway number partitioning).
+
+\bibitem{mertens2003}
+S.~Mertens, \emph{The Easiest Hard Problem: Number
+Partitioning}, arXiv:cond-mat/0310317 (2003).
+
+\end{thebibliography}
+
+\end{document}
