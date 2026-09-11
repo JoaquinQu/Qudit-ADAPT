@@ -362,13 +362,24 @@ def gradientes_pool(psi, pool, hdiag, n):
 # ==========================================================================
 
 def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
-               pool=None, mostrar=True):
+               pool=None, mostrar=True, checkpoint=None):
     """
     Qudit-ADAPT sobre una instancia de multiway number partitioning.
 
     `a` es la lista de números. Devuelve un dict con la traza de energía, los
     operadores elegidos, los parámetros óptimos y la partición leída del estado
     final.
+
+    En cada iteración se registra `p_optimo`, el peso del estado sobre el
+    subespacio fundamental, o sea la probabilidad de que un disparo del
+    experimento entregue una partición óptima. Es la cifra que importa en
+    optimización combinatoria, y no coincide con el error de energía: el fondo
+    del espectro es exponencialmente denso, así que un error relativo chico
+    puede convivir con probabilidad cero de medir la solución.
+
+    Con `checkpoint` se vuelca el estado a ese archivo tras cada iteración, de
+    modo que una corrida larga se pueda seguir mientras avanza y no se pierda
+    si el proceso muere.
     """
     a = np.asarray(a, dtype=float)
     n = len(a)
@@ -385,8 +396,14 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
     psi = psi0.copy()
     E_ini = float(np.real(np.vdot(psi, hdiag * psi)))
 
+    # Mascara del subespacio fundamental: se calcula una vez y sirve para
+    # medir en cada iteracion la probabilidad de acertar la particion optima.
+    mask_fund = np.isclose(hdiag, E0)
+
     ops, params = [], np.zeros(0)
     traza = [E_ini]
+    traza_p_optimo = [float(np.sum(np.abs(psi[mask_fund]) ** 2))]
+    traza_desbalance = [leer_estado(psi, a, cuantos=1)[0]["desbalance"]]
     indices, etiquetas = [], []
     razon = "max_iteration_reached"
 
@@ -417,10 +434,33 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         psi = guardar["psi"]
         traza.append(E)
 
+        # Probabilidad de que un disparo entregue una partición óptima.
+        p_opt = float(np.sum(np.abs(psi[mask_fund]) ** 2))
+        traza_p_optimo.append(p_opt)
+        mejor_k = leer_estado(psi, a, cuantos=1)[0]
+        traza_desbalance.append(mejor_k["desbalance"])
+
         if mostrar:
             eps = abs(E - E0) / abs(E0) if E0 != 0 else abs(E - E0)
-            print(f"  k={len(ops):3d}  |g|={norma:.3e}  E={E:.8f}  "
-                  f"eps_rel={eps:.3e}  {pool[j]['label']}")
+            print(f"  k={len(ops):3d}  |g|={norma:.3e}  E={E:.6f}  eps={eps:.2e}  "
+                  f"p_opt={p_opt:.4f}  desbal={mejor_k['desbalance']:.0f}  "
+                  f"{pool[j]['label']}", flush=True)
+
+        if checkpoint is not None:
+            with open(checkpoint, "w", encoding="utf-8") as f:
+                json.dump({
+                    "a": list(map(float, a)), "n": n, "l": l,
+                    "ground_energy": E0, "ground_degeneracy": degeneracion,
+                    "num_ansatz_ops": len(ops),
+                    "energy_trace": traza,
+                    "p_optimo_trace": traza_p_optimo,
+                    "desbalance_trace": traza_desbalance,
+                    "ansatz_op_labels": etiquetas,
+                    "params": list(map(float, params)),
+                    "grad_norm": norma,
+                    "runtime_s": time.time() - t0,
+                    "en_progreso": True,
+                }, f, indent=1)
 
     lectura = leer_estado(psi, a, cuantos=10)
     mejor = lectura[0]
@@ -444,6 +484,8 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         "ansatz_op_indices": indices, "ansatz_op_labels": etiquetas,
         "params": params.tolist(),
         "stop_reason": razon,
+        "p_optimo_trace": traza_p_optimo,
+        "desbalance_trace": traza_desbalance,
         "mejor_probabilidad": mejor["probabilidad"],
         "prob_subespacio_optimo": p_optimo,
         "top_particiones": lectura,

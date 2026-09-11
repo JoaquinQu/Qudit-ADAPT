@@ -62,8 +62,10 @@ def main():
     print(f"  ({time.time()-t:.1f} s)", flush=True)
 
     print(f"\n--- Qudit-ADAPT, l = {args.l} ---", flush=True)
+    ck = str(Path(args.salida).with_suffix(".checkpoint.json"))
     res = adapt_mwnp(a, l=args.l, epsilon=args.epsilon,
-                     max_iteration=args.max_iteration, mostrar=True)
+                     max_iteration=args.max_iteration, mostrar=True,
+                     checkpoint=ck)
 
     print("\n" + "=" * 72)
     print("RESULTADO")
