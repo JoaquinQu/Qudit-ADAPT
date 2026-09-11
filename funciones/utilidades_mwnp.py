@@ -101,6 +101,68 @@ def particion_desde_indice(idx, m):
     return [(idx // (D ** (m - 1 - i))) % D for i in range(m)]
 
 
+def sumas_de_particion(a, clases):
+    """Suma de cada una de las tres cajas."""
+    a = np.asarray(a, dtype=float)
+    return [float(a[[i for i in range(len(a)) if clases[i] == s]].sum())
+            for s in range(D)]
+
+
+def desbalance(sumas):
+    """Diferencia entre la caja más llena y la más vacía."""
+    return float(max(sumas) - min(sumas))
+
+
+def leer_estado(psi, a, cuantos=8):
+    """
+    Traduce el estado final a particiones legibles.
+
+    Devuelve las `cuantos` cadenas de trits más probables, cada una con su
+    probabilidad, la partición que codifica, las sumas de las tres cajas y su
+    desbalance. Es lo que uno realmente mediría: cada disparo del experimento
+    colapsa el estado a una cadena, y esa cadena ES una asignación.
+    """
+    a = np.asarray(a, dtype=float)
+    m = len(a)
+    prob = np.abs(psi) ** 2
+    orden = np.argsort(prob)[::-1][:cuantos]
+
+    fuera = []
+    for idx in orden:
+        clases = particion_desde_indice(int(idx), m)
+        s = sumas_de_particion(a, clases)
+        fuera.append({
+            "indice": int(idx),
+            "trits": "".join(str(c) for c in clases),
+            "probabilidad": float(prob[idx]),
+            "clases": clases,
+            "cajas": [[int(a[i]) for i in range(m) if clases[i] == c] for c in range(D)],
+            "sumas": s,
+            "desbalance": desbalance(s),
+        })
+    return fuera
+
+
+def fuerza_bruta(a):
+    """
+    Óptimo exacto por enumeración, para verificar. Sólo hasta ~n = 14: son
+    3^n asignaciones, que a n = 13 son 1.6 millones y a n = 16 ya 43.
+    """
+    hdiag = hamiltoniano_diag(a)
+    E0 = float(hdiag.min())
+    indices = np.flatnonzero(np.isclose(hdiag, E0))
+    m = len(a)
+    clases = particion_desde_indice(int(indices[0]), m)
+    return {
+        "energia": E0,
+        "objetivo": energia_a_objetivo(E0, a),
+        "degeneracion": int(len(indices)),
+        "sumas": sumas_de_particion(a, clases),
+        "desbalance": desbalance(sumas_de_particion(a, clases)),
+        "indices_optimos": indices,
+    }
+
+
 # ==========================================================================
 # 2. Pool: cada operador, como una compuerta de pocos sitios
 # ==========================================================================
@@ -360,9 +422,15 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
             print(f"  k={len(ops):3d}  |g|={norma:.3e}  E={E:.8f}  "
                   f"eps_rel={eps:.3e}  {pool[j]['label']}")
 
-    idx_mejor = int(np.argmax(np.abs(psi) ** 2))
-    clases = particion_desde_indice(idx_mejor, n)
-    sumas = [float(a[[i for i in range(n) if clases[i] == s]].sum()) for s in range(D)]
+    lectura = leer_estado(psi, a, cuantos=10)
+    mejor = lectura[0]
+    clases, sumas = mejor["clases"], mejor["sumas"]
+
+    # Peso total que el estado pone sobre el subespacio fundamental: es la
+    # probabilidad de que UN disparo del experimento entregue una partición
+    # óptima, que para optimización combinatoria es la cifra que importa.
+    hmin = float(hdiag.min())
+    p_optimo = float(np.sum(np.abs(psi[np.isclose(hdiag, hmin)]) ** 2))
 
     E_final = traza[-1]
     return {
@@ -376,8 +444,11 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         "ansatz_op_indices": indices, "ansatz_op_labels": etiquetas,
         "params": params.tolist(),
         "stop_reason": razon,
-        "mejor_probabilidad": float(np.abs(psi[idx_mejor]) ** 2),
+        "mejor_probabilidad": mejor["probabilidad"],
+        "prob_subespacio_optimo": p_optimo,
+        "top_particiones": lectura,
         "particion": clases, "sumas": sumas,
+        "desbalance": desbalance(sumas),
         "objetivo": energia_a_objetivo(E_final, a),
         "objetivo_optimo": energia_a_objetivo(E0, a),
         "runtime_s": time.time() - t0,
