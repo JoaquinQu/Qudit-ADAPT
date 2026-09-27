@@ -468,7 +468,7 @@ def gradientes_pool(psi, pool, hdiag, n):
 # ==========================================================================
 
 def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
-               pool=None, mostrar=True, checkpoint=None):
+               pool=None, mostrar=True, checkpoint=None, inicializacion="warm"):
     """
     Qudit-ADAPT sobre una instancia de multiway number partitioning.
 
@@ -545,7 +545,20 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         indices.append(j)
         etiquetas.append(pool[j]["label"])
 
-        x0 = np.concatenate([params, [0.0]])       # warm start
+        # Punto de partida de BFGS en cada paso.
+        #   warm: (theta*_{k-1}, 0), el óptimo anterior más el nuevo en cero.
+        #         Es el ADAPT estándar, y por construcción E_{k+1}(x0) = E_k.
+        #   cold: todo en cero. Con theta = 0 todas las exponenciales son la
+        #         identidad, así que cada optimización arranca literalmente
+        #         desde la superposición uniforme. Como el estado optimizado
+        #         cambia, el barrido del paso siguiente elige operadores
+        #         distintos: es otro algoritmo, no sólo otra inicialización.
+        if inicializacion == "warm":
+            x0 = np.concatenate([params, [0.0]])
+        elif inicializacion == "cold":
+            x0 = np.zeros(len(ops))
+        else:
+            raise ValueError("inicializacion debe ser 'warm' o 'cold'")
         guardar = {}
         t_opt = time.time()
         res = minimize(energia_y_grad, x0,
@@ -676,3 +689,64 @@ def varianza_gradiente(a, ops, n_muestras=100, seed=0, normalizar=True):
         "var_por_componente": np.var(grads, axis=0).tolist(),
         "abs_medio": float(np.mean(np.abs(grads))),
     }
+
+
+# ==========================================================================
+# 7. Reoptimización con la secuencia de operadores fija
+# ==========================================================================
+
+def operadores_desde_etiquetas(etiquetas):
+    """Operadores listos para aplicar a partir de sus etiquetas."""
+    ops = []
+    for label in etiquetas:
+        sitios, B = bloque_local(label)
+        w, V = np.linalg.eigh(B)
+        ops.append({"sitios": [s - 1 for s in sitios], "evals": w, "V": V,
+                    "label": label, "peso": len(sitios)})
+    return ops
+
+
+def reoptimizar_secuencia(a, etiquetas, maxiter=1000, cada_k=True):
+    """
+    Reoptimiza desde theta = 0 la MISMA secuencia de operadores que eligió otra
+    corrida, tomando sus primeros k para cada k.
+
+    La secuencia queda fija; lo único que cambia respecto del ADAPT original es
+    el punto de partida de BFGS. Por eso aísla el efecto de la inicialización:
+    si con el mismo circuito, partiendo de la superposición uniforme, se llega a
+    la solución que el warm start perdió, el circuito era suficiente y el
+    problema fue el camino de optimización. Es el experimento de las Figs. 5 y 6
+    del manuscrito.
+
+    Con cada_k=False se reoptimiza sólo el circuito completo, que es la
+    reoptimización global final que se propuso tras la auditoría de la Fig. 3b.
+    """
+    a = np.asarray(a, dtype=float)
+    n = len(a)
+    hdiag = hamiltoniano_diag(a)
+    E0 = float(hdiag.min())
+    mask_fund = np.isclose(hdiag, E0)
+    psi0 = estado_referencia(n)
+    ops = operadores_desde_etiquetas(etiquetas)
+
+    ks = range(1, len(ops) + 1) if cada_k else [len(ops)]
+    traza = {"k": [], "energia": [], "p_exito": [], "desbalance_top": [],
+             "parametros": [], "bfgs": []}
+    for k in ks:
+        guardar = {}
+        res = minimize(energia_y_grad, np.zeros(k),
+                       args=(ops[:k], psi0, hdiag, n, guardar),
+                       jac=True, method="BFGS",
+                       options={"maxiter": maxiter, "gtol": 1e-10})
+        E, _ = energia_y_grad(res.x, ops[:k], psi0, hdiag, n, guardar)
+        psi = guardar["psi"]
+        traza["k"].append(k)
+        traza["energia"].append(E)
+        traza["p_exito"].append(float(np.sum(np.abs(psi[mask_fund]) ** 2)))
+        traza["desbalance_top"].append(leer_estado(psi, a, cuantos=1)[0]["desbalance"])
+        traza["parametros"].append(res.x.tolist())
+        traza["bfgs"].append({"nit": int(res.nit), "nfev": int(res.nfev),
+                              "exito": bool(res.success)})
+
+    return {"ground_energy": E0, "traza": traza,
+            "top_particiones": leer_estado(psi, a, cuantos=10)}

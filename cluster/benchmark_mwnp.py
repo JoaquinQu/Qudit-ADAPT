@@ -82,8 +82,12 @@ def a_escala_j(E, a):
     return 2.0 * float(E) + (2.0 / 3.0) * float(np.sum(a)) ** 2
 
 
-def ruta_corrida(n, l, ident, carpeta=CARPETA):
-    return Path(carpeta) / f"n{n}_l{l}_i{ident:02d}.json"
+SUFIJOS = {"warm": "", "cold": "_cold", "fija0": "_fija0"}
+
+
+def ruta_corrida(n, l, ident, carpeta=CARPETA, estrategia="warm"):
+    # warm no lleva sufijo: son los archivos de la fase 1, que ya existen.
+    return Path(carpeta) / f"n{n}_l{l}_i{ident:02d}{SUFIJOS[estrategia]}.json"
 
 
 def conteo_nativo(etiquetas):
@@ -104,11 +108,13 @@ def correr(tarea):
     """Una corrida. Devuelve un resumen corto; el detalle queda en disco."""
     from funciones.utilidades_mwnp import adapt_mwnp, preparar_pool
 
-    inst, l, eps_j, max_it, carpeta = tarea
+    inst, l, eps_j, max_it, carpeta, estrategia = tarea
     n, ident, a = inst["n"], inst["id"], inst["a"]
-    ruta = ruta_corrida(n, l, ident, carpeta)
+    ruta = ruta_corrida(n, l, ident, carpeta, estrategia)
     if ruta.exists():
         return {"n": n, "l": l, "id": ident, "estado": "ya existía"}
+    if estrategia == "fija0":
+        return correr_fija0(inst, l, carpeta)
 
     t0 = time.time()
     try:
@@ -116,7 +122,7 @@ def correr(tarea):
         # El umbral viene en la escala de Joaquín, donde los gradientes valen
         # el doble que en la nuestra.
         r = adapt_mwnp(a, l=l, epsilon=eps_j / 2.0, max_iteration=max_it,
-                       pool=pool, mostrar=False)
+                       pool=pool, mostrar=False, inicializacion=estrategia)
     except Exception as e:                       # que una falla no tumbe el lote
         return {"n": n, "l": l, "id": ident, "estado": f"ERROR: {e!r}"}
 
@@ -128,7 +134,9 @@ def correr(tarea):
         "instancia": inst,
         "config": {"l": l, "epsilon_escala_j": eps_j, "max_iteration": max_it,
                    "optimizador": "BFGS, gtol=1e-10, jac analítico (adjunto)",
-                   "inicializacion": "warm start: (theta*_{k-1}, 0)"},
+                   "estrategia": estrategia,
+                   "inicializacion": ("warm start: (theta*_{k-1}, 0)" if estrategia == "warm"
+                                      else "cold: theta = 0 en cada paso de ADAPT")},
         "resultado": {
             "num_parametros": r["num_ansatz_ops"],
             "stop_reason": r["stop_reason"],
@@ -182,6 +190,83 @@ def correr(tarea):
             "t": salida["ejecucion"]["runtime_s"]}
 
 
+def correr_fija0(inst, l, carpeta):
+    """
+    Variante (i): la MISMA secuencia de operadores que eligió el warm start,
+    reoptimizada desde theta = 0 para cada tamaño k del circuito.
+
+    Necesita la corrida warm de la misma instancia, de la que lee los
+    operadores. Aísla el efecto de la inicialización: si con ese mismo circuito
+    tampoco se llega a la solución, el problema no era el punto de partida de
+    BFGS sino qué operadores se eligieron.
+    """
+    from funciones.utilidades_mwnp import reoptimizar_secuencia
+
+    n, ident, a = inst["n"], inst["id"], inst["a"]
+    origen = ruta_corrida(n, l, ident, carpeta, "warm")
+    if not origen.exists():
+        return {"n": n, "l": l, "id": ident, "estado": "falta la corrida warm"}
+    warm = json.load(open(origen, encoding="utf-8"))
+    etiquetas = warm["trazas"]["operadores"]
+
+    t0 = time.time()
+    try:
+        r = reoptimizar_secuencia(a, etiquetas, cada_k=True)
+    except Exception as e:
+        return {"n": n, "l": l, "id": ident, "estado": f"ERROR: {e!r}"}
+
+    tr = r["traza"]
+    # Se antepone k = 0, la superposición uniforme, para que el índice de la
+    # traza sea el tamaño del circuito igual que en las corridas warm y cold.
+    E_j = [a_escala_j(E, a) for E in tr["energia"]]
+    E0_j = a_escala_j(r["ground_energy"], a)
+    top = r["top_particiones"]
+    salida = {
+        "instancia": inst,
+        "config": {"l": l, "estrategia": "fija0",
+                   "optimizador": "BFGS, gtol=1e-10, jac analítico (adjunto)",
+                   "inicializacion": "theta = 0, secuencia fija de la corrida warm",
+                   "origen": origen.name},
+        "resultado": {
+            "num_parametros": len(etiquetas),
+            "p_exito": tr["p_exito"][-1],
+            "p_azar": inst["p_azar"],
+            "mejora_sobre_azar": tr["p_exito"][-1] / inst["p_azar"],
+            "E0_j": E0_j, "E_final_j": E_j[-1], "error_abs_j": E_j[-1] - E0_j,
+            "encontro_la_particion": top[0]["desbalance"] == 0,
+            "cadena_mas_probable": top[0]["trits"],
+            "particion_correcta": inst["particion_optima"],
+            "top_particiones": top,
+            "pool_size": warm["resultado"]["pool_size"],
+            "compuertas_nativas": warm["resultado"]["compuertas_nativas"],
+        },
+        "trazas": {
+            "energia_j": [warm["trazas"]["energia_j"][0]] + E_j,
+            "p_exito": [warm["trazas"]["p_exito"][0]] + tr["p_exito"],
+            "desbalance_top": [warm["trazas"]["desbalance_top"][0]] + tr["desbalance_top"],
+            "operadores": etiquetas,
+            "parametros": tr["parametros"],
+            "bfgs": tr["bfgs"],
+        },
+        "ejecucion": {
+            "runtime_s": time.time() - t0,
+            "commit": commit_del_codigo(),
+            "host": socket.gethostname(),
+            "hilos_blas": int(os.environ.get("OMP_NUM_THREADS", "1")),
+            "fecha_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        },
+    }
+    ruta = ruta_corrida(n, l, ident, carpeta, "fija0")
+    tmp = ruta.with_suffix(f".{os.getpid()}.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(salida, f, indent=1)
+    os.replace(tmp, ruta)
+    return {"n": n, "l": l, "id": ident, "estado": "ok",
+            "k": len(etiquetas), "p": tr["p_exito"][-1],
+            "acierto": salida["resultado"]["encontro_la_particion"],
+            "t": salida["ejecucion"]["runtime_s"]}
+
+
 def rango_ids(texto):
     """'0-9' -> [0..9];  '0,3,5' -> [0,3,5]."""
     ids = []
@@ -205,6 +290,10 @@ def main():
     p.add_argument("--procesos", type=int, default=1)
     p.add_argument("--hilos", type=int, default=1)
     p.add_argument("--carpeta", type=str, default=str(CARPETA))
+    p.add_argument("--estrategia", type=str, default="warm",
+                   choices=["warm", "cold", "fija0"],
+                   help="warm: ADAPT estándar | cold (ii): ADAPT desde theta=0 en cada paso"
+                        " | fija0 (i): la secuencia warm reoptimizada desde theta=0")
     args = p.parse_args()
 
     from funciones.utilidades_mwnp import etiquetas_pool
@@ -222,11 +311,12 @@ def main():
             print(f"pool n={n:2d} l={l}: listo en {time.time()-t:6.1f} s", flush=True)
 
     # Lo más caro primero, para que ningún proceso quede con la cola larga.
-    tareas = [(inst, l, args.epsilon, args.max_iteration, args.carpeta)
+    tareas = [(inst, l, args.epsilon, args.max_iteration, args.carpeta, args.estrategia)
               for inst in elegidas for l in args.l]
     tareas.sort(key=lambda t: (t[0]["n"], t[1]), reverse=True)
 
-    print(f"\n{len(tareas)} corridas  |  {args.procesos} procesos x {args.hilos} hilos"
+    print(f"\nestrategia: {args.estrategia}")
+    print(f"{len(tareas)} corridas  |  {args.procesos} procesos x {args.hilos} hilos"
           f"  |  epsilon = {args.epsilon:g} (escala J)\n", flush=True)
 
     t0 = time.time()
