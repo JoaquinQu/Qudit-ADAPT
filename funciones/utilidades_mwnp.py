@@ -98,8 +98,41 @@ def energia_a_objetivo(E, a):
 
 
 def particion_desde_indice(idx, m):
-    """Asignación de clases (una por número) del estado base `idx`."""
-    return [(idx // (D ** (m - 1 - i))) % D for i in range(m)]
+    """
+    Etiqueta de caja de cada número en el estado base `idx`, en la convención
+    de Joaquín (formulacion_qubo.pdf, §3.1): la etiqueta es el autovalor del
+    operador dígito d = J_z + I.
+
+    Con J_z = diag(1, 0, -1), d = diag(2, 1, 0), así que el nivel k del qutrit
+    lleva la etiqueta 2 - k. Es sólo una convención de lectura: el costo es
+    simétrico bajo permutar etiquetas, de modo que energías, probabilidades y
+    desbalances no cambian. Lo que cambia es qué número de caja se imprime, y
+    adoptar la suya evita leer "caja 0" donde él lee "caja 2".
+    """
+    return [2 - (idx // (D ** (m - 1 - i))) % D for i in range(m)]
+
+
+def hamiltoniano_joaquin(a):
+    """
+    H_p de Joaquín tal como está en formulacion_qubo.pdf, §2.4 y §3.3:
+
+        C(z) = sum_i (Sigma_i(z) - mu)^2,    mu = (1/3) sum_j a_j,
+
+    que vale exactamente 0 en una partición perfecta. Se implementa directo de
+    la fórmula y no como transformación de `hamiltoniano_diag`, para que exista
+    una versión de su escala que no dependa de nuestra derivación. Equivale a
+    2 * hamiltoniano_diag(a) + (2/3) (sum a)^2, lo que se verifica en los tests.
+    """
+    a = np.asarray(a, dtype=float)
+    m = len(a)
+    idx = np.arange(D ** m, dtype=np.int64)
+    Sigma = np.zeros((D, D ** m))
+    for j in range(m):
+        etiqueta = 2 - (idx // (D ** (m - 1 - j))) % D
+        for i in range(D):
+            Sigma[i] += a[j] * (etiqueta == i)
+    mu = a.sum() / 3.0
+    return np.sum((Sigma - mu) ** 2, axis=0)
 
 
 def sumas_de_particion(a, clases):
@@ -501,12 +534,12 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         # redondeo, y cuál elige argmax depende sólo del orden del pool.
         ag = np.abs(g)
         j = int(np.argmax(ag))
-        top = np.argsort(ag)[::-1][:5]
+        top = np.argsort(ag)[::-1][:20]
         traza_seleccion.append({
             "indice": j,
             "grad": float(g[j]),
             "empates": int(np.sum(np.isclose(ag, ag[j], rtol=1e-9, atol=1e-12))),
-            "top5": [[int(i), float(ag[i])] for i in top],
+            "top20": [[int(i), float(ag[i])] for i in top],
         })
         ops.append(pool[j])
         indices.append(j)

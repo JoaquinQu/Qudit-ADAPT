@@ -22,18 +22,18 @@
    "suma": 30,
    "suma_por_caja": 10,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     8
+     10
     ],
     [
      3,
      7
     ],
     [
-     10
+     2,
+     8
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -54,18 +54,18 @@
    "suma": 30,
    "suma_por_caja": 10,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     9
+     10
     ],
     [
      4,
      6
     ],
     [
-     10
+     1,
+     9
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -86,18 +86,18 @@
    "suma": 30,
    "suma_por_caja": 10,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     3,
-     7
+     10
     ],
     [
      4,
      6
     ],
     [
-     10
+     3,
+     7
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -118,18 +118,18 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     5,
-     8
+     13
     ],
     [
      6,
      7
     ],
     [
-     13
+     5,
+     8
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -150,18 +150,18 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     11
+     13
     ],
     [
      6,
      7
     ],
     [
-     13
+     2,
+     11
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -182,18 +182,18 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     5,
-     9
+     14
     ],
     [
      6,
      8
     ],
     [
-     14
+     5,
+     9
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -214,18 +214,18 @@
    "suma": 36,
    "suma_por_caja": 12,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     10
+     12
     ],
     [
      4,
      8
     ],
     [
-     12
+     2,
+     10
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -246,18 +246,18 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     3,
-     10
+     13
     ],
     [
      6,
      7
     ],
     [
-     13
+     3,
+     10
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -278,18 +278,18 @@
    "suma": 33,
    "suma_por_caja": 11,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     10
+     11
     ],
     [
      4,
      7
     ],
     [
-     11
+     1,
+     10
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -310,18 +310,18 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     3,
-     10
+     13
     ],
     [
      4,
      9
     ],
     [
-     13
+     3,
+     10
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -342,18 +342,18 @@
    "suma": 33,
    "suma_por_caja": 11,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     9
+     11
     ],
     [
      3,
      8
     ],
     [
-     11
+     2,
+     9
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -374,18 +374,18 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     3,
-     11
+     14
     ],
     [
      4,
      10
     ],
     [
-     14
+     3,
+     11
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -406,18 +406,18 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     12
+     14
     ],
     [
      6,
      8
     ],
     [
-     14
+     2,
+     12
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -438,18 +438,18 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     13
+     14
     ],
     [
      4,
      10
     ],
     [
-     14
+     1,
+     13
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -470,18 +470,18 @@
    "suma": 45,
    "suma_por_caja": 15,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     14
+     15
     ],
     [
      7,
      8
     ],
     [
-     15
+     1,
+     14
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -502,18 +502,18 @@
    "suma": 27,
    "suma_por_caja": 9,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     7
+     9
     ],
     [
      4,
      5
     ],
     [
-     9
+     2,
+     7
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -534,18 +534,18 @@
    "suma": 30,
    "suma_por_caja": 10,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     9
+     10
     ],
     [
      2,
      8
     ],
     [
-     10
+     1,
+     9
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -566,18 +566,18 @@
    "suma": 45,
    "suma_por_caja": 15,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     13
+     15
     ],
     [
      3,
      12
     ],
     [
-     15
+     2,
+     13
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -598,18 +598,18 @@
    "suma": 36,
    "suma_por_caja": 12,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     1,
-     11
+     12
     ],
     [
      5,
      7
     ],
     [
-     12
+     1,
+     11
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -630,18 +630,18 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "01102",
+   "particion_optima": "21120",
    "cajas_optimas": [
     [
-     2,
-     11
+     13
     ],
     [
      4,
      9
     ],
     [
-     13
+     2,
+     11
     ]
    ],
    "p_azar": 0.024691358024691357,
@@ -663,19 +663,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     1,
-     17
+     8,
+     10
     ],
     [
      6,
      12
     ],
     [
-     8,
-     10
+     1,
+     17
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -697,19 +697,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "001012",
+   "particion_optima": "221210",
    "cajas_optimas": [
     [
-     4,
-     6,
-     8
+     18
     ],
     [
      7,
      11
     ],
     [
-     18
+     4,
+     6,
+     8
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -731,19 +731,19 @@
    "suma": 36,
    "suma_por_caja": 12,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     2,
-     10
+     5,
+     7
     ],
     [
      3,
      9
     ],
     [
-     5,
-     7
+     2,
+     10
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -765,11 +765,10 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "011102",
+   "particion_optima": "211120",
    "cajas_optimas": [
     [
-     2,
-     11
+     13
     ],
     [
      3,
@@ -777,7 +776,8 @@
      6
     ],
     [
-     13
+     2,
+     11
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -799,19 +799,19 @@
    "suma": 57,
    "suma_por_caja": 19,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     3,
-     16
+     8,
+     11
     ],
     [
      5,
      14
     ],
     [
-     8,
-     11
+     3,
+     16
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -833,19 +833,19 @@
    "suma": 69,
    "suma_por_caja": 23,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     5,
-     18
+     11,
+     12
     ],
     [
      9,
      14
     ],
     [
-     11,
-     12
+     5,
+     18
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -867,19 +867,19 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     3,
-     18
+     6,
+     15
     ],
     [
      4,
      17
     ],
     [
-     6,
-     15
+     3,
+     18
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -901,19 +901,19 @@
    "suma": 51,
    "suma_por_caja": 17,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     3,
-     14
+     8,
+     9
     ],
     [
      6,
      11
     ],
     [
-     8,
-     9
+     3,
+     14
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -935,19 +935,19 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     5,
-     16
+     10,
+     11
     ],
     [
      8,
      13
     ],
     [
-     10,
-     11
+     5,
+     16
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -969,19 +969,19 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     6,
-     15
+     10,
+     11
     ],
     [
      8,
      13
     ],
     [
-     10,
-     11
+     6,
+     15
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1003,19 +1003,19 @@
    "suma": 60,
    "suma_por_caja": 20,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     2,
-     18
+     5,
+     15
     ],
     [
      4,
      16
     ],
     [
-     5,
-     15
+     2,
+     18
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1037,19 +1037,19 @@
    "suma": 39,
    "suma_por_caja": 13,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     1,
-     12
+     6,
+     7
     ],
     [
      5,
      8
     ],
     [
-     6,
-     7
+     1,
+     12
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1071,19 +1071,19 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     3,
-     11
+     5,
+     9
     ],
     [
      4,
      10
     ],
     [
-     5,
-     9
+     3,
+     11
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1105,19 +1105,19 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     3,
-     18
+     10,
+     11
     ],
     [
      4,
      17
     ],
     [
-     10,
-     11
+     3,
+     18
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1139,19 +1139,19 @@
    "suma": 42,
    "suma_por_caja": 14,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     4,
-     10
+     6,
+     8
     ],
     [
      5,
      9
     ],
     [
-     6,
-     8
+     4,
+     10
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1173,19 +1173,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     2,
-     16
+     4,
+     14
     ],
     [
      3,
      15
     ],
     [
-     4,
-     14
+     2,
+     16
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1207,19 +1207,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "001012",
+   "particion_optima": "221210",
    "cajas_optimas": [
     [
-     4,
-     5,
-     9
+     18
     ],
     [
      7,
      11
     ],
     [
-     18
+     4,
+     5,
+     9
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1241,19 +1241,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "001102",
+   "particion_optima": "221120",
    "cajas_optimas": [
     [
-     2,
-     4,
-     12
+     18
     ],
     [
      8,
      10
     ],
     [
-     18
+     2,
+     4,
+     12
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1275,19 +1275,19 @@
    "suma": 51,
    "suma_por_caja": 17,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     1,
-     16
+     4,
+     13
     ],
     [
      3,
      14
     ],
     [
-     4,
-     13
+     1,
+     16
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1309,19 +1309,19 @@
    "suma": 54,
    "suma_por_caja": 18,
    "degeneracion": 6,
-   "particion_optima": "012210",
+   "particion_optima": "210012",
    "cajas_optimas": [
     [
-     2,
-     16
+     8,
+     10
     ],
     [
      3,
      15
     ],
     [
-     8,
-     10
+     2,
+     16
     ]
    ],
    "p_azar": 0.00823045267489712,
@@ -1344,20 +1344,20 @@
    "suma": 69,
    "suma_por_caja": 23,
    "degeneracion": 6,
-   "particion_optima": "0102201",
+   "particion_optima": "2120021",
    "cajas_optimas": [
     [
-     1,
-     6,
-     16
+     10,
+     13
     ],
     [
      4,
      19
     ],
     [
-     10,
-     13
+     1,
+     6,
+     16
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1380,20 +1380,20 @@
    "suma": 69,
    "suma_por_caja": 23,
    "degeneracion": 6,
-   "particion_optima": "0120021",
+   "particion_optima": "2102201",
    "cajas_optimas": [
     [
-     3,
-     9,
-     11
+     6,
+     17
     ],
     [
      5,
      18
     ],
     [
-     6,
-     17
+     3,
+     9,
+     11
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1416,20 +1416,20 @@
    "suma": 78,
    "suma_por_caja": 26,
    "degeneracion": 6,
-   "particion_optima": "0100221",
+   "particion_optima": "2122001",
    "cajas_optimas": [
     [
-     7,
-     9,
-     10
+     12,
+     14
     ],
     [
      8,
      18
     ],
     [
-     12,
-     14
+     7,
+     9,
+     10
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1452,20 +1452,20 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "0102201",
+   "particion_optima": "2120021",
    "cajas_optimas": [
     [
-     1,
-     5,
-     15
+     9,
+     12
     ],
     [
      3,
      18
     ],
     [
-     9,
-     12
+     1,
+     5,
+     15
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1488,20 +1488,20 @@
    "suma": 69,
    "suma_por_caja": 23,
    "degeneracion": 6,
-   "particion_optima": "0102201",
+   "particion_optima": "2120021",
    "cajas_optimas": [
     [
-     2,
-     6,
-     15
+     9,
+     14
     ],
     [
      5,
      18
     ],
     [
-     9,
-     14
+     2,
+     6,
+     15
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1524,20 +1524,20 @@
    "suma": 66,
    "suma_por_caja": 22,
    "degeneracion": 6,
-   "particion_optima": "0102021",
+   "particion_optima": "2120201",
    "cajas_optimas": [
     [
-     2,
-     9,
-     11
+     10,
+     12
     ],
     [
      4,
      18
     ],
     [
-     10,
-     12
+     2,
+     9,
+     11
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1560,20 +1560,20 @@
    "suma": 93,
    "suma_por_caja": 31,
    "degeneracion": 6,
-   "particion_optima": "0012201",
+   "particion_optima": "2210021",
    "cajas_optimas": [
     [
-     5,
-     7,
-     19
+     15,
+     16
     ],
     [
      10,
      21
     ],
     [
-     15,
-     16
+     5,
+     7,
+     19
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1596,20 +1596,20 @@
    "suma": 66,
    "suma_por_caja": 22,
    "degeneracion": 6,
-   "particion_optima": "0102201",
+   "particion_optima": "2120021",
    "cajas_optimas": [
     [
-     2,
-     6,
-     14
+     10,
+     12
     ],
     [
      5,
      17
     ],
     [
-     10,
-     12
+     2,
+     6,
+     14
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1632,20 +1632,20 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "0012201",
+   "particion_optima": "2210021",
    "cajas_optimas": [
     [
-     3,
-     8,
-     18
+     14,
+     15
     ],
     [
      9,
      20
     ],
     [
-     14,
-     15
+     3,
+     8,
+     18
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1668,20 +1668,20 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "0012021",
+   "particion_optima": "2210201",
    "cajas_optimas": [
     [
-     6,
-     8,
-     15
+     11,
+     18
     ],
     [
      10,
      19
     ],
     [
-     11,
-     18
+     6,
+     8,
+     15
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1704,20 +1704,20 @@
    "suma": 81,
    "suma_por_caja": 27,
    "degeneracion": 6,
-   "particion_optima": "0010221",
+   "particion_optima": "2212001",
    "cajas_optimas": [
     [
-     7,
-     8,
-     12
+     13,
+     14
     ],
     [
      11,
      16
     ],
     [
-     13,
-     14
+     7,
+     8,
+     12
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1740,20 +1740,20 @@
    "suma": 81,
    "suma_por_caja": 27,
    "degeneracion": 6,
-   "particion_optima": "0012021",
+   "particion_optima": "2210201",
    "cajas_optimas": [
     [
-     4,
-     8,
-     15
+     11,
+     16
     ],
     [
      9,
      18
     ],
     [
-     11,
-     16
+     4,
+     8,
+     15
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1776,20 +1776,20 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "0012201",
+   "particion_optima": "2210021",
    "cajas_optimas": [
     [
-     2,
-     7,
-     20
+     13,
+     16
     ],
     [
      8,
      21
     ],
     [
-     13,
-     16
+     2,
+     7,
+     20
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1812,12 +1812,10 @@
    "suma": 63,
    "suma_por_caja": 21,
    "degeneracion": 6,
-   "particion_optima": "0110012",
+   "particion_optima": "2112210",
    "cajas_optimas": [
     [
-     2,
-     9,
-     10
+     21
     ],
     [
      3,
@@ -1825,7 +1823,9 @@
      13
     ],
     [
-     21
+     2,
+     9,
+     10
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1848,12 +1848,10 @@
    "suma": 60,
    "suma_por_caja": 20,
    "degeneracion": 6,
-   "particion_optima": "0101102",
+   "particion_optima": "2121120",
    "cajas_optimas": [
     [
-     1,
-     3,
-     16
+     20
     ],
     [
      2,
@@ -1861,7 +1859,9 @@
      12
     ],
     [
-     20
+     1,
+     3,
+     16
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1884,20 +1884,20 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "0012210",
+   "particion_optima": "2210012",
    "cajas_optimas": [
     [
-     4,
-     6,
-     19
+     14,
+     15
     ],
     [
      13,
      16
     ],
     [
-     14,
-     15
+     4,
+     6,
+     19
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1920,20 +1920,20 @@
    "suma": 90,
    "suma_por_caja": 30,
    "degeneracion": 6,
-   "particion_optima": "0102201",
+   "particion_optima": "2120021",
    "cajas_optimas": [
     [
-     1,
-     12,
-     17
+     14,
+     16
     ],
     [
      10,
      20
     ],
     [
-     14,
-     16
+     1,
+     12,
+     17
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1956,11 +1956,11 @@
    "suma": 75,
    "suma_por_caja": 25,
    "degeneracion": 6,
-   "particion_optima": "0121120",
+   "particion_optima": "2101102",
    "cajas_optimas": [
     [
-     4,
-     21
+     6,
+     19
     ],
     [
      5,
@@ -1968,8 +1968,8 @@
      12
     ],
     [
-     6,
-     19
+     4,
+     21
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -1992,20 +1992,20 @@
    "suma": 60,
    "suma_por_caja": 20,
    "degeneracion": 6,
-   "particion_optima": "0012201",
+   "particion_optima": "2210021",
    "cajas_optimas": [
     [
-     3,
-     4,
-     13
+     9,
+     11
     ],
     [
      6,
      14
     ],
     [
-     9,
-     11
+     3,
+     4,
+     13
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -2028,20 +2028,20 @@
    "suma": 84,
    "suma_por_caja": 28,
    "degeneracion": 6,
-   "particion_optima": "0102021",
+   "particion_optima": "2120201",
    "cajas_optimas": [
     [
-     4,
-     9,
-     15
+     11,
+     17
     ],
     [
      7,
      21
     ],
     [
-     11,
-     17
+     4,
+     9,
+     15
     ]
    ],
    "p_azar": 0.0027434842249657062,
@@ -2065,12 +2065,11 @@
    "suma": 99,
    "suma_por_caja": 33,
    "degeneracion": 6,
-   "particion_optima": "00111202",
+   "particion_optima": "22111020",
    "cajas_optimas": [
     [
-     8,
-     9,
-     16
+     14,
+     19
     ],
     [
      10,
@@ -2078,8 +2077,9 @@
      12
     ],
     [
-     14,
-     19
+     8,
+     9,
+     16
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2103,21 +2103,21 @@
    "suma": 99,
    "suma_por_caja": 33,
    "degeneracion": 6,
-   "particion_optima": "00010221",
+   "particion_optima": "22212001",
    "cajas_optimas": [
     [
-     5,
-     6,
-     8,
-     14
+     16,
+     17
     ],
     [
      9,
      24
     ],
     [
-     16,
-     17
+     5,
+     6,
+     8,
+     14
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2141,12 +2141,11 @@
    "suma": 111,
    "suma_por_caja": 37,
    "degeneracion": 6,
-   "particion_optima": "01011220",
+   "particion_optima": "21211002",
    "cajas_optimas": [
     [
-     3,
-     10,
-     24
+     17,
+     20
     ],
     [
      7,
@@ -2154,8 +2153,9 @@
      16
     ],
     [
-     17,
-     20
+     3,
+     10,
+     24
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2179,12 +2179,11 @@
    "suma": 72,
    "suma_por_caja": 24,
    "degeneracion": 6,
-   "particion_optima": "01201102",
+   "particion_optima": "21021120",
    "cajas_optimas": [
     [
-     1,
-     8,
-     15
+     3,
+     21
     ],
     [
      2,
@@ -2192,8 +2191,9 @@
      12
     ],
     [
-     3,
-     21
+     1,
+     8,
+     15
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2217,12 +2217,11 @@
    "suma": 96,
    "suma_por_caja": 32,
    "degeneracion": 6,
-   "particion_optima": "01102120",
+   "particion_optima": "21120102",
    "cajas_optimas": [
     [
-     1,
-     8,
-     23
+     10,
+     22
     ],
     [
      4,
@@ -2230,8 +2229,9 @@
      21
     ],
     [
-     10,
-     22
+     1,
+     8,
+     23
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2255,21 +2255,21 @@
    "suma": 84,
    "suma_por_caja": 28,
    "degeneracion": 6,
-   "particion_optima": "01202201",
+   "particion_optima": "21020021",
    "cajas_optimas": [
     [
-     3,
-     9,
-     16
+     7,
+     10,
+     11
     ],
     [
      4,
      24
     ],
     [
-     7,
-     10,
-     11
+     3,
+     9,
+     16
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2293,21 +2293,21 @@
    "suma": 111,
    "suma_por_caja": 37,
    "degeneracion": 6,
-   "particion_optima": "00012201",
+   "particion_optima": "22210021",
    "cajas_optimas": [
     [
-     1,
-     5,
-     9,
-     22
+     16,
+     21
     ],
     [
      13,
      24
     ],
     [
-     16,
-     21
+     1,
+     5,
+     9,
+     22
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2331,12 +2331,11 @@
    "suma": 93,
    "suma_por_caja": 31,
    "degeneracion": 6,
-   "particion_optima": "01012120",
+   "particion_optima": "21210102",
    "cajas_optimas": [
     [
-     2,
-     5,
-     24
+     14,
+     17
     ],
     [
      4,
@@ -2344,8 +2343,9 @@
      16
     ],
     [
-     14,
-     17
+     2,
+     5,
+     24
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2369,12 +2369,11 @@
    "suma": 129,
    "suma_por_caja": 43,
    "degeneracion": 6,
-   "particion_optima": "01011202",
+   "particion_optima": "21211020",
    "cajas_optimas": [
     [
-     7,
-     13,
-     23
+     19,
+     24
     ],
     [
      10,
@@ -2382,8 +2381,9 @@
      17
     ],
     [
-     19,
-     24
+     7,
+     13,
+     23
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2407,12 +2407,11 @@
    "suma": 111,
    "suma_por_caja": 37,
    "degeneracion": 6,
-   "particion_optima": "01102201",
+   "particion_optima": "21120021",
    "cajas_optimas": [
     [
-     5,
-     12,
-     20
+     18,
+     19
     ],
     [
      7,
@@ -2420,8 +2419,9 @@
      22
     ],
     [
-     18,
-     19
+     5,
+     12,
+     20
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2445,21 +2445,21 @@
    "suma": 123,
    "suma_por_caja": 41,
    "degeneracion": 6,
-   "particion_optima": "00012201",
+   "particion_optima": "22210021",
    "cajas_optimas": [
     [
-     3,
-     7,
-     9,
-     22
+     20,
+     21
     ],
     [
      18,
      23
     ],
     [
-     20,
-     21
+     3,
+     7,
+     9,
+     22
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2483,12 +2483,11 @@
    "suma": 84,
    "suma_por_caja": 28,
    "degeneracion": 6,
-   "particion_optima": "01102012",
+   "particion_optima": "21120210",
    "cajas_optimas": [
     [
-     5,
-     10,
-     13
+     11,
+     17
     ],
     [
      6,
@@ -2496,8 +2495,9 @@
      14
     ],
     [
-     11,
-     17
+     5,
+     10,
+     13
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2521,12 +2521,11 @@
    "suma": 84,
    "suma_por_caja": 28,
    "degeneracion": 6,
-   "particion_optima": "01201102",
+   "particion_optima": "21021120",
    "cajas_optimas": [
     [
-     1,
-     6,
-     21
+     4,
+     24
     ],
     [
      2,
@@ -2534,8 +2533,9 @@
      18
     ],
     [
-     4,
-     24
+     1,
+     6,
+     21
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2559,12 +2559,11 @@
    "suma": 105,
    "suma_por_caja": 35,
    "degeneracion": 6,
-   "particion_optima": "01121002",
+   "particion_optima": "21101220",
    "cajas_optimas": [
     [
-     1,
-     16,
-     18
+     12,
+     23
     ],
     [
      10,
@@ -2572,8 +2571,9 @@
      14
     ],
     [
-     12,
-     23
+     1,
+     16,
+     18
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2597,12 +2597,11 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "01012120",
+   "particion_optima": "21210102",
    "cajas_optimas": [
     [
-     2,
-     5,
-     22
+     11,
+     18
     ],
     [
      4,
@@ -2610,8 +2609,9 @@
      17
     ],
     [
-     11,
-     18
+     2,
+     5,
+     22
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2635,12 +2635,11 @@
    "suma": 78,
    "suma_por_caja": 26,
    "degeneracion": 6,
-   "particion_optima": "01201102",
+   "particion_optima": "21021120",
    "cajas_optimas": [
     [
-     1,
-     7,
-     18
+     4,
+     22
     ],
     [
      2,
@@ -2648,8 +2647,9 @@
      13
     ],
     [
-     4,
-     22
+     1,
+     7,
+     18
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2673,12 +2673,11 @@
    "suma": 111,
    "suma_por_caja": 37,
    "degeneracion": 6,
-   "particion_optima": "01102120",
+   "particion_optima": "21120102",
    "cajas_optimas": [
     [
-     1,
-     12,
-     24
+     17,
+     20
     ],
     [
      8,
@@ -2686,8 +2685,9 @@
      19
     ],
     [
-     17,
-     20
+     1,
+     12,
+     24
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2711,21 +2711,21 @@
    "suma": 93,
    "suma_por_caja": 31,
    "degeneracion": 6,
-   "particion_optima": "01220201",
+   "particion_optima": "21002021",
    "cajas_optimas": [
     [
-     6,
-     11,
-     14
+     8,
+     10,
+     13
     ],
     [
      7,
      24
     ],
     [
-     8,
-     10,
-     13
+     6,
+     11,
+     14
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2749,12 +2749,11 @@
    "suma": 105,
    "suma_por_caja": 35,
    "degeneracion": 6,
-   "particion_optima": "01102012",
+   "particion_optima": "21120210",
    "cajas_optimas": [
     [
-     8,
-     12,
-     15
+     13,
+     22
     ],
     [
      9,
@@ -2762,8 +2761,9 @@
      16
     ],
     [
-     13,
-     22
+     8,
+     12,
+     15
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2787,12 +2787,11 @@
    "suma": 87,
    "suma_por_caja": 29,
    "degeneracion": 6,
-   "particion_optima": "01210012",
+   "particion_optima": "21012210",
    "cajas_optimas": [
     [
-     1,
-     12,
-     16
+     6,
+     23
     ],
     [
      4,
@@ -2800,8 +2799,9 @@
      18
     ],
     [
-     6,
-     23
+     1,
+     12,
+     16
     ]
    ],
    "p_azar": 0.0009144947416552355,
@@ -2826,13 +2826,11 @@
    "suma": 96,
    "suma_por_caja": 32,
    "degeneracion": 6,
-   "particion_optima": "001210102",
+   "particion_optima": "221012120",
    "cajas_optimas": [
     [
-     1,
-     2,
-     8,
-     21
+     6,
+     26
     ],
     [
      5,
@@ -2840,8 +2838,10 @@
      20
     ],
     [
-     6,
-     26
+     1,
+     2,
+     8,
+     21
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -2866,12 +2866,11 @@
    "suma": 93,
    "suma_por_caja": 31,
    "degeneracion": 6,
-   "particion_optima": "001121120",
+   "particion_optima": "221101102",
    "cajas_optimas": [
     [
-     2,
-     3,
-     26
+     8,
+     23
     ],
     [
      4,
@@ -2880,8 +2879,9 @@
      12
     ],
     [
-     8,
-     23
+     2,
+     3,
+     26
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -2906,12 +2906,12 @@
    "suma": 138,
    "suma_por_caja": 46,
    "degeneracion": 6,
-   "particion_optima": "012201120",
+   "particion_optima": "210021102",
    "cajas_optimas": [
     [
-     2,
-     18,
-     26
+     8,
+     16,
+     22
     ],
     [
      6,
@@ -2919,9 +2919,9 @@
      21
     ],
     [
-     8,
-     16,
-     22
+     2,
+     18,
+     26
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -2946,12 +2946,12 @@
    "suma": 111,
    "suma_por_caja": 37,
    "degeneracion": 6,
-   "particion_optima": "010222110",
+   "particion_optima": "212000112",
    "cajas_optimas": [
     [
-     1,
-     9,
-     27
+     11,
+     12,
+     14
     ],
     [
      2,
@@ -2959,9 +2959,9 @@
      19
     ],
     [
-     11,
-     12,
-     14
+     1,
+     9,
+     27
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -2986,12 +2986,11 @@
    "suma": 126,
    "suma_por_caja": 42,
    "degeneracion": 6,
-   "particion_optima": "011102120",
+   "particion_optima": "211120102",
    "cajas_optimas": [
     [
-     2,
-     15,
-     25
+     20,
+     22
     ],
     [
      3,
@@ -3000,8 +2999,9 @@
      21
     ],
     [
-     20,
-     22
+     2,
+     15,
+     25
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3026,13 +3026,11 @@
    "suma": 114,
    "suma_por_caja": 38,
    "degeneracion": 6,
-   "particion_optima": "010001212",
+   "particion_optima": "212221010",
    "cajas_optimas": [
     [
-     2,
-     10,
-     12,
-     14
+     17,
+     21
     ],
     [
      5,
@@ -3040,8 +3038,10 @@
      18
     ],
     [
-     17,
-     21
+     2,
+     10,
+     12,
+     14
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3066,12 +3066,12 @@
    "suma": 156,
    "suma_por_caja": 52,
    "degeneracion": 6,
-   "particion_optima": "012201120",
+   "particion_optima": "210021102",
    "cajas_optimas": [
     [
-     10,
-     17,
-     25
+     15,
+     16,
+     21
     ],
     [
      13,
@@ -3079,9 +3079,9 @@
      20
     ],
     [
-     15,
-     16,
-     21
+     10,
+     17,
+     25
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3106,13 +3106,11 @@
    "suma": 123,
    "suma_por_caja": 41,
    "degeneracion": 6,
-   "particion_optima": "001012102",
+   "particion_optima": "221210120",
    "cajas_optimas": [
     [
-     3,
-     6,
-     11,
-     21
+     15,
+     26
     ],
     [
      10,
@@ -3120,8 +3118,10 @@
      18
     ],
     [
-     15,
-     26
+     3,
+     6,
+     11,
+     21
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3146,12 +3146,12 @@
    "suma": 123,
    "suma_por_caja": 41,
    "degeneracion": 6,
-   "particion_optima": "012201210",
+   "particion_optima": "210021012",
    "cajas_optimas": [
     [
-     2,
-     13,
-     26
+     8,
+     12,
+     21
     ],
     [
      4,
@@ -3159,9 +3159,9 @@
      23
     ],
     [
-     8,
-     12,
-     21
+     2,
+     13,
+     26
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3186,12 +3186,12 @@
    "suma": 96,
    "suma_por_caja": 32,
    "degeneracion": 6,
-   "particion_optima": "012120201",
+   "particion_optima": "210102021",
    "cajas_optimas": [
     [
-     4,
-     12,
-     16
+     6,
+     11,
+     15
     ],
     [
      5,
@@ -3199,9 +3199,9 @@
      18
     ],
     [
-     6,
-     11,
-     15
+     4,
+     12,
+     16
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3226,12 +3226,12 @@
    "suma": 108,
    "suma_por_caja": 36,
    "degeneracion": 6,
-   "particion_optima": "012120201",
+   "particion_optima": "210102021",
    "cajas_optimas": [
     [
-     1,
-     16,
-     19
+     4,
+     14,
+     18
     ],
     [
      2,
@@ -3239,9 +3239,9 @@
      23
     ],
     [
-     4,
-     14,
-     18
+     1,
+     16,
+     19
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3266,13 +3266,11 @@
    "suma": 123,
    "suma_por_caja": 41,
    "degeneracion": 6,
-   "particion_optima": "010100221",
+   "particion_optima": "212122001",
    "cajas_optimas": [
     [
-     2,
-     10,
-     12,
-     17
+     20,
+     21
     ],
     [
      5,
@@ -3280,8 +3278,10 @@
      25
     ],
     [
-     20,
-     21
+     2,
+     10,
+     12,
+     17
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3306,12 +3306,12 @@
    "suma": 153,
    "suma_por_caja": 51,
    "degeneracion": 6,
-   "particion_optima": "012221100",
+   "particion_optima": "210001122",
    "cajas_optimas": [
     [
-     1,
-     23,
-     27
+     12,
+     19,
+     20
     ],
     [
      8,
@@ -3319,9 +3319,9 @@
      22
     ],
     [
-     12,
-     19,
-     20
+     1,
+     23,
+     27
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3346,12 +3346,12 @@
    "suma": 135,
    "suma_por_caja": 45,
    "degeneracion": 6,
-   "particion_optima": "012120201",
+   "particion_optima": "210102021",
    "cajas_optimas": [
     [
-     3,
-     17,
-     25
+     6,
+     15,
+     24
     ],
     [
      5,
@@ -3359,9 +3359,9 @@
      27
     ],
     [
-     6,
-     15,
-     24
+     3,
+     17,
+     25
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3386,12 +3386,12 @@
    "suma": 129,
    "suma_por_caja": 43,
    "degeneracion": 6,
-   "particion_optima": "012210021",
+   "particion_optima": "210012201",
    "cajas_optimas": [
     [
-     5,
-     17,
-     21
+     9,
+     11,
+     23
     ],
     [
      6,
@@ -3399,9 +3399,9 @@
      24
     ],
     [
-     9,
-     11,
-     23
+     5,
+     17,
+     21
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3426,12 +3426,12 @@
    "suma": 129,
    "suma_por_caja": 43,
    "degeneracion": 6,
-   "particion_optima": "012012210",
+   "particion_optima": "210210012",
    "cajas_optimas": [
     [
-     3,
-     13,
-     27
+     7,
+     17,
+     19
     ],
     [
      5,
@@ -3439,9 +3439,9 @@
      23
     ],
     [
-     7,
-     17,
-     19
+     3,
+     13,
+     27
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3466,12 +3466,12 @@
    "suma": 141,
    "suma_por_caja": 47,
    "degeneracion": 6,
-   "particion_optima": "012210021",
+   "particion_optima": "210012201",
    "cajas_optimas": [
     [
-     4,
-     19,
-     24
+     10,
+     12,
+     25
     ],
     [
      7,
@@ -3479,9 +3479,9 @@
      26
     ],
     [
-     10,
-     12,
-     25
+     4,
+     19,
+     24
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3506,12 +3506,11 @@
    "suma": 114,
    "suma_por_caja": 38,
    "degeneracion": 6,
-   "particion_optima": "011120102",
+   "particion_optima": "211102120",
    "cajas_optimas": [
     [
-     2,
-     15,
-     21
+     11,
+     27
     ],
     [
      4,
@@ -3520,8 +3519,9 @@
      18
     ],
     [
-     11,
-     27
+     2,
+     15,
+     21
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3546,12 +3546,12 @@
    "suma": 138,
    "suma_por_caja": 46,
    "degeneracion": 6,
-   "particion_optima": "011202201",
+   "particion_optima": "211020021",
    "cajas_optimas": [
     [
-     9,
-     13,
-     24
+     12,
+     14,
+     20
     ],
     [
      10,
@@ -3559,9 +3559,9 @@
      25
     ],
     [
-     12,
-     14,
-     20
+     9,
+     13,
+     24
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3586,12 +3586,12 @@
    "suma": 138,
    "suma_por_caja": 46,
    "degeneracion": 6,
-   "particion_optima": "012122010",
+   "particion_optima": "210100212",
    "cajas_optimas": [
     [
-     1,
-     19,
-     26
+     11,
+     17,
+     18
     ],
     [
      7,
@@ -3599,9 +3599,9 @@
      25
     ],
     [
-     11,
-     17,
-     18
+     1,
+     19,
+     26
     ]
    ],
    "p_azar": 0.00030483158055174517,
@@ -3627,12 +3627,12 @@
    "suma": 162,
    "suma_por_caja": 54,
    "degeneracion": 6,
-   "particion_optima": "0122111020",
+   "particion_optima": "2100111202",
    "cajas_optimas": [
     [
-     2,
-     22,
-     30
+     12,
+     15,
+     27
     ],
     [
      3,
@@ -3641,9 +3641,9 @@
      18
     ],
     [
-     12,
-     15,
-     27
+     2,
+     22,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3669,13 +3669,12 @@
    "suma": 207,
    "suma_por_caja": 69,
    "degeneracion": 6,
-   "particion_optima": "0012221100",
+   "particion_optima": "2210001122",
    "cajas_optimas": [
     [
-     2,
-     9,
-     28,
-     30
+     22,
+     23,
+     24
     ],
     [
      18,
@@ -3683,9 +3682,10 @@
      26
     ],
     [
-     22,
-     23,
-     24
+     2,
+     9,
+     28,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3711,14 +3711,11 @@
    "suma": 138,
    "suma_por_caja": 46,
    "degeneracion": 6,
-   "particion_optima": "0011000221",
+   "particion_optima": "2211222001",
    "cajas_optimas": [
     [
-     3,
-     4,
-     11,
-     12,
-     16
+     22,
+     24
     ],
     [
      8,
@@ -3726,8 +3723,11 @@
      29
     ],
     [
-     22,
-     24
+     3,
+     4,
+     11,
+     12,
+     16
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3753,13 +3753,12 @@
    "suma": 195,
    "suma_por_caja": 65,
    "degeneracion": 6,
-   "particion_optima": "0012120210",
+   "particion_optima": "2210102012",
    "cajas_optimas": [
     [
-     3,
-     8,
-     24,
-     30
+     19,
+     21,
+     25
     ],
     [
      17,
@@ -3767,9 +3766,10 @@
      28
     ],
     [
-     19,
-     21,
-     25
+     3,
+     8,
+     24,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3795,13 +3795,11 @@
    "suma": 147,
    "suma_por_caja": 49,
    "degeneracion": 6,
-   "particion_optima": "0110102102",
+   "particion_optima": "2112120120",
    "cajas_optimas": [
     [
-     1,
-     7,
-     17,
-     24
+     19,
+     30
     ],
     [
      5,
@@ -3810,8 +3808,10 @@
      22
     ],
     [
-     19,
-     30
+     1,
+     7,
+     17,
+     24
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3837,13 +3837,12 @@
    "suma": 156,
    "suma_por_caja": 52,
    "degeneracion": 6,
-   "particion_optima": "0120120021",
+   "particion_optima": "2102102201",
    "cajas_optimas": [
     [
-     2,
-     11,
-     19,
-     20
+     9,
+     18,
+     25
     ],
     [
      7,
@@ -3851,9 +3850,10 @@
      28
     ],
     [
-     9,
-     18,
-     25
+     2,
+     11,
+     19,
+     20
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3879,13 +3879,11 @@
    "suma": 150,
    "suma_por_caja": 50,
    "degeneracion": 6,
-   "particion_optima": "0101011220",
+   "particion_optima": "2121211002",
    "cajas_optimas": [
     [
-     2,
-     5,
-     13,
-     30
+     23,
+     27
     ],
     [
      3,
@@ -3894,8 +3892,10 @@
      22
     ],
     [
-     23,
-     27
+     2,
+     5,
+     13,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3921,13 +3921,12 @@
    "suma": 153,
    "suma_por_caja": 51,
    "degeneracion": 6,
-   "particion_optima": "0100222110",
+   "particion_optima": "2122000112",
    "cajas_optimas": [
     [
-     1,
-     9,
-     11,
-     30
+     16,
+     17,
+     18
     ],
     [
      6,
@@ -3935,9 +3934,10 @@
      26
     ],
     [
-     16,
-     17,
-     18
+     1,
+     9,
+     11,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -3963,13 +3963,12 @@
    "suma": 174,
    "suma_por_caja": 58,
    "degeneracion": 6,
-   "particion_optima": "0120200121",
+   "particion_optima": "2102022101",
    "cajas_optimas": [
     [
-     1,
-     14,
-     21,
-     22
+     13,
+     18,
+     27
     ],
     [
      4,
@@ -3977,9 +3976,10 @@
      29
     ],
     [
-     13,
-     18,
-     27
+     1,
+     14,
+     21,
+     22
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4005,12 +4005,12 @@
    "suma": 162,
    "suma_por_caja": 54,
    "degeneracion": 6,
-   "particion_optima": "0112122010",
+   "particion_optima": "2110100212",
    "cajas_optimas": [
     [
-     1,
-     25,
-     28
+     13,
+     20,
+     21
     ],
     [
      4,
@@ -4019,9 +4019,9 @@
      27
     ],
     [
-     13,
-     20,
-     21
+     1,
+     25,
+     28
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4047,13 +4047,12 @@
    "suma": 156,
    "suma_por_caja": 52,
    "degeneracion": 6,
-   "particion_optima": "0102210021",
+   "particion_optima": "2120012201",
    "cajas_optimas": [
     [
-     5,
-     8,
-     19,
-     20
+     11,
+     12,
+     29
     ],
     [
      6,
@@ -4061,9 +4060,10 @@
      30
     ],
     [
-     11,
-     12,
-     29
+     5,
+     8,
+     19,
+     20
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4089,13 +4089,12 @@
    "suma": 162,
    "suma_por_caja": 54,
    "degeneracion": 6,
-   "particion_optima": "0012012201",
+   "particion_optima": "2210210021",
    "cajas_optimas": [
     [
-     4,
-     8,
-     15,
-     27
+     13,
+     17,
+     24
     ],
     [
      9,
@@ -4103,9 +4102,10 @@
      29
     ],
     [
-     13,
-     17,
-     24
+     4,
+     8,
+     15,
+     27
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4131,12 +4131,13 @@
    "suma": 129,
    "suma_por_caja": 43,
    "degeneracion": 6,
-   "particion_optima": "0120222110",
+   "particion_optima": "2102000112",
    "cajas_optimas": [
     [
-     4,
-     10,
-     29
+     7,
+     11,
+     12,
+     13
     ],
     [
      6,
@@ -4144,10 +4145,9 @@
      21
     ],
     [
-     7,
-     11,
-     12,
-     13
+     4,
+     10,
+     29
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4173,13 +4173,12 @@
    "suma": 174,
    "suma_por_caja": 58,
    "degeneracion": 6,
-   "particion_optima": "0010221210",
+   "particion_optima": "2212001012",
    "cajas_optimas": [
     [
-     4,
-     12,
-     16,
-     26
+     17,
+     18,
+     23
     ],
     [
      13,
@@ -4187,9 +4186,10 @@
      24
     ],
     [
-     17,
-     18,
-     23
+     4,
+     12,
+     16,
+     26
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4215,13 +4215,12 @@
    "suma": 192,
    "suma_por_caja": 64,
    "degeneracion": 6,
-   "particion_optima": "0012122010",
+   "particion_optima": "2210100212",
    "cajas_optimas": [
     [
-     2,
-     6,
-     27,
-     29
+     17,
+     23,
+     24
     ],
     [
      14,
@@ -4229,9 +4228,10 @@
      28
     ],
     [
-     17,
-     23,
-     24
+     2,
+     6,
+     27,
+     29
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4257,13 +4257,12 @@
    "suma": 153,
    "suma_por_caja": 51,
    "degeneracion": 6,
-   "particion_optima": "0100222110",
+   "particion_optima": "2122000112",
    "cajas_optimas": [
     [
-     3,
-     7,
-     11,
-     30
+     12,
+     19,
+     20
     ],
     [
      6,
@@ -4271,9 +4270,10 @@
      23
     ],
     [
-     12,
-     19,
-     20
+     3,
+     7,
+     11,
+     30
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4299,13 +4299,12 @@
    "suma": 159,
    "suma_por_caja": 53,
    "degeneracion": 6,
-   "particion_optima": "0102021021",
+   "particion_optima": "2120201201",
    "cajas_optimas": [
     [
-     5,
-     10,
-     15,
-     23
+     13,
+     16,
+     24
     ],
     [
      7,
@@ -4313,9 +4312,10 @@
      27
     ],
     [
-     13,
-     16,
-     24
+     5,
+     10,
+     15,
+     23
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4341,13 +4341,12 @@
    "suma": 180,
    "suma_por_caja": 60,
    "degeneracion": 6,
-   "particion_optima": "0120012210",
+   "particion_optima": "2102210012",
    "cajas_optimas": [
     [
-     1,
-     13,
-     17,
-     29
+     11,
+     23,
+     26
     ],
     [
      10,
@@ -4355,9 +4354,10 @@
      28
     ],
     [
-     11,
-     23,
-     26
+     1,
+     13,
+     17,
+     29
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4383,13 +4383,12 @@
    "suma": 174,
    "suma_por_caja": 58,
    "degeneracion": 6,
-   "particion_optima": "0012212001",
+   "particion_optima": "2210010221",
    "cajas_optimas": [
     [
-     1,
-     7,
-     24,
-     26
+     17,
+     19,
+     22
     ],
     [
      10,
@@ -4397,9 +4396,10 @@
      28
     ],
     [
-     17,
-     19,
-     22
+     1,
+     7,
+     24,
+     26
     ]
    ],
    "p_azar": 0.00010161052685058171,
@@ -4425,12 +4425,12 @@
    "suma": 168,
    "suma_por_caja": 56,
    "degeneracion": 6,
-   "particion_optima": "0111220120",
+   "particion_optima": "2111002102",
    "cajas_optimas": [
     [
-     6,
-     21,
-     29
+     15,
+     17,
+     24
     ],
     [
      8,
@@ -4439,9 +4439,9 @@
      23
     ],
     [
-     15,
-     17,
-     24
+     6,
+     21,
+     29
     ]
    ],
    "p_azar": 0.00010161052685058171,
