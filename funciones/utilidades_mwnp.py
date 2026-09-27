@@ -52,6 +52,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import time
 from pathlib import Path
 
@@ -140,6 +141,73 @@ def leer_estado(psi, a, cuantos=8):
             "sumas": s,
             "desbalance": desbalance(s),
         })
+    return fuera
+
+
+def instancia_unica(n, indice, seed=0, rango=None, intentos_max=200000):
+    """
+    La instancia número `indice` de tamaño n, con partición perfecta ÚNICA.
+
+    Criterios, todos verificados por enumeración exacta y no por construcción:
+      * n enteros DISTINTOS en [1, rango], con rango = 3n por defecto;
+      * existe un reparto en tres cajas de suma idéntica (desbalance 0);
+      * ese reparto es único: degeneración exactamente 6, que es el mínimo
+        posible porque cada partición aparece una vez por cada permutación de
+        las tres etiquetas.
+
+    Los números distintos importan: los repetidos inflan la degeneración y con
+    ella la probabilidad de acertar por azar. El rango crece con n porque, fijo,
+    a n = 10 ya no queda ninguna instancia de solución única y la dificultad
+    dejaría de ser comparable entre tamaños.
+
+    Es DETERMINISTA por (seed, n, indice): la instancia 7 es siempre la misma,
+    se generen 10 o 20. Así se pueden agregar instancias sin tocar las previas.
+    Con números distintos no hay partición perfecta para n < 5 (dos cajas de
+    un solo elemento tendrían que ser iguales).
+    """
+    if n < 5:
+        raise ValueError("con números distintos no existe partición perfecta para n < 5")
+    rango = 3 * n if rango is None else rango
+    rng = np.random.default_rng([seed, n, indice])
+
+    for _ in range(intentos_max):
+        a = sorted(rng.choice(np.arange(1, rango + 1), size=n, replace=False).tolist())
+        if sum(a) % 3:
+            continue
+        h = hamiltoniano_diag(a)
+        E0 = float(h.min())
+        # desbalance 0  <=>  sum_s S_s^2 = S^2/3  <=>  2 E0 + S^2 = S^2/3
+        if not np.isclose(energia_a_objetivo(E0, a), sum(a) ** 2 / 3):
+            continue
+        optimos = np.flatnonzero(np.isclose(h, E0))
+        if len(optimos) != 6:
+            continue
+        clases = particion_desde_indice(int(optimos[0]), n)
+        return {
+            "n": n, "indice": indice, "seed": seed, "rango": rango,
+            "a": [int(x) for x in a],
+            "suma": int(sum(a)), "suma_por_caja": int(sum(a) // 3),
+            "degeneracion": 6,
+            "particion_optima": "".join(map(str, clases)),
+            "cajas_optimas": [[int(a[i]) for i in range(n) if clases[i] == c]
+                              for c in range(D)],
+            "p_azar": 6.0 / D ** n,
+        }
+    raise RuntimeError(f"sin instancia única para n={n} tras {intentos_max} intentos")
+
+
+def instancias_unicas(n, cuantas, seed=0, rango=None):
+    """Las primeras `cuantas` instancias únicas de tamaño n, sin duplicados."""
+    fuera, vistas = [], set()
+    indice = 0
+    while len(fuera) < cuantas:
+        inst = instancia_unica(n, indice, seed=seed, rango=rango)
+        clave = tuple(inst["a"])
+        if clave not in vistas:
+            vistas.add(clave)
+            inst["id"] = len(fuera)
+            fuera.append(inst)
+        indice += 1
     return fuera
 
 
@@ -240,8 +308,13 @@ def etiquetas_pool(n, l):
     for k in ordenes:
         labels += sorted({str(canonical_op(op)) for op in res[k].keys()})
 
-    with open(ruta, "w", encoding="utf-8") as f:
+    # Escritura atómica: con varios procesos en paralelo, dos podrían pedir el
+    # mismo pool a la vez. Se escribe a un temporal y se renombra, que en POSIX
+    # es atómico, así nadie lee nunca un archivo a medio escribir.
+    tmp = ruta.with_suffix(f".{os.getpid()}.tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(labels, f)
+    os.replace(tmp, ruta)
     return labels
 
 
@@ -405,6 +478,8 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
     traza_p_optimo = [float(np.sum(np.abs(psi[mask_fund]) ** 2))]
     traza_desbalance = [leer_estado(psi, a, cuantos=1)[0]["desbalance"]]
     indices, etiquetas = [], []
+    traza_norma, traza_seleccion = [], []
+    traza_params, traza_bfgs, traza_tiempo = [], [], []
     razon = "max_iteration_reached"
 
     if mostrar:
@@ -412,19 +487,34 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
               f"(degeneración {degeneracion}) | E inicial = {E_ini:.6f}")
 
     for it in range(max_iteration):
+        t_it = time.time()
         g = gradientes_pool(psi, pool, hdiag, n)
+        t_barrido = time.time() - t_it
         norma = float(np.linalg.norm(g))
+        traza_norma.append(norma)
         if norma < epsilon:
             razon = "gradient_norm_below_epsilon"
             break
 
-        j = int(np.argmax(np.abs(g)))
+        # Selección. Se registran también los empates: en instancias con
+        # simetría varios operadores comparten el gradiente máximo hasta
+        # redondeo, y cuál elige argmax depende sólo del orden del pool.
+        ag = np.abs(g)
+        j = int(np.argmax(ag))
+        top = np.argsort(ag)[::-1][:5]
+        traza_seleccion.append({
+            "indice": j,
+            "grad": float(g[j]),
+            "empates": int(np.sum(np.isclose(ag, ag[j], rtol=1e-9, atol=1e-12))),
+            "top5": [[int(i), float(ag[i])] for i in top],
+        })
         ops.append(pool[j])
         indices.append(j)
         etiquetas.append(pool[j]["label"])
 
         x0 = np.concatenate([params, [0.0]])       # warm start
         guardar = {}
+        t_opt = time.time()
         res = minimize(energia_y_grad, x0,
                        args=(ops, psi0, hdiag, n, guardar),
                        jac=True, method="BFGS",
@@ -433,6 +523,11 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         E, _ = energia_y_grad(params, ops, psi0, hdiag, n, guardar)
         psi = guardar["psi"]
         traza.append(E)
+        traza_params.append(params.tolist())
+        traza_bfgs.append({"nit": int(res.nit), "nfev": int(res.nfev),
+                           "exito": bool(res.success),
+                           "t_barrido": t_barrido, "t_bfgs": time.time() - t_opt})
+        traza_tiempo.append(time.time() - t_it)
 
         # Probabilidad de que un disparo entregue una partición óptima.
         p_opt = float(np.sum(np.abs(psi[mask_fund]) ** 2))
@@ -486,6 +581,11 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
         "stop_reason": razon,
         "p_optimo_trace": traza_p_optimo,
         "desbalance_trace": traza_desbalance,
+        "grad_norm_trace": traza_norma,
+        "seleccion_trace": traza_seleccion,
+        "params_trace": traza_params,
+        "bfgs_trace": traza_bfgs,
+        "tiempo_iter_trace": traza_tiempo,
         "mejor_probabilidad": mejor["probabilidad"],
         "prob_subespacio_optimo": p_optimo,
         "top_particiones": lectura,
