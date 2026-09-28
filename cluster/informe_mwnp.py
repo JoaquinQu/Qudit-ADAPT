@@ -105,8 +105,8 @@ def fig_exito_vs_n(por):
     b.set_xticks(ns)
     b.set_xlabel(r"n\'umero de qutrits $n$")
     b.set_ylabel(r"$p_{\rm \acute{e}xito}$ final")
-    b.legend(frameon=False, loc="lower left", ncol=3)
-    b.set_title(r"(b)", loc="left", fontsize=10)
+    b.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3)
+    b.text(-0.18, 1.02, r"(b)", transform=b.transAxes, fontsize=10)
     fig.tight_layout(w_pad=2.5)
     guardar(fig, "exito_vs_n")
 
@@ -191,6 +191,58 @@ def fig_tiempos(por):
     guardar(fig, "tiempos")
 
 
+def cargar_ordenes():
+    por = defaultdict(dict)
+    for f in glob.glob(str(RES / "mwnp_ordenes" / "*.json")):
+        d = json.load(open(f, encoding="utf-8"))
+        i = d["instancia"]
+        por[i["instancia_base"]][i["orden"]] = d["resultado"]["p_exito"]
+    return por
+
+
+def fig_ordenes(ordenes):
+    bases = sorted(ordenes)
+    M = np.array([[ordenes[b][r] for r in range(10)] for b in bases])
+    fig, ax = plt.subplots(figsize=(4.8, 3.4))
+    im = ax.imshow(M, aspect="auto", cmap="Blues", vmin=0, vmax=1, interpolation="nearest")
+    ax.set_xticks(range(10))
+    ax.set_xticklabels(["asc."] + [str(r) for r in range(1, 10)])
+    ax.set_yticks(range(len(bases)))
+    ax.set_yticklabels([str(b) for b in bases], fontsize=7)
+    ax.set_xlabel(r"orden de los n\'umeros en los qutrits")
+    ax.set_ylabel(r"instancia ($n=6$)")
+    ax.axvline(0.5, color="k", lw=0.8)
+    for s in ax.spines.values():
+        s.set_visible(True)
+    cb = fig.colorbar(im, ax=ax, fraction=0.05, pad=0.03)
+    cb.set_label(r"$p_{\rm \acute{e}xito}$")
+    fig.tight_layout()
+    guardar(fig, "ordenes")
+
+
+def fig_rango():
+    fig, ax = plt.subplots(figsize=(4.2, 2.7))
+    etiquetas, x = [], 0
+    for l, c in ((1, C_L1), (2, C_L2)):
+        for nombre, pat in ((r"$[1,8]$", "mwnp_rango8/n6_l{l}_i??.json"),
+                            (r"$[1,18]$", "mwnp/n6_l{l}_i??.json")):
+            ps = [json.load(open(f))["resultado"]["p_exito"] for f in glob.glob(str(RES / pat.format(l=l)))]
+            fr = np.mean(np.array(ps) >= UMBRAL)
+            ax.bar(x, fr, color=c, alpha=0.55 if "8]" in nombre else 0.95, width=0.7)
+            ax.text(x, fr + 0.03, f"{int(np.sum(np.array(ps) >= UMBRAL))}/{len(ps)}",
+                    ha="center", fontsize=8)
+            etiquetas.append(nombre + rf"\\$\ell={l}$")
+            x += 1
+        x += 0.5
+    ax.set_xticks([0, 1, 2.5, 3.5])
+    ax.set_xticklabels([r"$[1,8]$" "\n" r"$\ell=1$", r"$[1,18]$" "\n" r"$\ell=1$",
+                        r"$[1,8]$" "\n" r"$\ell=2$", r"$[1,18]$" "\n" r"$\ell=2$"], fontsize=8.5)
+    ax.set_ylim(0, 1.12)
+    ax.set_ylabel(r"fracci\'on resuelta")
+    fig.tight_layout()
+    guardar(fig, "rango")
+
+
 # --------------------------------------------------------------------------
 # tablas y cifras
 # --------------------------------------------------------------------------
@@ -200,7 +252,7 @@ def tabla_instancias():
     lineas = []
     for n in range(5, 11):
         ej = [i for i in inst if i["n"] == n][0]
-        cajas = r"\;|\;".join(", ".join(map(str, c)) for c in ej["cajas_optimas"])
+        cajas = r" $\,|\,$ ".join(", ".join(map(str, c)) for c in ej["cajas_optimas"])
         lineas.append(rf"{n} & $[1,{3*n}]$ & ${6/3**n:.1e}$ & {ej['a']} & {cajas} \\".replace("e-0", r"\times10^{-").replace("$ &", "}$ &", 1)
                       if False else
                       rf"{n} & $[1,{3*n}]$ & {_sci(6/3**n)} & \texttt{{{ej['a']}}} & {cajas} \\")
@@ -324,7 +376,41 @@ def cifras(por, todas):
     m["NTreceKmax"] = int(np.argmax(tr))
     m["NTrecePfin"] = _sci(r13["prob_subespacio_optimo"])
     m["NTreceHoras"] = f"{r13['runtime_s']/3600:.1f}"
+    # orden de los numeros
+    o = cargar_ordenes()
+    fr = np.array([np.mean(np.array([o[b][r] for r in range(10)]) >= UMBRAL) for b in sorted(o)])
+    m["OrdSiempre"], m["OrdNunca"] = int((fr == 1).sum()), int((fr == 0).sum())
+    m["OrdDepende"] = int(((fr > 0) & (fr < 1)).sum())
+    m["OrdTasaAsc"] = f"{100*np.mean([o[b][0] >= UMBRAL for b in sorted(o)]):.0f}"
+    m["OrdTasaMedia"] = f"{100*np.mean([o[b][r] >= UMBRAL for b in o for r in range(10)]):.0f}"
+    dep = [b for b, f in zip(sorted(o), fr) if 0 < f < 1]
+    m["OrdAscFallaEnDep"] = sum(o[b][0] < UMBRAL for b in dep)
+
+    # rango
+    def res(pat):
+        ps = np.array([json.load(open(f))["resultado"]["p_exito"] for f in glob.glob(str(RES / pat))])
+        return int((ps >= UMBRAL).sum()), len(ps)
+    for l in (1, 2):
+        a, na = res(f"mwnp_rango8/n6_l{l}_i??.json"); b, nb = res(f"mwnp/n6_l{l}_i??.json")
+        m[f"RangoOchoL{'Uno' if l==1 else 'Dos'}"] = f"{a}/{na}"
+        m[f"RangoDiecL{'Uno' if l==1 else 'Dos'}"] = f"{b}/{nb}"
+    b1 = sum(json.load(open(f))["resultado"]["p_exito"] >= UMBRAL
+             for f in glob.glob(str(RES / "mwnp" / "n6_l1_i0?.json")))
+    b2 = sum(json.load(open(f))["resultado"]["p_exito"] >= UMBRAL
+             for f in glob.glob(str(RES / "mwnp" / "n6_l1_i1?.json")))
+    m["NSeisTandaUno"], m["NSeisTandaDos"] = b1, b2
+
+    # sensibilidad a la maquina: n = 5, 6, l = 1, warm
+    def pe(carp, n, i):
+        return json.load(open(RES / carp / f"n{n}_l1_i{i:02d}.json"))["resultado"]["p_exito"] >= UMBRAL
+    pares = [(n, i) for n in (5, 6) for i in range(10)]
+    m["HilosFlips"] = sum(pe("mwnp_laptop_1h", n, i) != pe("mwnp_laptop_2h", n, i) for n, i in pares)
+    m["MaquinaFlips"] = sum(pe("mwnp_laptop_2h", n, i) != pe("mwnp", n, i) for n, i in pares)
+    m["MaquinaTotal"] = len(pares)
+    m["TotalTodo"] = (len(todas) + len(glob.glob(str(RES / "mwnp_rango8" / "*.json")))
+                      + len(glob.glob(str(RES / "mwnp_ordenes" / "*.json"))))
     return m
+
 
 
 def main():
@@ -334,10 +420,12 @@ def main():
 
     fig_exito_vs_n(por)
     fig_pareado(por)
-    fig_trazas(por, 5, 0, "trazas_n5_i00")
-    fig_trazas(por, 6, 0, "trazas_n6_i00")
+    fig_trazas(por, 6, 3, "trazas_n6_i03")
+    fig_trazas(por, 7, 4, "trazas_n7_i04")
     fig_varianza()
     fig_tiempos(por)
+    fig_ordenes(cargar_ordenes())
+    fig_rango()
 
     (INF / "tabla_instancias.tex").write_text(tabla_instancias(), encoding="utf-8")
     (INF / "tabla_fase1.tex").write_text(tabla_fase1(por), encoding="utf-8")
