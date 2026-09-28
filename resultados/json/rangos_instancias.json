@@ -1,0 +1,215 @@
+{
+ "muestras": 2000,
+ "filas": [
+  {
+   "n": 5,
+   "rango": "2n",
+   "R": 10,
+   "frac_perfecta": 0.0725,
+   "frac_unica": 0.0725
+  },
+  {
+   "n": 5,
+   "rango": "3n",
+   "R": 15,
+   "frac_perfecta": 0.027,
+   "frac_unica": 0.027
+  },
+  {
+   "n": 5,
+   "rango": "4n",
+   "R": 20,
+   "frac_perfecta": 0.0145,
+   "frac_unica": 0.0145
+  },
+  {
+   "n": 5,
+   "rango": "6n",
+   "R": 30,
+   "frac_perfecta": 0.0105,
+   "frac_unica": 0.0105
+  },
+  {
+   "n": 5,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.0295,
+   "frac_unica": 0.0295
+  },
+  {
+   "n": 6,
+   "rango": "2n",
+   "R": 12,
+   "frac_perfecta": 0.1075,
+   "frac_unica": 0.1075
+  },
+  {
+   "n": 6,
+   "rango": "3n",
+   "R": 18,
+   "frac_perfecta": 0.0555,
+   "frac_unica": 0.0555
+  },
+  {
+   "n": 6,
+   "rango": "4n",
+   "R": 24,
+   "frac_perfecta": 0.024,
+   "frac_unica": 0.024
+  },
+  {
+   "n": 6,
+   "rango": "6n",
+   "R": 36,
+   "frac_perfecta": 0.0165,
+   "frac_unica": 0.0165
+  },
+  {
+   "n": 6,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.0735,
+   "frac_unica": 0.0735
+  },
+  {
+   "n": 7,
+   "rango": "2n",
+   "R": 14,
+   "frac_perfecta": 0.184,
+   "frac_unica": 0.1815
+  },
+  {
+   "n": 7,
+   "rango": "3n",
+   "R": 21,
+   "frac_perfecta": 0.077,
+   "frac_unica": 0.0745
+  },
+  {
+   "n": 7,
+   "rango": "4n",
+   "R": 28,
+   "frac_perfecta": 0.0585,
+   "frac_unica": 0.0575
+  },
+  {
+   "n": 7,
+   "rango": "6n",
+   "R": 42,
+   "frac_perfecta": 0.0235,
+   "frac_unica": 0.023
+  },
+  {
+   "n": 7,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.1375,
+   "frac_unica": 0.133
+  },
+  {
+   "n": 8,
+   "rango": "2n",
+   "R": 16,
+   "frac_perfecta": 0.239,
+   "frac_unica": 0.15
+  },
+  {
+   "n": 8,
+   "rango": "3n",
+   "R": 24,
+   "frac_perfecta": 0.136,
+   "frac_unica": 0.106
+  },
+  {
+   "n": 8,
+   "rango": "4n",
+   "R": 32,
+   "frac_perfecta": 0.0845,
+   "frac_unica": 0.0715
+  },
+  {
+   "n": 8,
+   "rango": "6n",
+   "R": 48,
+   "frac_perfecta": 0.0415,
+   "frac_unica": 0.037
+  },
+  {
+   "n": 8,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.2685,
+   "frac_unica": 0.1665
+  },
+  {
+   "n": 9,
+   "rango": "2n",
+   "R": 18,
+   "frac_perfecta": 0.3135,
+   "frac_unica": 0.0825
+  },
+  {
+   "n": 9,
+   "rango": "3n",
+   "R": 27,
+   "frac_perfecta": 0.1975,
+   "frac_unica": 0.1145
+  },
+  {
+   "n": 9,
+   "rango": "4n",
+   "R": 36,
+   "frac_perfecta": 0.146,
+   "frac_unica": 0.0885
+  },
+  {
+   "n": 9,
+   "rango": "6n",
+   "R": 54,
+   "frac_perfecta": 0.074,
+   "frac_unica": 0.0585
+  },
+  {
+   "n": 9,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.3235,
+   "frac_unica": 0.042
+  },
+  {
+   "n": 10,
+   "rango": "2n",
+   "R": 20,
+   "frac_perfecta": 0.3315,
+   "frac_unica": 0.0105
+  },
+  {
+   "n": 10,
+   "rango": "3n",
+   "R": 30,
+   "frac_perfecta": 0.2915,
+   "frac_unica": 0.082
+  },
+  {
+   "n": 10,
+   "rango": "4n",
+   "R": 40,
+   "frac_perfecta": 0.2235,
+   "frac_unica": 0.089
+  },
+  {
+   "n": 10,
+   "rango": "6n",
+   "R": 60,
+   "frac_perfecta": 0.1305,
+   "frac_unica": 0.0725
+  },
+  {
+   "n": 10,
+   "rango": "15",
+   "R": 15,
+   "frac_perfecta": 0.335,
+   "frac_unica": 0.0
+  }
+ ]
+}

@@ -427,8 +427,9 @@ def energia_y_grad(params, ops, psi0, hdiag, n, guardar=None):
 
     donde |phi_j> es el estado tras aplicar los primeros j operadores y
     |lambda_j> = U_{j+1}^dag ... U_k^dag H |psi>. La recursión hacia atrás
-    reutiliza cada lambda, de modo que el gradiente completo cuesta lo mismo
-    que dos evaluaciones de la energía, no k+1 como en diferencias finitas.
+    reutiliza cada lambda, de modo que energía y gradiente completo cuestan unas
+    3k aplicaciones de bloque (unas tres evaluaciones de la energía), no k+1
+    evaluaciones como en diferencias finitas.
     """
     k = len(params)
 

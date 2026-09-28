@@ -395,6 +395,48 @@ def tabla_estrategias(res):
 
 
 # --------------------------------------------------------------------------
+# pool y rangos
+# --------------------------------------------------------------------------
+
+def n_pool(n, l):
+    """Operadores distintos del pool de K_n: conteo por tamaño de soporte."""
+    from math import comb
+    if l == 1:
+        return n + 4 * comb(n, 2)
+    return 3 * n + 40 * comb(n, 2) + 78 * comb(n, 3) + 32 * comb(n, 4)
+
+
+def tabla_pool():
+    """Tamaños del pool; se verifican contra las etiquetas en caché que existan."""
+    lineas = []
+    for n in range(5, 11):
+        n1, n2 = n_pool(n, 1), n_pool(n, 2)
+        for l, esperado in ((1, n1), (2, n2)):
+            ruta = RES / "cache_pools" / f"kn_{n}_l{l}.json"
+            if ruta.exists():
+                lab = json.load(open(ruta, encoding="utf-8"))
+                assert len(set(lab)) == esperado, (n, l, len(set(lab)), esperado)
+                if l == 2:
+                    assert len(lab) == n1 + n2, (n, len(lab))
+        lineas.append(rf"{n} & {n1} & {n2} & {n1 + n2} & {n2 / n1:.0f} \\")
+    return "\n".join(lineas)
+
+
+def tabla_rangos():
+    r = json.load(open(RES / "json" / "rangos_instancias.json", encoding="utf-8"))
+    cols = ["2n", "3n", "4n", "6n", "15"]
+    lineas = []
+    for n in range(5, 11):
+        fs = {f["rango"]: f for f in r["filas"] if f["n"] == n}
+        celdas = []
+        for c in cols:
+            v = f"{100 * fs[c]['frac_unica']:.1f}"
+            celdas.append(rf"\textbf{{{v}}}" if c == "3n" else v)
+        lineas.append(rf"{n} & " + " & ".join(celdas) + r" \\")
+    return "\n".join(lineas)
+
+
+# --------------------------------------------------------------------------
 # QAOA sobre las instancias de Joaquin
 # --------------------------------------------------------------------------
 
@@ -640,9 +682,19 @@ def cifras(por, todas):
     baja = [f["curva"][0]["E_j"] / f["curva"][-1]["E_j"] for f in r]
     m["QaoaBajaMin"], m["QaoaBajaMax"] = f"{min(baja):.0f}", f"{max(baja):.0f}"
 
+    r = json.load(open(RES / "json" / "rangos_instancias.json", encoding="utf-8"))
+    m["RangoMuestras"] = r["muestras"]
+    m["RangoQuinceDiez"] = f"{100 * [f for f in r['filas'] if f['n'] == 10 and f['rango'] == '15'][0]['frac_unica']:.1f}"
+    m["RangoDosnDiez"] = f"{100 * [f for f in r['filas'] if f['n'] == 10 and f['rango'] == '2n'][0]['frac_unica']:.1f}"
+    tres = [f["frac_unica"] for f in r["filas"] if f["rango"] == "3n"]
+    m["RangoTresMin"], m["RangoTresMax"] = f"{100 * min(tres):.1f}", f"{100 * max(tres):.1f}"
+
     m["TotalTodo"] = (len(todas) + len(glob.glob(str(RES / "mwnp_rango8" / "*.json")))
                       + len(glob.glob(str(RES / "mwnp_ordenes" / "*.json")))
-                      + len(runs) - sum(1 for k in runs if k[0] == 6 and k[1] == 1))
+                      # todas las estrategias de n = 5..9 con órdenes, menos las 100 de
+                      # n = 6, l = 1, warm, que son copias de mwnp_ordenes
+                      + len(glob.glob(str(RES / "mwnp_ordenes_5a9" / "*.json")))
+                      - sum(1 for k in runs if k[0] == 6 and k[1] == 1))
     return m
 
 
@@ -668,6 +720,8 @@ def main():
     fig_estrategias(o5)
     (INF / "tabla_estrategias.tex").write_text(tabla_estrategias(o5), encoding="utf-8")
     (INF / "tabla_qaoa.tex").write_text(tabla_qaoa(), encoding="utf-8")
+    (INF / "tabla_pool.tex").write_text(tabla_pool(), encoding="utf-8")
+    (INF / "tabla_rangos.tex").write_text(tabla_rangos(), encoding="utf-8")
     (INF / "tabla_instancias.tex").write_text(tabla_instancias(), encoding="utf-8")
     (INF / "tabla_fase1.tex").write_text(tabla_fase1(por), encoding="utf-8")
     (INF / "tabla_fase2.tex").write_text(tabla_fase2(por), encoding="utf-8")
