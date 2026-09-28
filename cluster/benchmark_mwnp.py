@@ -52,7 +52,7 @@ import platform
 import socket
 import time
 from datetime import datetime, timezone
-from multiprocessing import Pool
+import multiprocessing
 
 import numpy as np
 
@@ -104,6 +104,14 @@ def conteo_nativo(etiquetas):
             "generadores_que_no_factorizan": no_prod}
 
 
+# Pools ya preparados en el proceso padre, antes de crear los procesos hijos.
+# Con fork, los hijos los heredan por copia en escritura: los bloques de cada
+# operador (hasta 81x81) no se escriben nunca, así que todos los procesos leen
+# la misma memoria. A n = 12 con l = 2 el pool pesa ~2 GB; sin compartirlo,
+# 50 procesos necesitarían 100 GB sólo para eso.
+POOLS = {}
+
+
 def correr(tarea):
     """Una corrida. Devuelve un resumen corto; el detalle queda en disco."""
     from funciones.utilidades_mwnp import adapt_mwnp, preparar_pool
@@ -118,7 +126,7 @@ def correr(tarea):
 
     t0 = time.time()
     try:
-        pool = preparar_pool(n, l)
+        pool = POOLS[(n, l)] if (n, l) in POOLS else preparar_pool(n, l)
         # El umbral viene en la escala de Joaquín, donde los gradientes valen
         # el doble que en la nuestra.
         r = adapt_mwnp(a, l=l, epsilon=eps_j / 2.0, max_iteration=max_it,
@@ -298,7 +306,7 @@ def main():
                         " | fija0 (i): la secuencia warm reoptimizada desde theta=0")
     args = p.parse_args()
 
-    from funciones.utilidades_mwnp import etiquetas_pool
+    from funciones.utilidades_mwnp import etiquetas_pool, preparar_pool
 
     todas = json.load(open(args.instancias, encoding="utf-8"))["instancias"]
     ids = set(rango_ids(args.ids))
@@ -310,12 +318,16 @@ def main():
         for l in args.l:
             t = time.time()
             etiquetas_pool(n, l)
+            if args.estrategia != "fija0":
+                POOLS[(n, l)] = preparar_pool(n, l)
             print(f"pool n={n:2d} l={l}: listo en {time.time()-t:6.1f} s", flush=True)
 
     # Lo más caro primero, para que ningún proceso quede con la cola larga.
     tareas = [(inst, l, args.epsilon, args.max_iteration, args.carpeta, args.estrategia)
               for inst in elegidas for l in args.l]
-    tareas.sort(key=lambda t: (t[0]["n"], t[1]), reverse=True)
+    # El orden 0 (ascendente) va primero: así la tanda con un orden por
+    # instancia se completa antes que las repeticiones con otros órdenes.
+    tareas.sort(key=lambda t: (t[0].get("orden", 0) != 0, -t[0]["n"], -t[1]))
 
     print(f"\nestrategia: {args.estrategia}")
     print(f"{len(tareas)} corridas  |  {args.procesos} procesos x {args.hilos} hilos"
@@ -323,7 +335,8 @@ def main():
 
     t0 = time.time()
     hechas = 0
-    with Pool(args.procesos) as pool:
+    # fork explícito: los hijos heredan POOLS sin copiarlo (ver arriba).
+    with multiprocessing.get_context("fork").Pool(args.procesos) as pool:
         for r in pool.imap_unordered(correr, tareas):
             hechas += 1
             if r["estado"] == "ok":

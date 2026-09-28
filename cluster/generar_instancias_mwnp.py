@@ -59,7 +59,7 @@ def main():
                        "seed": args.seed,
                    },
                    "instancias": todas}, f, indent=1)
-    print(f"\n{len(todas)} instancias guardadas en {Path(args.salida).relative_to(PROJECT_ROOT)}")
+    print(f"\n{len(todas)} instancias guardadas en {Path(args.salida).resolve().relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

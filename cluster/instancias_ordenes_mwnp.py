@@ -10,6 +10,8 @@ los demás son permutaciones aleatorias deterministas por (seed, instancia, orde
 
     python cluster/instancias_ordenes_mwnp.py --n 6 --ids 0-19 --ordenes 10
     python cluster/instancias_ordenes_mwnp.py --n 5 6 7 8 9 --ordenes 5 --salida datos/mwnp_ordenes_5a9.json
+    python cluster/instancias_ordenes_mwnp.py --n 10 11 12 --ordenes 5 \
+        --base datos/mwnp_instancias_5a12.json --salida datos/mwnp_ordenes_10a12.json
 """
 from pathlib import Path
 import sys
@@ -27,11 +29,13 @@ def main():
     p.add_argument("--ids", type=str, default="0-19")
     p.add_argument("--ordenes", type=int, default=10)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--base", type=str, default="datos/mwnp_instancias.json",
+                   help="archivo con las instancias base")
     p.add_argument("--salida", type=str, default=None,
                    help="por defecto datos/mwnp_ordenes_n{n}.json (un solo n)")
     args = p.parse_args()
     a0, b0 = map(int, args.ids.split("-"))
-    base = [i for i in json.load(open(PROJECT_ROOT / "datos" / "mwnp_instancias.json"))["instancias"]
+    base = [i for i in json.load(open(PROJECT_ROOT / args.base))["instancias"]
             if i["n"] in args.n and a0 <= i["id"] <= b0]
     fuera = []
     for inst in base:
