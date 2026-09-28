@@ -243,6 +243,180 @@ def fig_rango():
     guardar(fig, "rango")
 
 
+
+# --------------------------------------------------------------------------
+# l = 1 contra l = 2 con 5 ordenes por instancia (n = 5..9)
+# --------------------------------------------------------------------------
+
+def cargar_ordenes_5a9(estrategia="warm"):
+    """(n, l, instancia_base, orden) -> (p_éxito final, traza de p_éxito, dict resultado, tiempo)."""
+    runs = {}
+    for f in glob.glob(str(RES / "mwnp_ordenes_5a9" / "*.json")):
+        d = json.load(open(f, encoding="utf-8"))
+        if d["config"].get("estrategia", "warm") != estrategia:
+            continue
+        i = d["instancia"]
+        runs[(i["n"], d["config"]["l"], i["instancia_base"], i["orden"])] = (
+            d["resultado"]["p_exito"], d["trazas"]["p_exito"], d["resultado"], d["ejecucion"]["runtime_s"])
+    return runs
+
+
+def fig_ordenes_5a9(res):
+    """(a) tasa de éxito promediada sobre órdenes contra n; (b) l = 1 contra l = 2 por instancia."""
+    filas = res["por_n_l"]
+    ns = sorted({f["n"] for f in filas})
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.0, 2.9))
+    for l, c, m, dx in ((1, C_L1, "o", -0.06), (2, C_L2, "s", 0.06)):
+        fl = [f for f in filas if f["l"] == l]
+        y = np.array([f["tasa"] for f in fl])
+        lo = y - np.array([f["ic95"][0] for f in fl])
+        hi = np.array([f["ic95"][1] for f in fl]) - y
+        a.errorbar(np.array(ns) + dx, y, yerr=[lo, hi], marker=m, color=c, lw=1.6, ms=5,
+                   capsize=2.5, label=rf"$\ell={l}$")
+    a.set_xlabel(r"n\'umero de qutrits $n$")
+    a.set_ylabel(r"tasa de \'exito")
+    a.set_ylim(-0.03, 1.03)
+    a.set_xticks(ns)
+    a.legend(frameon=False, loc="lower left")
+    a.set_title(r"(a)", loc="left", fontsize=10)
+
+    rng = np.random.default_rng(1)
+    cmap = plt.get_cmap("viridis")
+    for j, n in enumerate(ns):
+        t1 = [x for f in filas if f["n"] == n and f["l"] == 1 for x in f["tasa_por_instancia"].values()]
+        t2 = [x for f in filas if f["n"] == n and f["l"] == 2 for x in f["tasa_por_instancia"].values()]
+        b.scatter(np.array(t1) + rng.uniform(-0.03, 0.03, len(t1)),
+                  np.array(t2) + rng.uniform(-0.03, 0.03, len(t2)),
+                  s=14, color=cmap(j / (len(ns) - 1) * 0.9), alpha=0.8, lw=0, label=rf"$n={n}$")
+    b.plot([0, 1], [0, 1], color="0.6", lw=0.8)
+    b.set_xlim(-0.06, 1.06)
+    b.set_ylim(-0.06, 1.06)
+    b.set_aspect("equal")
+    b.set_xlabel(r"tasa por instancia, $\ell=1$")
+    b.set_ylabel(r"tasa por instancia, $\ell=2$")
+    b.legend(frameon=False, loc="center left", bbox_to_anchor=(1.0, 0.5), handletextpad=0.2)
+    b.set_title(r"(b)", loc="left", fontsize=10)
+    fig.tight_layout(w_pad=2.0)
+    guardar(fig, "ordenes_5a9")
+
+
+def fig_ordenes_iteracion(runs):
+    """Fracción de corridas con p_éxito >= umbral en función de la iteración ADAPT."""
+    ns = sorted({k[0] for k in runs})
+    kmax = max(len(v[1]) for v in runs.values()) - 1
+    cmap = plt.get_cmap("viridis")
+    fig, ejes = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
+    for ax, l in zip(ejes, (1, 2)):
+        for j, n in enumerate(ns):
+            trazas = [v[1] for k, v in runs.items() if k[0] == n and k[1] == l]
+            M = np.array([t + [t[-1]] * (kmax + 1 - len(t)) for t in trazas]) >= UMBRAL
+            ax.plot(np.arange(kmax + 1), M.mean(axis=0), color=cmap(j / (len(ns) - 1) * 0.9),
+                    lw=1.5, label=rf"$n={n}$")
+        ax.set_xlabel(r"iteraci\'on ADAPT $k$")
+        ax.set_title(rf"$\ell={l}$", fontsize=10)
+        ax.set_ylim(-0.02, 1.02)
+    ejes[0].set_ylabel(r"fracci\'on con $p_{\rm \acute{e}xito}\geq 0.1$")
+    ejes[1].legend(frameon=False, loc="center left", bbox_to_anchor=(1.0, 0.5))
+    fig.tight_layout(w_pad=1.0)
+    guardar(fig, "ordenes_iteracion")
+
+
+def tabla_ordenes(res):
+    lineas = []
+    filas = res["por_n_l"]
+    ns = sorted({f["n"] for f in filas})
+    for n in ns:
+        for l in (1, 2):
+            f = [x for x in filas if x["n"] == n and x["l"] == l][0]
+            pref = rf"\multirow{{2}}{{*}}{{{n}}}" if l == 1 else ""
+            lineas.append(rf"{pref} & {l} & {f['tasa']:.2f} & [{f['ic95'][0]:.2f}, {f['ic95'][1]:.2f}] & "
+                          rf"{f['siempre']} / {f['depende']} / {f['nunca']} & {f['convergidas']}/{f['corridas']} & "
+                          rf"{f['k_mediana']:.0f} & {f['nativas_mediana']:.0f} & {f['ms_mediana']:.0f} & "
+                          rf"{_tiempo(f['t_mediana_s'])} \\")
+        if n < ns[-1]:
+            lineas.append(r"\midrule")
+    return "\n".join(lineas)
+
+
+def fig_estrategias(res):
+    """Tasa de éxito de warm, (ii) y (i) contra n, para l = 1 y l = 2."""
+    filas = [f for f in res.get("contra_warm", []) if f["n"] != "todos"]
+    if not filas:
+        return
+    fig, ejes = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
+    for ax, l in zip(ejes, (1, 2)):
+        for otra, c, m, dx, nombre in (("cold", C_COLD, "^", 0.07, r"(ii) ADAPT desde $\bm\theta=0$"),
+                                       ("fija0", C_FIJA, "D", 0.14, r"(i) secuencia fija desde $\bm\theta=0$")):
+            fs = sorted([f for f in filas if f["l"] == l and f["otra"] == otra], key=lambda f: f["n"])
+            if not fs:
+                continue
+            ns = np.array([f["n"] for f in fs])
+            if otra == "cold":
+                y = np.array([f["tasa_warm"] for f in fs])
+                ic = np.array([f["ic_warm"] for f in fs])
+                ax.errorbar(ns, y, yerr=[y - ic[:, 0], ic[:, 1] - y], marker="o", color=C_WARM,
+                            lw=1.6, ms=4.5, capsize=2, label="warm start")
+            y = np.array([f["tasa_otra"] for f in fs])
+            ic = np.array([f["ic_otra"] for f in fs])
+            ax.errorbar(ns + dx, y, yerr=[y - ic[:, 0], ic[:, 1] - y], marker=m, color=c,
+                        lw=1.3, ms=4.5, capsize=2, label=nombre)
+        ax.set_title(rf"$\ell={l}$", fontsize=10)
+        ax.set_xlabel(r"n\'umero de qutrits $n$")
+        ax.set_ylim(-0.03, 1.03)
+        ax.set_xticks(range(5, 10))
+    ejes[0].set_ylabel(r"tasa de \'exito")
+    ejes[1].legend(frameon=False, loc="upper right")
+    fig.tight_layout(w_pad=1.0)
+    guardar(fig, "estrategias")
+
+
+def tabla_estrategias(res):
+    filas = res.get("contra_warm", [])
+    lineas = []
+    for l in (1, 2):
+        ns = sorted({f["n"] for f in filas if f["l"] == l and f["n"] != "todos"})
+        for j, n in enumerate(ns):
+            c = [f for f in filas if f["l"] == l and f["n"] == n and f["otra"] == "cold"]
+            fi = [f for f in filas if f["l"] == l and f["n"] == n and f["otra"] == "fija0"]
+            pref = rf"\multirow{{{len(ns)}}}{{*}}{{{l}}}" if j == 0 else ""
+            celda = lambda x, k: f"{x[0][k]:.2f}" if x else "--"
+            par = lambda x: f"{x[0]['gana_warm']} / {x[0]['gana_otra']} / {x[0]['iguales']}" if x else "--"
+            tw = c[0]["tasa_warm"] if c else (fi[0]["tasa_warm"] if fi else float("nan"))
+            lineas.append(rf"{pref} & {n} & {tw:.2f} & {celda(c, 'tasa_otra')} & {celda(fi, 'tasa_otra')}"
+                          rf" & {par(c)} & {par(fi)} \\")
+        tc = [f for f in filas if f["l"] == l and f["n"] == "todos" and f["otra"] == "cold"]
+        tf = [f for f in filas if f["l"] == l and f["n"] == "todos" and f["otra"] == "fija0"]
+        tot = lambda x: (rf"{x[0]['gana_warm']} / {x[0]['gana_otra']} (p = {_sci(x[0]['p_signo']).strip('$')})"
+                         if x else "--")
+        lineas.append(rf"\cmidrule(lr){{2-7}} & todos & & & & ${tot(tc)}$ & ${tot(tf)}$ \\")
+        if l == 1:
+            lineas.append(r"\midrule")
+    return "\n".join(lineas)
+
+
+# --------------------------------------------------------------------------
+# QAOA sobre las instancias de Joaquin
+# --------------------------------------------------------------------------
+
+def tabla_qaoa():
+    suyo = json.load(open(RES / "json" / "qaoa_joaquin.json", encoding="utf-8"))["instancias"]
+    reop = {tuple(f["a"]): f for f in
+            json.load(open(RES / "json" / "qaoa_reoptimizado.json", encoding="utf-8"))["instancias"]}
+    lineas = []
+    for n in (5, 6):
+        fs = [f for f in suyo if f["n"] == n]
+        col = {
+            "suyo": [f["qaoa"][-1]["p_exito"] for f in fs],
+            "reop": [reop[tuple(f["a"])]["curva"][-1]["p_exito"] for f in fs],
+            "l1": [f["adapt"]["1"]["nuestro"]["p_exito"] for f in fs],
+            "l2": [f["adapt"]["2"]["nuestro"]["p_exito"] for f in fs],
+        }
+        k1 = np.median([f["adapt"]["1"]["nuestro"]["k"] for f in fs])
+        k2 = np.median([f["adapt"]["2"]["nuestro"]["k"] for f in fs])
+        celdas = [f"{np.median(v):.2f} ({int(np.sum(np.array(v) >= UMBRAL))}/{len(v)})" for v in col.values()]
+        lineas.append(rf"{n} & {celdas[0]} & {celdas[1]} & {celdas[2]} & {k1:.0f} & {celdas[3]} & {k2:.0f} \\")
+    return "\n".join(lineas)
+
 # --------------------------------------------------------------------------
 # tablas y cifras
 # --------------------------------------------------------------------------
@@ -407,8 +581,56 @@ def cifras(por, todas):
     m["HilosFlips"] = sum(pe("mwnp_laptop_1h", n, i) != pe("mwnp_laptop_2h", n, i) for n, i in pares)
     m["MaquinaFlips"] = sum(pe("mwnp_laptop_2h", n, i) != pe("mwnp", n, i) for n, i in pares)
     m["MaquinaTotal"] = len(pares)
+    # l = 1 contra l = 2 con ordenes (n = 5..9)
+    o5 = json.load(open(RES / "json" / "ordenes_5a9.json", encoding="utf-8"))
+    runs = cargar_ordenes_5a9()
+    m["OcSignoDos"] = o5["signo_total"]["l2_mejor"]
+    m["OcSignoUno"] = o5["signo_total"]["l1_mejor"]
+    m["OcSignoP"] = _sci(o5["signo_total"]["p"])
+    m["OcCorridas"] = len(runs)
+    viejos = {(n, l, int(Path(f).stem.split("_i")[1])): json.load(open(f))["resultado"]["p_exito"]
+              for n in range(5, 10) for l in (1, 2)
+              for f in glob.glob(str(RES / "mwnp" / f"n{n}_l{l}_i??.json"))}
+    comunes = [(k, runs[(k[0], k[1], k[2], 0)][0]) for k in viejos if (k[0], k[1], k[2], 0) in runs]
+    m["OcReproVeredicto"] = sum((viejos[k] >= UMBRAL) == (p >= UMBRAL) for k, p in comunes)
+    m["OcReproTotal"] = len(comunes)
+    m["OcReproExactas"] = o5["reproducibilidad"]["iguales"]
+    medio = [v[0] for k, v in runs.items() if k[1] == 2 and abs(v[0] - 0.5) < 0.02]
+    m["OcMitad"] = len(medio)
+    m["OcLDosCorridas"] = sum(k[1] == 2 for k in runs)
+    asc = {(f["n"], f["l"]): f for f in o5["orden_ascendente"]}
+    m["OcAscSeisAsc"] = f"{asc[(6, 1)]['tasa_asc']:.2f}"
+    m["OcAscSeisOtros"] = f"{asc[(6, 1)]['tasa_otros']:.2f}"
+    m["OcAscDifMax"] = f"{max(abs(f['tasa_asc'] - f['tasa_otros']) for k, f in asc.items() if k != (6, 1)):.2f}"
+    for l, nom in ((1, "Uno"), (2, "Dos")):
+        fs = [f for f in o5["por_n_l"] if f["l"] == l]
+        m[f"OcPerdidas{nom}"] = sum(f["perdidas"] for f in fs)
+        m[f"OcFallas{nom}"] = sum(f["fallas"] for f in fs)
+    for f in o5.get("contra_warm", []):
+        if f["n"] == "todos":
+            clave = f"Est{'Cold' if f['otra'] == 'cold' else 'Fija'}L{'Uno' if f['l'] == 1 else 'Dos'}"
+            m[clave + "Warm"], m[clave + "Otra"] = f["gana_warm"], f["gana_otra"]
+            m[clave + "P"] = _sci(f["p_signo"])
+    for f in o5["por_n_l"]:
+        if f["l"] == 2 and f["n"] in (8, 9):
+            m[f"OcConvDos{'Ocho' if f['n'] == 8 else 'Nueve'}"] = f["convergidas"]
+
+    # QAOA de Joaquin
+    q = json.load(open(RES / "json" / "qaoa_joaquin.json", encoding="utf-8"))
+    sube = pasos = 0
+    for f in q["instancias"]:
+        E = [c["E_j"] for c in sorted(f["qaoa"], key=lambda c: c["p"])]
+        sube += sum(E[i + 1] > E[i] + 1e-6 for i in range(len(E) - 1))
+        pasos += len(E) - 1
+    m["QaoaSube"], m["QaoaPasos"] = sube, pasos
+    m["QaoaDif"] = _sci(q["max_dif_energia"])
+    r = json.load(open(RES / "json" / "qaoa_reoptimizado.json", encoding="utf-8"))["instancias"]
+    baja = [f["curva"][0]["E_j"] / f["curva"][-1]["E_j"] for f in r]
+    m["QaoaBajaMin"], m["QaoaBajaMax"] = f"{min(baja):.0f}", f"{max(baja):.0f}"
+
     m["TotalTodo"] = (len(todas) + len(glob.glob(str(RES / "mwnp_rango8" / "*.json")))
-                      + len(glob.glob(str(RES / "mwnp_ordenes" / "*.json"))))
+                      + len(glob.glob(str(RES / "mwnp_ordenes" / "*.json")))
+                      + len(runs) - sum(1 for k in runs if k[0] == 6 and k[1] == 1))
     return m
 
 
@@ -427,6 +649,13 @@ def main():
     fig_ordenes(cargar_ordenes())
     fig_rango()
 
+    o5 = json.load(open(RES / "json" / "ordenes_5a9.json", encoding="utf-8"))
+    fig_ordenes_5a9(o5)
+    fig_ordenes_iteracion(cargar_ordenes_5a9())
+    (INF / "tabla_ordenes.tex").write_text(tabla_ordenes(o5), encoding="utf-8")
+    fig_estrategias(o5)
+    (INF / "tabla_estrategias.tex").write_text(tabla_estrategias(o5), encoding="utf-8")
+    (INF / "tabla_qaoa.tex").write_text(tabla_qaoa(), encoding="utf-8")
     (INF / "tabla_instancias.tex").write_text(tabla_instancias(), encoding="utf-8")
     (INF / "tabla_fase1.tex").write_text(tabla_fase1(por), encoding="utf-8")
     (INF / "tabla_fase2.tex").write_text(tabla_fase2(por), encoding="utf-8")

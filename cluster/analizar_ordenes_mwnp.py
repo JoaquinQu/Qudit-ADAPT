@@ -32,12 +32,13 @@ UMBRAL = 0.1
 
 
 def cargar(carpeta):
-    """(n, l, instancia_base, orden) -> resumen de la corrida."""
-    runs = {}
+    """estrategia -> {(n, l, instancia_base, orden) -> resumen de la corrida}."""
+    runs = defaultdict(dict)
     for ruta in sorted(Path(carpeta).glob("n*_l*_i*.json")):
         d = json.load(open(ruta, encoding="utf-8"))
         i, r, t = d["instancia"], d["resultado"], d["trazas"]
-        runs[(i["n"], d["config"]["l"], i["instancia_base"], i["orden"])] = {
+        est = d["config"].get("estrategia", "warm")
+        runs[est][(i["n"], d["config"]["l"], i["instancia_base"], i["orden"])] = {
             "p": r["p_exito"],
             "p_traza": t["p_exito"],
             "k": r["num_parametros"],
@@ -46,6 +47,7 @@ def cargar(carpeta):
             "ms": r["compuertas_nativas"]["ms"][-1],
             "t": d["ejecucion"]["runtime_s"],
             "p_azar": i["p_azar"],
+            "E": r["E_final_j"],
         }
     return runs
 
@@ -127,6 +129,65 @@ def resumen(runs):
     return salida
 
 
+def contra_warm(runs):
+    """
+    Warm contra (ii) ADAPT desde theta = 0 ("cold") y contra (i) la secuencia
+    warm reoptimizada desde theta = 0 ("fija0"), sobre las mismas
+    (instancia, orden). Unidad estadística: la instancia; su tasa es la
+    fracción de órdenes resueltos.
+    """
+    fuera = []
+    for otra in ("cold", "fija0"):
+        if otra not in runs:
+            continue
+        for l in (1, 2):
+            tot_w = tot_o = 0
+            for n in sorted({k[0] for k in runs[otra]}):
+                claves = [k for k in runs[otra] if k[0] == n and k[1] == l and k in runs["warm"]]
+                if not claves:
+                    continue
+                bases = sorted({k[2] for k in claves})
+                tw, to = [], []
+                for b in bases:
+                    ks = [k for k in claves if k[2] == b]
+                    tw.append(np.mean([runs["warm"][k]["p"] >= UMBRAL for k in ks]))
+                    to.append(np.mean([runs[otra][k]["p"] >= UMBRAL for k in ks]))
+                tw, to = np.array(tw), np.array(to)
+                gw, go = int((tw > to).sum()), int((to > tw).sum())
+                tot_w += gw
+                tot_o += go
+                # energía final: fracción de corridas en que la otra termina más abajo
+                baja = np.mean([runs[otra][k]["E"] < runs["warm"][k]["E"] - 1e-6 for k in claves])
+                fuera.append({"otra": otra, "l": l, "n": n, "corridas": len(claves),
+                              "tasa_warm": float(tw.mean()), "tasa_otra": float(to.mean()),
+                              "ic_warm": [float(x) for x in ic_bootstrap(tw)],
+                              "ic_otra": [float(x) for x in ic_bootstrap(to)],
+                              "gana_warm": gw, "gana_otra": go, "iguales": int((tw == to).sum()),
+                              "p_signo": float(binomtest(gw, gw + go).pvalue) if gw + go else 1.0,
+                              "frac_E_otra_menor": float(baja)})
+            fuera.append({"otra": otra, "l": l, "n": "todos", "gana_warm": tot_w, "gana_otra": tot_o,
+                          "p_signo": float(binomtest(tot_w, tot_w + tot_o).pvalue) if tot_w + tot_o else 1.0})
+    return fuera
+
+
+def mostrar_contra_warm(filas):
+    nombres = {"cold": "(ii) ADAPT desde theta=0", "fija0": "(i) secuencia warm desde theta=0"}
+    for otra in ("cold", "fija0"):
+        for l in (1, 2):
+            fs = [f for f in filas if f["otra"] == otra and f["l"] == l]
+            if not fs:
+                continue
+            print(f"\nwarm contra {nombres[otra]}, l = {l}:")
+            for f in fs:
+                if f["n"] == "todos":
+                    print(f"  todos: gana warm {f['gana_warm']}, gana {otra} {f['gana_otra']}"
+                          f"  (signo p = {f['p_signo']:.1e})")
+                else:
+                    print(f"  n={f['n']}  tasa warm {f['tasa_warm']:.2f}  {otra} {f['tasa_otra']:.2f}"
+                          f"   instancias: warm {f['gana_warm']:2d} / {otra} {f['gana_otra']:2d} / igual {f['iguales']:2d}"
+                          f"   E_{otra} < E_warm en {f['frac_E_otra_menor']:.0%} de las corridas  [{f['corridas']}]")
+
+
 def mostrar(s):
     print(f"resuelve = p_éxito >= {UMBRAL}; tasa = media sobre instancias de la fracción de órdenes resueltos\n")
     print(f"{'n':>2s} {'l':>2s} {'tasa':>6s} {'IC 95 %':>13s} {'siempre/dep/nunca':>18s}"
@@ -161,8 +222,11 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--carpeta", type=str, default=str(CARPETA))
     args = p.parse_args()
-    s = resumen(cargar(args.carpeta))
+    runs = cargar(args.carpeta)
+    s = resumen(runs["warm"])
     mostrar(s)
+    s["contra_warm"] = contra_warm(runs)
+    mostrar_contra_warm(s["contra_warm"])
     salida = PROJECT_ROOT / "resultados" / "json" / "ordenes_5a9.json"
     json.dump(s, open(salida, "w", encoding="utf-8"), indent=1)
     print(f"\nguardado en {salida.relative_to(PROJECT_ROOT)}")
