@@ -42,7 +42,8 @@ def cargar(carpeta):
             "p": r["p_exito"],
             "p_traza": t["p_exito"],
             "k": r["num_parametros"],
-            "conv": r["stop_reason"] == "gradient_norm_below_epsilon",
+            # (i) reoptimiza una secuencia fija: no tiene criterio de parada propio
+            "conv": r.get("stop_reason") == "gradient_norm_below_epsilon",
             "nativas": r["compuertas_nativas"]["total"][-1],
             "ms": r["compuertas_nativas"]["ms"][-1],
             "t": d["ejecucion"]["runtime_s"],

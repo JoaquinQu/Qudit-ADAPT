@@ -365,7 +365,7 @@ def fig_estrategias(res):
         ax.set_ylim(-0.03, 1.03)
         ax.set_xticks(range(5, 10))
     ejes[0].set_ylabel(r"tasa de \'exito")
-    ejes[1].legend(frameon=False, loc="upper right")
+    ejes[1].legend(frameon=False, loc="lower left")
     fig.tight_layout(w_pad=1.0)
     guardar(fig, "estrategias")
 
@@ -648,6 +648,11 @@ def cifras(por, todas):
         fs = [f for f in o5["por_n_l"] if f["l"] == l]
         m[f"OcPerdidas{nom}"] = sum(f["perdidas"] for f in fs)
         m[f"OcFallas{nom}"] = sum(f["fallas"] for f in fs)
+    for l, nom in ((1, "Uno"), (2, "Dos")):
+        fr = [f["frac_E_otra_menor"] for f in o5.get("contra_warm", [])
+              if f["otra"] == "fija0" and f["l"] == l and f["n"] != "todos"]
+        if fr:
+            m[f"EFija{nom}Min"], m[f"EFija{nom}Max"] = f"{100 * min(fr):.0f}", f"{100 * max(fr):.0f}"
     for f in o5.get("contra_warm", []):
         if f["n"] == "todos":
             clave = f"Est{'Cold' if f['otra'] == 'cold' else 'Fija'}L{'Uno' if f['l'] == 1 else 'Dos'}"

@@ -52,8 +52,10 @@ instancias de solución única por tamaño, cada una bajo 5 órdenes de sus núm
   instancias contra \OcSignoUno{} (prueba de signo, $p=$\,\OcSignoP). Con ambos pools la tasa de
   éxito cae con $n$.
 \item La conjetura de que el warm start es una desventaja no se sostiene. Con $\ell=2$, warm
-  resuelve más que ADAPT desde $\bm\theta=0$: \EstColdLDosWarm{} instancias contra
-  \EstColdLDosOtra{} ($p=$\,\EstColdLDosP). Con $\ell=1$ no hay diferencia significativa.
+  resuelve más que ADAPT desde $\bm\theta=0$ (\EstColdLDosWarm{} instancias contra
+  \EstColdLDosOtra, $p=$\,\EstColdLDosP) y más que su propia secuencia reoptimizada desde
+  $\bm\theta=0$ (\EstFijaLDosWarm{} contra \EstFijaLDosOtra, $p=$\,\EstFijaLDosP). Con $\ell=1$ no
+  hay diferencia significativa.
 \item Contra QAOA ($n=5,6$), ADAPT $\ell=2$ supera a un QAOA bien optimizado con un número de
   parámetros similar.
 \item El resultado de una corrida individual depende del orden, arbitrario, en que se asignan los
@@ -93,24 +95,96 @@ Seguimos el costo de J.~Molina, con $\mu=S/3$:
   C(z)=\sum_{i=0}^{2}\big(\Sigma_i(z)-\mu\big)^2 ,
   \label{eq:costo}
 \end{equation}
-que vale 0 exactamente en una partición perfecta. Para reescribirlo, usamos que
-$\sum_i\Sigma_i=S$:
-\begin{align}
-C&=\sum_i\Sigma_i^2-2\mu\sum_i\Sigma_i+3\mu^2=\sum_i\Sigma_i^2-\frac{S^2}{3}, \\
-\sum_i\Sigma_i^2&=\sum_i\sum_{j,k}a_ja_k\,\delta_{i,z_j}\delta_{i,z_k}
-  =\sum_{j,k}a_ja_k\,\delta_{z_j,z_k}
-  =\sum_j a_j^2+2\sum_{j<k}a_ja_k\,\delta_{z_j,z_k}.
-\end{align}
-Con $w_{jk}=a_ja_k$ definimos el peso del corte
-$W_{\rm cut}(z)=\sum_{j<k}w_{jk}\big(1-\delta_{z_j,z_k}\big)$, la suma de los pesos de los pares
-que quedan en cajas distintas. Como $\sum_{j<k}a_ja_k=(S^2-\sum_ja_j^2)/2$,
+que vale 0 exactamente en una partición perfecta. Lo reescribimos en siete pasos.
+
+\paragraph{Paso 1: las tres cajas suman $S$.} Cada número está en exactamente una caja, así que
+$\sum_i\delta_{i,z_j}=1$ para todo $j$. Entonces
+\begin{equation}
+  \sum_i\Sigma_i=\sum_ja_j\sum_i\delta_{i,z_j}=\sum_ja_j=S .
+\end{equation}
+
+\paragraph{Paso 2: desarrollar el cuadrado.} Sumar $\mu^2$ sobre las tres cajas da $3\mu^2$:
+\begin{equation}
+  C=\sum_i\Sigma_i^2-2\mu\sum_i\Sigma_i+3\mu^2
+   =\sum_i\Sigma_i^2-2\frac S3S+3\frac{S^2}{9}
+   =\sum_i\Sigma_i^2-\frac{S^2}{3}.
+  \label{eq:paso2}
+\end{equation}
+Todo el problema queda en $\sum_i\Sigma_i^2$, la suma de los cuadrados de las sumas de las cajas.
+
+\paragraph{Paso 3: expandir $\Sigma_i^2$.} Cada $\Sigma_i$ es una suma sobre $j$, y su cuadrado es
+una doble suma:
+\begin{equation}
+  \Sigma_i^2=\Big(\sum_ja_j\delta_{i,z_j}\Big)\Big(\sum_ka_k\delta_{i,z_k}\Big)
+  =\sum_{j,k}a_ja_k\,\delta_{i,z_j}\delta_{i,z_k}.
+\end{equation}
+El producto $\delta_{i,z_j}\delta_{i,z_k}$ vale 1 sólo si $j$ y $k$ están ambos en la caja $i$. Al
+sumar sobre $i$ sobrevive a lo más un término, el de la caja común, y sólo si comparten caja:
+$\sum_i\delta_{i,z_j}\delta_{i,z_k}=\delta_{z_j,z_k}$. Por lo tanto
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_{j,k}a_ja_k\,\delta_{z_j,z_k}.
+\end{equation}
+
+\paragraph{Paso 4: separar $j=k$ de $j\neq k$.} En la diagonal, $\delta_{z_j,z_j}=1$ y queda
+$\sum_ja_j^2$. Fuera de la diagonal, cada par aparece dos veces, como $(j,k)$ y como $(k,j)$:
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_ja_j^2+2\sum_{j<k}a_ja_k\,\delta_{z_j,z_k}.
+\end{equation}
+
+\paragraph{Paso 5: de ``misma caja'' a ``cajas distintas''.} Con $\delta=1-(1-\delta)$, y con
+$w_{jk}=a_ja_k$,
+\begin{equation}
+  \sum_{j<k}w_{jk}\,\delta_{z_j,z_k}=P-W_{\rm cut}(z),\qquad
+  P=\sum_{j<k}w_{jk},\qquad
+  W_{\rm cut}(z)=\sum_{j<k}w_{jk}\big(1-\delta_{z_j,z_k}\big).
+\end{equation}
+$1-\delta_{z_j,z_k}$ vale 1 justo cuando el par queda \emph{cortado} (en cajas distintas). $P$ es el
+peso de todos los pares, y $W_{\rm cut}$ el de los pares cortados.
+
+\paragraph{Paso 6: $P$ sólo depende de los números.} De $S^2=(\sum_ja_j)^2=\sum_ja_j^2+2\sum_{j<k}a_ja_k$,
+\begin{equation}
+  P=\tfrac12\Big(S^2-\sum_ja_j^2\Big).
+\end{equation}
+
+\paragraph{Paso 7: juntar.} Los $\sum_ja_j^2$ se cancelan:
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_ja_j^2+2\big(P-W_{\rm cut}\big)=S^2-2W_{\rm cut},
+\end{equation}
+y reemplazando en la ec.~\eqref{eq:paso2},
 \begin{equation}
   \boxed{\;C(z)=\tfrac23S^2-2\,W_{\rm cut}(z)\;}
   \label{eq:corte}
 \end{equation}
-Minimizar $C$ equivale a maximizar el corte ponderado en tres partes del grafo completo $K_n$ con
-pesos $a_ja_k$: es Max 3-Cut ponderado sobre $K_n$. El grafo es completo porque todos los pares
-de números interactúan a través de las sumas.
+
+\paragraph{Qué significa.}
+\begin{itemize}
+\item $S$ está fijo por la instancia, así que $\tfrac23S^2$ es una constante y minimizar $C$
+  equivale a maximizar $W_{\rm cut}$.
+\item $W_{\rm cut}$ es un corte ponderado en tres partes: se suma $a_ja_k$ por cada par en cajas
+  distintas. Es Max 3-Cut con peso $a_ja_k$ en la arista $(j,k)$.
+\item Todos los pesos son positivos, así que hay arista entre todos los pares: el grafo es el
+  completo $K_n$.
+\item Como $C\geq0$, siempre $W_{\rm cut}\leq S^2/3$. Una partición perfecta es un corte que alcanza
+  esa cota.
+\end{itemize}
+
+\paragraph{Ejemplo.} La instancia de $n=5$ de la tabla~\ref{tab:instancias}, $a=(2,3,7,8,10)$, tiene
+$S=30$, $\sum_ja_j^2=226$ y $P=(900-226)/2=337$ (tabla~\ref{tab:ejemplo}).
+
+\begin{table}[h]
+\centering
+\caption{Verificación de la ec.~\eqref{eq:corte} en dos particiones de $a=(2,3,7,8,10)$.}
+\label{tab:ejemplo}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+partición & sumas & $C$ directo & pares en la misma caja & $W_{\rm cut}$ & $\tfrac23S^2-2W_{\rm cut}$ \\
+\midrule
+$\{10\},\{3,7\},\{2,8\}$ & 10, 10, 10 & 0 & $3\cdot7+2\cdot8=37$ & $337-37=300$ & $600-600=0$ \\
+$\{10,2\},\{3,7\},\{8\}$ & 12, 10, 8 & $4+0+4=8$ & $10\cdot2+3\cdot7=41$ & $337-41=296$ & $600-592=8$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Codificación en qutrits}
 
@@ -570,15 +644,28 @@ $\ell$ & $n$ & warm & (ii) & (i) & (ii) ADAPT desde 0 & (i) secuencia fija \\
   Encuentra la solución a mitad de camino casi tan seguido como warm: en $n=8$ superan
   $\pex=0.1$ en algún momento el \PmaxColdOcho{} de sus corridas contra el \PmaxWarmOcho{} de
   warm. Pero la pierde más: termina resuelta en \FinColdOcho{} contra \FinWarmOcho.
-\item \textbf{(i) secuencia fija desde $\bm\theta=0$:} en curso en BitWit; se agrega al terminar.
+\item \textbf{(i) con $\ell=2$.} Sobre el mismo circuito, partir del óptimo anterior es mejor que
+  partir de cero: warm gana en \EstFijaLDosWarm{} instancias y (i) en \EstFijaLDosOtra{}
+  ($p=$\,\EstFijaLDosP). La diferencia se concentra en $n\geq7$. Reoptimizar desde cero termina
+  con menor energía que warm sólo en el \EFijaDosMin--\EFijaDosMax\,\% de las corridas, según $n$.
+\item \textbf{(i) con $\ell=1$.} No hay diferencia significativa: \EstFijaLUnoWarm{} contra
+  \EstFijaLUnoOtra{} ($p=$\,\EstFijaLUnoP), con la mayoría de las instancias empatadas. Aun así,
+  (i) termina con menor energía sólo en el \EFijaUnoMin--\EFijaUnoMax\,\% de las corridas.
 \end{itemize}
 
 \paragraph{Conclusiones.} La conjetura de que partir del óptimo anterior es una desventaja no se
-sostiene. Con $\ell=2$ ocurre lo contrario: al reoptimizar desde cero, BFGS cae en puntos donde
-todo el pool tiene gradiente pequeño, y el criterio de parada detiene ADAPT antes. Warm, en
-cambio, parte del óptimo anterior y sigue descendiendo; es el mecanismo de \emph{burrowing}
-(Grimsley \emph{et al.}) que el paper invoca para Max 3-Cut. Con $\ell=1$ las dos estrategias
-son equivalentes.
+sostiene. Con $\ell=2$ ocurre lo contrario, y por dos vías independientes:
+\begin{itemize}
+\item \emph{En la selección de operadores} (ii): al reoptimizar desde cero, BFGS cae en puntos
+  donde todo el pool tiene gradiente pequeño, y el criterio de parada detiene ADAPT antes.
+\item \emph{En la optimización de un circuito dado} (i): con los mismos operadores, partir del
+  óptimo anterior lleva a mínimos más bajos que partir de cero. Es el análogo de las Figs.~5--6 del
+  paper.
+\end{itemize}
+Ambas son el mecanismo de \emph{burrowing} (Grimsley \emph{et al.}) que el paper invoca para Max
+3-Cut: cada nuevo operador deforma el paisaje y warm sigue descendiendo desde donde estaba. Con
+$\ell=1$ las estrategias son equivalentes en tasa de éxito, aunque reoptimizar desde cero rara vez
+llega a menor energía que warm.
 
 \subsection{Comparación con QAOA}
 
@@ -706,7 +793,8 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
   y cuatro sitios, a cambio de un pool de 30 a 80 veces más grande. Ambos pierden eficacia con
   $n$.
 \item El warm start no es una desventaja. Con $\ell=2$ es claramente mejor que reiniciar desde
-  $\bm\theta=0$, porque este último detiene ADAPT antes; con $\ell=1$ son equivalentes.
+  $\bm\theta=0$, tanto en la elección de operadores (ADAPT desde cero se detiene antes) como en la
+  optimización de un circuito fijo. Con $\ell=1$ las estrategias son equivalentes.
 \item ADAPT $\ell=2$ supera a un QAOA bien optimizado con un número similar de parámetros. El
   QAOA de MWNP tiene que inicializarse en la escala de $H_C$.
 \item Las corridas individuales dependen del orden de los números y, en casi-empates, de la
@@ -734,7 +822,6 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
 \section{Pendientes}
 
 \begin{itemize}
-\item Terminar la variante (i) y agregarla a la sección~\ref{sec:estrategias}.
 \item Subir el tope de $\ell=2$ a 300 parámetros en $n=8,9$.
 \item Explicar el estancamiento en $\pex\approx0.5$.
 \item QAOA reoptimizado sobre las instancias del benchmark ($n=5$--$9$), y conteo de compuertas
