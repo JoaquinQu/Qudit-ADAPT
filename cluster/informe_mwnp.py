@@ -39,7 +39,7 @@ def estilo():
     mpl.rcdefaults()
     mpl.rcParams.update({
         "text.usetex": True,
-        "text.latex.preamble": r"\usepackage{amsmath}\usepackage{txfonts}",
+        "text.latex.preamble": r"\usepackage{amsmath}\usepackage{bm}\usepackage{txfonts}",
         "font.family": "serif", "font.size": 10,
         "axes.labelsize": 11, "legend.fontsize": 8.5,
         "xtick.labelsize": 9.5, "ytick.labelsize": 9.5,
@@ -386,9 +386,9 @@ def tabla_estrategias(res):
                           rf" & {par(c)} & {par(fi)} \\")
         tc = [f for f in filas if f["l"] == l and f["n"] == "todos" and f["otra"] == "cold"]
         tf = [f for f in filas if f["l"] == l and f["n"] == "todos" and f["otra"] == "fija0"]
-        tot = lambda x: (rf"{x[0]['gana_warm']} / {x[0]['gana_otra']} (p = {_sci(x[0]['p_signo']).strip('$')})"
+        tot = lambda x: (rf"{x[0]['gana_warm']} / {x[0]['gana_otra']} ($p={_sci(x[0]['p_signo']).strip('$')}$)"
                          if x else "--")
-        lineas.append(rf"\cmidrule(lr){{2-7}} & todos & & & & ${tot(tc)}$ & ${tot(tf)}$ \\")
+        lineas.append(rf"\cmidrule(lr){{2-7}} & todos & & & & {tot(tc)} & {tot(tf)} \\")
         if l == 1:
             lineas.append(r"\midrule")
     return "\n".join(lineas)
@@ -611,6 +611,18 @@ def cifras(por, todas):
             clave = f"Est{'Cold' if f['otra'] == 'cold' else 'Fija'}L{'Uno' if f['l'] == 1 else 'Dos'}"
             m[clave + "Warm"], m[clave + "Otra"] = f["gana_warm"], f["gana_otra"]
             m[clave + "P"] = _sci(f["p_signo"])
+    # warm contra (ii): presupuesto y respuestas perdidas, l = 2
+    for est, nom in (("warm", "Warm"), ("cold", "Cold")):
+        rr = cargar_ordenes_5a9(est)
+        if not rr:
+            continue
+        dos = {k: v for k, v in rr.items() if k[1] == 2}
+        m[f"Conv{nom}Dos"] = sum(v[2]["stop_reason"] == "gradient_norm_below_epsilon" for v in dos.values())
+        m[f"Tot{nom}Dos"] = len(dos)
+        ocho = [v for k, v in dos.items() if k[0] == 8]
+        m[f"K{nom}Ocho"] = f"{np.median([v[2]['num_parametros'] for v in ocho]):.0f}"
+        m[f"Pmax{nom}Ocho"] = f"{np.mean([max(v[1]) >= UMBRAL for v in ocho]):.2f}"
+        m[f"Fin{nom}Ocho"] = f"{np.mean([v[0] >= UMBRAL for v in ocho]):.2f}"
     for f in o5["por_n_l"]:
         if f["l"] == 2 and f["n"] in (8, 9):
             m[f"OcConvDos{'Ocho' if f['n'] == 8 else 'Nueve'}"] = f["convergidas"]
