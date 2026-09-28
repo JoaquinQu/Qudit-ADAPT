@@ -290,6 +290,8 @@ def main():
     p.add_argument("--procesos", type=int, default=1)
     p.add_argument("--hilos", type=int, default=1)
     p.add_argument("--carpeta", type=str, default=str(CARPETA))
+    p.add_argument("--instancias", type=str, default=str(INSTANCIAS),
+                   help="archivo de instancias; por defecto el conjunto fijo del benchmark")
     p.add_argument("--estrategia", type=str, default="warm",
                    choices=["warm", "cold", "fija0"],
                    help="warm: ADAPT estándar | cold (ii): ADAPT desde theta=0 en cada paso"
@@ -298,7 +300,7 @@ def main():
 
     from funciones.utilidades_mwnp import etiquetas_pool
 
-    todas = json.load(open(INSTANCIAS, encoding="utf-8"))["instancias"]
+    todas = json.load(open(args.instancias, encoding="utf-8"))["instancias"]
     ids = set(rango_ids(args.ids))
     elegidas = [i for i in todas if i["n"] in args.n and i["id"] in ids]
 
