@@ -68,6 +68,20 @@ def commit_del_codigo():
         return "desconocido"
 
 
+def fijar_nucleo(contador, nucleos):
+    """
+    Inicializador de cada proceso trabajador: lo fija a un núcleo de la lista.
+    A n = 12 el rendimiento lo decide el caché L3 (32 MB por bloque de 8
+    núcleos en BitWit): un proceso por bloque corre casi a velocidad libre, y
+    dos o más por bloque se pisan el caché. La lista de núcleos decide cuántos
+    procesos van a cada bloque.
+    """
+    with contador.get_lock():
+        i = contador.value
+        contador.value += 1
+    os.sched_setaffinity(0, {nucleos[i % len(nucleos)]})
+
+
 def rango_ids(texto):
     ids = []
     for trozo in texto.split(","):
@@ -178,6 +192,8 @@ def main():
     p.add_argument("--reinicios", type=int, default=10)
     p.add_argument("--interp", action="store_true", help="agrega la cadena INTERP por instancia")
     p.add_argument("--solo_interp", action="store_true", help="sólo la cadena INTERP")
+    p.add_argument("--nucleos", type=str, default=None,
+                   help="núcleos a los que fijar los procesos, p.ej. '0,8,16,24,32,40,48,56'")
     p.add_argument("--mezclador", type=str, default="jx", choices=["jx", "x"])
     p.add_argument("--maxiter", type=int, default=1000)
     p.add_argument("--gtol", type=float, default=1e-8)
@@ -202,7 +218,10 @@ def main():
     print(f"{len(tareas)} tareas | p = {args.p} | mezclador {args.mezclador} | "
           f"{args.procesos} procesos | carpeta {args.carpeta}", flush=True)
     t0 = time.time()
-    with multiprocessing.get_context("fork").Pool(args.procesos) as pool:
+    ctx = multiprocessing.get_context("fork")
+    nucleos = rango_ids(args.nucleos) if args.nucleos else None
+    extra = {"initializer": fijar_nucleo, "initargs": (ctx.Value("i", 0), nucleos)} if nucleos else {}
+    with ctx.Pool(args.procesos, **extra) as pool:
         for k, r in enumerate(pool.imap_unordered(correr, tareas), 1):
             extra = f"p_exito={r['p']:.4f}  {r['t']:8.1f} s" if r["estado"] == "ok" else r["estado"]
             print(f"[{k:4d}/{len(tareas)}] n={r['n']:2d} #{r['id']:02d} r={r['r']}  {extra}", flush=True)

@@ -110,13 +110,15 @@ def conteo_nativo(etiquetas):
 # la misma memoria. A n = 12 con l = 2 el pool pesa ~2 GB; sin compartirlo,
 # 50 procesos necesitarían 100 GB sólo para eso.
 POOLS = {}
+BARRIDOS = {}       # (n, l) -> preparar_barrido(pool, n), sólo con --barrido soporte y l = 2
 
 
 def correr(tarea):
     """Una corrida. Devuelve un resumen corto; el detalle queda en disco."""
     from funciones.utilidades_mwnp import adapt_mwnp, preparar_pool
 
-    inst, l, eps_j, max_it, carpeta, estrategia = tarea
+    inst, l, eps_j, max_it, carpeta, estrategia = tarea[:6]
+    barrido_modo = tarea[6] if len(tarea) > 6 else "operador"
     n, ident, a = inst["n"], inst["id"], inst["a"]
     ruta = ruta_corrida(n, l, ident, carpeta, estrategia)
     if ruta.exists():
@@ -129,8 +131,9 @@ def correr(tarea):
         pool = POOLS[(n, l)] if (n, l) in POOLS else preparar_pool(n, l)
         # El umbral viene en la escala de Joaquín, donde los gradientes valen
         # el doble que en la nuestra.
+        barrido = BARRIDOS.get((n, l)) if barrido_modo == "soporte" else None
         r = adapt_mwnp(a, l=l, epsilon=eps_j / 2.0, max_iteration=max_it,
-                       pool=pool, mostrar=False, inicializacion=estrategia)
+                       pool=pool, mostrar=False, inicializacion=estrategia, barrido=barrido)
     except Exception as e:                       # que una falla no tumbe el lote
         return {"n": n, "l": l, "id": ident, "estado": f"ERROR: {e!r}"}
 
@@ -143,6 +146,7 @@ def correr(tarea):
         "config": {"l": l, "epsilon_escala_j": eps_j, "max_iteration": max_it,
                    "optimizador": "BFGS, gtol=1e-10, jac analítico (adjunto)",
                    "estrategia": estrategia,
+                   "barrido": "soporte" if barrido is not None else "operador",
                    "inicializacion": ("warm start: (theta*_{k-1}, 0)" if estrategia == "warm"
                                       else "cold: theta = 0 en cada paso de ADAPT")},
         "resultado": {
@@ -275,6 +279,20 @@ def correr_fija0(inst, l, carpeta):
             "t": salida["ejecucion"]["runtime_s"]}
 
 
+def fijar_nucleo(contador, nucleos):
+    """
+    Inicializador de cada proceso trabajador: lo fija a un núcleo de la lista.
+    A n = 12 el rendimiento lo decide el caché L3 (32 MB por bloque de 8
+    núcleos en BitWit): un proceso por bloque corre casi a velocidad libre, y
+    dos o más por bloque se pisan el caché. La lista de núcleos decide cuántos
+    procesos van a cada bloque.
+    """
+    with contador.get_lock():
+        i = contador.value
+        contador.value += 1
+    os.sched_setaffinity(0, {nucleos[i % len(nucleos)]})
+
+
 def rango_ids(texto):
     """'0-9' -> [0..9];  '0,3,5' -> [0,3,5]."""
     ids = []
@@ -300,13 +318,18 @@ def main():
     p.add_argument("--carpeta", type=str, default=str(CARPETA))
     p.add_argument("--instancias", type=str, default=str(INSTANCIAS),
                    help="archivo de instancias; por defecto el conjunto fijo del benchmark")
+    p.add_argument("--nucleos", type=str, default=None,
+                   help="núcleos a los que fijar los procesos, p.ej. '0,8,16,24,32,40,48,56'")
+    p.add_argument("--barrido", type=str, default="operador", choices=["operador", "soporte"],
+                   help="soporte: gradiente del pool l = 2 por matrices reducidas (mismo valor hasta"
+                        " redondeo, mucho más rápido a n grande); l = 1 usa siempre el original")
     p.add_argument("--estrategia", type=str, default="warm",
                    choices=["warm", "cold", "fija0"],
                    help="warm: ADAPT estándar | cold (ii): ADAPT desde theta=0 en cada paso"
                         " | fija0 (i): la secuencia warm reoptimizada desde theta=0")
     args = p.parse_args()
 
-    from funciones.utilidades_mwnp import etiquetas_pool, preparar_pool
+    from funciones.utilidades_mwnp import etiquetas_pool, preparar_barrido, preparar_pool
 
     todas = json.load(open(args.instancias, encoding="utf-8"))["instancias"]
     ids = set(rango_ids(args.ids))
@@ -320,10 +343,12 @@ def main():
             etiquetas_pool(n, l)
             if args.estrategia != "fija0":
                 POOLS[(n, l)] = preparar_pool(n, l)
+                if args.barrido == "soporte" and l == 2:
+                    BARRIDOS[(n, l)] = preparar_barrido(POOLS[(n, l)], n)
             print(f"pool n={n:2d} l={l}: listo en {time.time()-t:6.1f} s", flush=True)
 
     # Lo más caro primero, para que ningún proceso quede con la cola larga.
-    tareas = [(inst, l, args.epsilon, args.max_iteration, args.carpeta, args.estrategia)
+    tareas = [(inst, l, args.epsilon, args.max_iteration, args.carpeta, args.estrategia, args.barrido)
               for inst in elegidas for l in args.l]
     # El orden 0 (ascendente) va primero: así la tanda con un orden por
     # instancia se completa antes que las repeticiones con otros órdenes.
@@ -336,7 +361,10 @@ def main():
     t0 = time.time()
     hechas = 0
     # fork explícito: los hijos heredan POOLS sin copiarlo (ver arriba).
-    with multiprocessing.get_context("fork").Pool(args.procesos) as pool:
+    ctx = multiprocessing.get_context("fork")
+    nucleos = rango_ids(args.nucleos) if args.nucleos else None
+    extra = {"initializer": fijar_nucleo, "initargs": (ctx.Value("i", 0), nucleos)} if nucleos else {}
+    with ctx.Pool(args.procesos, **extra) as pool:
         for r in pool.imap_unordered(correr, tareas):
             hechas += 1
             if r["estado"] == "ok":

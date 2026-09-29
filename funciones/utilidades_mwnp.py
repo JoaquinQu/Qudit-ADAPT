@@ -464,12 +464,72 @@ def gradientes_pool(psi, pool, hdiag, n):
                      for op in pool])
 
 
+def preparar_barrido(pool, n):
+    """
+    Reorganiza el pool para `gradientes_por_soporte`.
+
+    Agrupa los operadores por soporte (sus sitios, ordenados) y, dentro de cada
+    tamaño de soporte w, por tipo: la etiqueta con los sitios renombrados 1..w
+    conservando el orden. El bloque de un operador sólo depende de los factores
+    de cada sitio en ese orden, así que todos los operadores del mismo tipo
+    tienen el mismo bloque de 3^w x 3^w, y se guarda uno por tipo. Las copias
+    repetidas del pool (O_1 dentro de O_3) apuntan al mismo (soporte, tipo).
+    """
+    tipos, bloques, soportes = {}, {}, {}
+    op_soporte = np.empty(len(pool), dtype=np.int64)
+    op_tipo = np.empty(len(pool), dtype=np.int64)
+    for j, op in enumerate(pool):
+        S = tuple(op["sitios"])                              # 0-indexados, ordenados
+        w = len(S)
+        rango = {s + 1: r + 1 for r, s in enumerate(S)}      # la etiqueta usa sitios 1..n
+        canon = str(tuple(sorted((rango[s], eje) for s, eje in ast.literal_eval(op["label"]))))
+        tipos.setdefault(w, {})
+        bloques.setdefault(w, [])
+        if canon not in tipos[w]:
+            tipos[w][canon] = len(bloques[w])
+            bloques[w].append(bloque_local(canon)[1])
+        if S not in soportes:
+            soportes[S] = len(soportes)
+        op_soporte[j], op_tipo[j] = soportes[S], tipos[w][canon]
+    return {"n": n, "soportes": sorted(soportes, key=soportes.get),
+            "op_soporte": op_soporte, "op_tipo": op_tipo,
+            "bloques": {w: np.array(b) for w, b in bloques.items()}}
+
+
+def gradientes_por_soporte(psi, barrido, hdiag, n):
+    """
+    El mismo gradiente de ADAPT que `gradientes_pool`, g_j = -2 Im <psi|A_j|H psi>,
+    calculado por soporte en vez de por operador.
+
+    Para un soporte S de w sitios, con Psi y Phi = H Psi vistos como matrices
+    de 3^w x 3^(n-w) (el soporte adelante),
+
+        <psi|A|phi> = sum_ab B_ab R_ab,    R = conj(Psi) Phi^T  (3^w x 3^w),
+
+    así que basta UNA contracción del estado por soporte (793 en n = 12) y no
+    una por operador (35 952 en n = 12, l = 2). La matriz R se reutiliza para
+    todos los operadores de ese soporte.
+    """
+    phi = hdiag * psi
+    pila = np.stack([psi, phi]).reshape((2,) + (D,) * n)
+    tmax = max(len(b) for b in barrido["bloques"].values())
+    V = np.zeros((len(barrido["soportes"]), tmax), dtype=complex)
+    for i, S in enumerate(barrido["soportes"]):
+        w = len(S)
+        X = np.moveaxis(pila, [1 + s for s in S], list(range(1, w + 1))).reshape(2, D ** w, -1)
+        R = X[0].conj() @ X[1].T
+        B = barrido["bloques"][w]
+        V[i, :len(B)] = np.einsum("tab,ab->t", B, R)
+    return -2.0 * np.imag(V[barrido["op_soporte"], barrido["op_tipo"]])
+
+
 # ==========================================================================
 # 5. El loop ADAPT
 # ==========================================================================
 
 def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
-               pool=None, mostrar=True, checkpoint=None, inicializacion="warm"):
+               pool=None, mostrar=True, checkpoint=None, inicializacion="warm",
+               barrido=None):
     """
     Qudit-ADAPT sobre una instancia de multiway number partitioning.
 
@@ -487,6 +547,10 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
     Con `checkpoint` se vuelca el estado a ese archivo tras cada iteración, de
     modo que una corrida larga se pueda seguir mientras avanza y no se pierda
     si el proceso muere.
+
+    Con `barrido` (de `preparar_barrido(pool, n)`) el gradiente del pool se
+    calcula por soporte: mismo resultado hasta redondeo y mucho más rápido con
+    el pool de l = 2 a n grande.
     """
     a = np.asarray(a, dtype=float)
     n = len(a)
@@ -522,7 +586,8 @@ def adapt_mwnp(a, l=1, epsilon=1e-2, max_iteration=30, maxiter=1000,
 
     for it in range(max_iteration):
         t_it = time.time()
-        g = gradientes_pool(psi, pool, hdiag, n)
+        g = (gradientes_pool(psi, pool, hdiag, n) if barrido is None
+             else gradientes_por_soporte(psi, barrido, hdiag, n))
         t_barrido = time.time() - t_it
         norma = float(np.linalg.norm(g))
         traza_norma.append(norma)

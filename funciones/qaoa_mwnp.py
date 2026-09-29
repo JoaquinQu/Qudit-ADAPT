@@ -26,16 +26,18 @@ H_M = sum_j G^(j), con G un operador de un qutrit:
 IMPLEMENTACIÓN
 --------------
 Nada de matrices de 3^n x 3^n: H_C es un vector y exp(-i beta H_M) es un
-producto de compuertas de un qutrit, que se aplican sitio por sitio. El
+producto de compuertas de un qutrit. El
 gradiente es analítico por el método adjunto y no guarda estados intermedios:
 la pasada hacia atrás deshace cada capa (todas son unitarias), así que la
-memoria es O(3^n) para cualquier p. Energía y gradiente cuestan unas cuatro
-veces la preparación del estado.
+memoria es O(3^n) para cualquier p. El mezclador se aplica por grupos de 3
+qutrits (U^{otimes 3}, de 27 x 27), con n/3 pasadas por el estado en vez de n:
+a n = 12 el costo lo manda el tráfico de memoria.
 """
 
 from __future__ import annotations
 
 import time
+from functools import reduce
 
 import numpy as np
 from scipy.optimize import minimize
@@ -44,6 +46,7 @@ D = 3
 LX = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]], dtype=complex) / np.sqrt(2)
 LZ2 = np.diag([1.0, 0.0, 1.0]).astype(complex)
 GENERADORES = {"jx": LX, "x": -(LZ2 + np.sqrt(2) * LX)}
+GRUPO = 3           # sitios por grupo en el mezclador: U^{otimes 3} es de 27 x 27
 
 
 def estado_uniforme(n):
@@ -51,13 +54,59 @@ def estado_uniforme(n):
     return np.full(D ** n, D ** (-n / 2.0), dtype=complex)
 
 
-def _en_cada_sitio(pila, M, n):
-    """(M^{otimes n}) aplicado a cada estado de una pila de forma (m, 3^n)."""
+def _en_cada_sitio_por_sitio(pila, M, n):
+    """(M^{otimes n}) sitio por sitio: n pasadas por el estado. Sólo para verificar."""
     m = pila.shape[0]
     for s in range(n):
         x = pila.reshape(m, D ** s, D, -1)
         pila = np.einsum("ij,majb->maib", M, x).reshape(m, -1)
     return pila
+
+
+def _grupos(n, g=GRUPO):
+    """[(primer sitio, tamaño)] de los grupos de a lo más g sitios consecutivos."""
+    return [(s, min(g, n - s)) for s in range(0, n, g)]
+
+
+def _en_cada_sitio(pila, M, n, g=GRUPO):
+    """
+    (M^{otimes n}) aplicado a cada estado de una pila de forma (m, 3^n).
+
+    Se aplica M^{otimes t} a grupos de t <= g sitios consecutivos con un
+    producto de matrices: n/g pasadas por el estado en vez de n. A n = 12 el
+    costo está dominado por el tráfico de memoria, así que eso es lo que manda.
+    """
+    m = pila.shape[0]
+    for s, t in _grupos(n, g):
+        Mt = reduce(np.kron, [M] * t)
+        A, B = D ** s, D ** (n - s - t)
+        if B == 1:
+            pila = (pila.reshape(m, A, D ** t) @ Mt.T).reshape(m, -1)
+        else:
+            pila = np.matmul(Mt, pila.reshape(m, A, D ** t, B)).reshape(m, -1)
+    return pila
+
+
+def _esperado_suma_local(lam, psi, G, n, g=GRUPO):
+    """
+    <lam| sum_j G^(j) |psi>, por grupos de sitios: para cada grupo se forma la
+    matriz de transición reducida R_ab = sum_resto conj(lam_a) psi_b y se
+    contrae con la suma de G sobre los sitios del grupo. Una lectura del estado
+    por grupo, sin escribir nada del tamaño del estado.
+    """
+    total = 0j
+    for s, t in _grupos(n, g):
+        Hg = sum(reduce(np.kron, [G if k == j else np.eye(D) for k in range(t)]) for j in range(t))
+        A, B = D ** s, D ** (n - s - t)
+        X, Y = lam.reshape(A, D ** t, B), psi.reshape(A, D ** t, B)
+        if A == 1:
+            R = X[0].conj() @ Y[0].T
+        elif B == 1:
+            R = X[:, :, 0].conj().T @ Y[:, :, 0]
+        else:
+            R = np.matmul(X.conj(), Y.transpose(0, 2, 1)).sum(axis=0)
+        total += np.sum(Hg * R)
+    return total
 
 
 def _suma_local(psi, G, n):
@@ -105,7 +154,7 @@ def energia_y_grad(params, h, p, mezclador="jx"):
     grad = np.zeros(2 * p)
     pila = np.stack([psi, h * psi])
     for l in range(p - 1, -1, -1):
-        grad[p + l] = 2.0 * np.imag(np.vdot(pila[1], _suma_local(pila[0], G, n)))
+        grad[p + l] = 2.0 * np.imag(_esperado_suma_local(pila[1], pila[0], G, n))
         pila = _en_cada_sitio(pila, _unitario(w, V, -params[p + l]), n)
         grad[l] = 2.0 * np.imag(np.vdot(pila[1], h * pila[0]))
         pila = pila * np.exp(1j * params[l] * h)[None, :]
