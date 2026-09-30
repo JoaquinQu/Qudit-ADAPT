@@ -689,6 +689,7 @@ def cifras(por, todas):
 
     r = json.load(open(RES / "json" / "rangos_instancias.json", encoding="utf-8"))
     m["RangoMuestras"] = r["muestras"]
+    m["RangoErrorMax"] = f"{100 * max(f.get('error_unica', 0.0) for f in r['filas']):.1f}"
     m["RangoQuinceDiez"] = f"{100 * [f for f in r['filas'] if f['n'] == 10 and f['rango'] == '15'][0]['frac_unica']:.1f}"
     m["RangoDosnDiez"] = f"{100 * [f for f in r['filas'] if f['n'] == 10 and f['rango'] == '2n'][0]['frac_unica']:.1f}"
     tres = [f["frac_unica"] for f in r["filas"] if f["rango"] == "3n"]
@@ -879,6 +880,13 @@ def main():
     it_n = max(n for n in por_n if "interp" in por_n[n])
     m["KInterpN"], m["KInterpMediana"] = it_n, _sci(por_n[it_n]["interp"]["mediana"])
     m["KInterpRazon"] = f"{por_n[it_n]['interp']['mediana'] / por_n[it_n]['azar']:.0f}"
+    # umbral 0.5: ADAPT l = 2 contra INTERP donde INTERP gana con umbral 0.1
+    for n, nom in ((5, "Cinco"), (6, "Seis"), (7, "Siete")):
+        pa = [r["p"] for r in k80["adapt"] if r["n"] == n and r["l"] == 2]
+        pi = [r["curva"][-1]["p_exito"] for r in k80["interp"] if r["n"] == n]
+        m[f"KMedioAdapt{nom}"] = f"{np.mean(np.array(pa) >= 0.5):.2f}"
+        m[f"KMedioInterp{nom}"] = f"{np.mean(np.array(pi) >= 0.5):.2f}"
+        m[f"KMinInterp{nom}"] = f"{min(pi):.2f}"
     m["KCorridasAdapt"] = len(k80["adapt"])
     m["KReinicios"] = len(k80["qaoa"])
     (INF / "numeros_mwnp.tex").write_text(

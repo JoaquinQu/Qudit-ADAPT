@@ -20,7 +20,7 @@ import json
 
 import numpy as np
 
-MUESTRAS = 2000
+MUESTRAS = 10000
 RANGOS = {"2n": lambda n: 2 * n, "3n": lambda n: 3 * n, "4n": lambda n: 4 * n,
           "6n": lambda n: 6 * n, "15": lambda n: 15}
 
@@ -33,8 +33,12 @@ def main():
         etiquetas = np.stack([(idx // 3 ** (n - 1 - i)) % 3 for i in range(n)], axis=1)
         caja0 = (etiquetas == 0).astype(float)
         caja1 = (etiquetas == 1).astype(float)
+        hechos = {}
         for nombre, R in RANGOS.items():
             R = R(n)
+            if R in hechos:            # mismo rango (n = 5: 3n = 15): mismo resultado
+                filas.append({**hechos[R], "rango": nombre})
+                continue
             perfecta = unica = 0
             for _ in range(MUESTRAS):
                 a = rng.choice(np.arange(1, R + 1), n, replace=False).astype(float)
@@ -45,8 +49,11 @@ def main():
                 optimos = int(np.sum((caja0 @ a == S / 3) & (caja1 @ a == S / 3)))
                 perfecta += optimos > 0
                 unica += optimos == 6
+            f = unica / MUESTRAS
             filas.append({"n": n, "rango": nombre, "R": R,
-                          "frac_perfecta": perfecta / MUESTRAS, "frac_unica": unica / MUESTRAS})
+                          "frac_perfecta": perfecta / MUESTRAS, "frac_unica": f,
+                          "error_unica": float(np.sqrt(f * (1 - f) / MUESTRAS))})
+            hechos[R] = filas[-1]
             print(f"n={n:2d} R={nombre:>3s} ({R:3d})  perfecta {perfecta/MUESTRAS:.3f}"
                   f"  única {unica/MUESTRAS:.3f}", flush=True)
     salida = PROJECT_ROOT / "resultados" / "json" / "rangos_instancias.json"

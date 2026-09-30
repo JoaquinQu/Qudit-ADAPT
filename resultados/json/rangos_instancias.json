@@ -1,215 +1,245 @@
 {
- "muestras": 2000,
+ "muestras": 10000,
  "filas": [
   {
    "n": 5,
    "rango": "2n",
    "R": 10,
-   "frac_perfecta": 0.0725,
-   "frac_unica": 0.0725
+   "frac_perfecta": 0.0789,
+   "frac_unica": 0.0789,
+   "error_unica": 0.0026958262184347123
   },
   {
    "n": 5,
    "rango": "3n",
    "R": 15,
-   "frac_perfecta": 0.027,
-   "frac_unica": 0.027
+   "frac_perfecta": 0.0334,
+   "frac_unica": 0.0334,
+   "error_unica": 0.0017967871326342471
   },
   {
    "n": 5,
    "rango": "4n",
    "R": 20,
-   "frac_perfecta": 0.0145,
-   "frac_unica": 0.0145
+   "frac_perfecta": 0.0122,
+   "frac_unica": 0.0122,
+   "error_unica": 0.0010977777552856499
   },
   {
    "n": 5,
    "rango": "6n",
    "R": 30,
-   "frac_perfecta": 0.0105,
-   "frac_unica": 0.0105
+   "frac_perfecta": 0.0072,
+   "frac_unica": 0.0072,
+   "error_unica": 0.0008454679177828097
   },
   {
    "n": 5,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.0295,
-   "frac_unica": 0.0295
+   "frac_perfecta": 0.0334,
+   "frac_unica": 0.0334,
+   "error_unica": 0.0017967871326342471
   },
   {
    "n": 6,
    "rango": "2n",
    "R": 12,
-   "frac_perfecta": 0.1075,
-   "frac_unica": 0.1075
+   "frac_perfecta": 0.1255,
+   "frac_unica": 0.1255,
+   "error_unica": 0.0033128499815113874
   },
   {
    "n": 6,
    "rango": "3n",
    "R": 18,
-   "frac_perfecta": 0.0555,
-   "frac_unica": 0.0555
+   "frac_perfecta": 0.0525,
+   "frac_unica": 0.0525,
+   "error_unica": 0.002230330692969094
   },
   {
    "n": 6,
    "rango": "4n",
    "R": 24,
-   "frac_perfecta": 0.024,
-   "frac_unica": 0.024
+   "frac_perfecta": 0.0249,
+   "frac_unica": 0.0249,
+   "error_unica": 0.0015582037735803363
   },
   {
    "n": 6,
    "rango": "6n",
    "R": 36,
-   "frac_perfecta": 0.0165,
-   "frac_unica": 0.0165
+   "frac_perfecta": 0.0125,
+   "frac_unica": 0.0125,
+   "error_unica": 0.0011110243021644486
   },
   {
    "n": 6,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.0735,
-   "frac_unica": 0.0735
+   "frac_perfecta": 0.0767,
+   "frac_unica": 0.0767,
+   "error_unica": 0.0026611484362958787
   },
   {
    "n": 7,
    "rango": "2n",
    "R": 14,
-   "frac_perfecta": 0.184,
-   "frac_unica": 0.1815
+   "frac_perfecta": 0.1634,
+   "frac_unica": 0.1577,
+   "error_unica": 0.003644594764853838
   },
   {
    "n": 7,
    "rango": "3n",
    "R": 21,
-   "frac_perfecta": 0.077,
-   "frac_unica": 0.0745
+   "frac_perfecta": 0.0803,
+   "frac_unica": 0.0784,
+   "error_unica": 0.0026880000000000003
   },
   {
    "n": 7,
    "rango": "4n",
    "R": 28,
-   "frac_perfecta": 0.0585,
-   "frac_unica": 0.0575
+   "frac_perfecta": 0.0477,
+   "frac_unica": 0.0463,
+   "error_unica": 0.00210134028657902
   },
   {
    "n": 7,
    "rango": "6n",
    "R": 42,
-   "frac_perfecta": 0.0235,
-   "frac_unica": 0.023
+   "frac_perfecta": 0.0205,
+   "frac_unica": 0.0203,
+   "error_unica": 0.001410245014173069
   },
   {
    "n": 7,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.1375,
-   "frac_unica": 0.133
+   "frac_perfecta": 0.153,
+   "frac_unica": 0.1486,
+   "error_unica": 0.00355693744673701
   },
   {
    "n": 8,
    "rango": "2n",
    "R": 16,
-   "frac_perfecta": 0.239,
-   "frac_unica": 0.15
+   "frac_perfecta": 0.2423,
+   "frac_unica": 0.152,
+   "error_unica": 0.0035902089075706997
   },
   {
    "n": 8,
    "rango": "3n",
    "R": 24,
-   "frac_perfecta": 0.136,
-   "frac_unica": 0.106
+   "frac_perfecta": 0.1342,
+   "frac_unica": 0.1074,
+   "error_unica": 0.0030962112331040983
   },
   {
    "n": 8,
    "rango": "4n",
    "R": 32,
-   "frac_perfecta": 0.0845,
-   "frac_unica": 0.0715
+   "frac_perfecta": 0.0788,
+   "frac_unica": 0.0682,
+   "error_unica": 0.0025208879388025165
   },
   {
    "n": 8,
    "rango": "6n",
    "R": 48,
-   "frac_perfecta": 0.0415,
-   "frac_unica": 0.037
+   "frac_perfecta": 0.039,
+   "frac_unica": 0.035,
+   "error_unica": 0.0018377975949489106
   },
   {
    "n": 8,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.2685,
-   "frac_unica": 0.1665
+   "frac_perfecta": 0.2563,
+   "frac_unica": 0.1531,
+   "error_unica": 0.0036008386523142077
   },
   {
    "n": 9,
    "rango": "2n",
    "R": 18,
-   "frac_perfecta": 0.3135,
-   "frac_unica": 0.0825
+   "frac_perfecta": 0.3047,
+   "frac_unica": 0.0824,
+   "error_unica": 0.002749731623267987
   },
   {
    "n": 9,
    "rango": "3n",
    "R": 27,
-   "frac_perfecta": 0.1975,
-   "frac_unica": 0.1145
+   "frac_perfecta": 0.2184,
+   "frac_unica": 0.1143,
+   "error_unica": 0.0031817528188091545
   },
   {
    "n": 9,
    "rango": "4n",
    "R": 36,
-   "frac_perfecta": 0.146,
-   "frac_unica": 0.0885
+   "frac_perfecta": 0.1433,
+   "frac_unica": 0.0946,
+   "error_unica": 0.0029266164764109423
   },
   {
    "n": 9,
    "rango": "6n",
    "R": 54,
-   "frac_perfecta": 0.074,
-   "frac_unica": 0.0585
+   "frac_perfecta": 0.0794,
+   "frac_unica": 0.0625,
+   "error_unica": 0.0024206145913796356
   },
   {
    "n": 9,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.3235,
-   "frac_unica": 0.042
+   "frac_perfecta": 0.3335,
+   "frac_unica": 0.0367,
+   "error_unica": 0.001880242271623527
   },
   {
    "n": 10,
    "rango": "2n",
    "R": 20,
-   "frac_perfecta": 0.3315,
-   "frac_unica": 0.0105
+   "frac_perfecta": 0.3308,
+   "frac_unica": 0.011,
+   "error_unica": 0.0010430244484191155
   },
   {
    "n": 10,
    "rango": "3n",
    "R": 30,
-   "frac_perfecta": 0.2915,
-   "frac_unica": 0.082
+   "frac_perfecta": 0.2817,
+   "frac_unica": 0.0689,
+   "error_unica": 0.0025328401054942255
   },
   {
    "n": 10,
    "rango": "4n",
    "R": 40,
-   "frac_perfecta": 0.2235,
-   "frac_unica": 0.089
+   "frac_perfecta": 0.2188,
+   "frac_unica": 0.095,
+   "error_unica": 0.00293214938227915
   },
   {
    "n": 10,
    "rango": "6n",
    "R": 60,
-   "frac_perfecta": 0.1305,
-   "frac_unica": 0.0725
+   "frac_perfecta": 0.1361,
+   "frac_unica": 0.0828,
+   "error_unica": 0.0027557967994756073
   },
   {
    "n": 10,
    "rango": "15",
    "R": 15,
-   "frac_perfecta": 0.335,
-   "frac_unica": 0.0
+   "frac_perfecta": 0.3332,
+   "frac_unica": 0.0,
+   "error_unica": 0.0
   }
  ]
 }
