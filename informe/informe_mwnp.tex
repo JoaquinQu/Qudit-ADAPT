@@ -42,15 +42,23 @@
 
 \begin{abstract}
 \noindent Aplicamos Qudit-ADAPT al problema de repartir $n$ números en tres subconjuntos de igual
-suma, con un qutrit por número. Hicimos \TotalTodo{} simulaciones en BitWit con $n=5$--$9$: 20
-instancias de solución única por tamaño, cada una bajo 5 órdenes de sus números.
+suma, con un qutrit por número. Hay dos bloques de simulaciones en BitWit, ambos con 20 instancias
+de solución única por tamaño, cada una bajo 5 órdenes de sus números:
+\begin{itemize}
+\item un estudio detallado con $n=5$--$9$ (\TotalTodo{} simulaciones: $\ell=1$ contra $\ell=2$ y
+  estrategias de inicialización, secciones 4.1--4.2);
+\item un benchmark ampliado de ADAPT ($k\leq80$) contra QAOA ($p=40$) con $n=5$--$\KNmax$
+  (sección~\ref{sec:k80}); $n=12$ está en curso.
+\end{itemize}
+Resultados principales:
 \begin{itemize}
 \item El problema es Max 3-Cut ponderado sobre el grafo completo $K_n$ (pesos $a_ia_j$) más una
   constante. El pool es el de $K_n$: $2n^2-n$ operadores con $\ell=1$ y
   $3n+40\binom{n}{2}+78\binom{n}{3}+32\binom{n}{4}$ con $\ell=2$.
-\item El pool $\ell=2$ resuelve más instancias que $\ell=1$ en todo $n$: gana en \OcSignoDos{}
+\item En $n=5$--9 el pool $\ell=2$ resuelve más instancias que $\ell=1$: gana en \OcSignoDos{}
   instancias contra \OcSignoUno{} (prueba de signo, $p=$\,\OcSignoP). Con ambos pools la tasa de
-  éxito cae con $n$.
+  éxito cae con $n$. En $n=10$--$\KNmax$, con tope de 80 parámetros, $\ell=2$ queda limitado por el
+  tope y no se separa de $\ell=1$.
 \item La conjetura de que el warm start es una desventaja no se sostiene. Con $\ell=2$, warm
   resuelve más que ADAPT desde $\bm\theta=0$ (\EstColdLDosWarm{} instancias contra
   \EstColdLDosOtra, $p=$\,\EstColdLDosP) y más que su propia secuencia reoptimizada desde
@@ -638,6 +646,10 @@ $\max_k\pex(k)\geq0.1$ en alguna iteración intermedia.
 %==============================================================================
 
 \subsection{\texorpdfstring{$\ell=1$ contra $\ell=2$}{l=1 contra l=2}}
+
+Esta sección y la siguiente cubren $n=5$--9 con tope de 150 parámetros. Los resultados de $\ell=1$
+contra $\ell=2$ para $n=10$ y $\KNmax$, con tope de 80, están en la sección~\ref{sec:k80}
+(tabla~\ref{tab:k80} y fig.~\ref{fig:k80}).
 
 \begin{table}[h]
 \centering
