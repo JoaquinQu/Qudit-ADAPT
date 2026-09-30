@@ -1016,23 +1016,58 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
   operadores distintos, no 2724, y para $G_2$ (Tabla~II) son 1550, no 1600. La dinámica no cambia,
   porque \texttt{argmax} elige siempre la primera copia. Sí cambian el tamaño reportado y las
   mediciones de gradiente: $16\times1550=24\,800$ en vez de $25\,600$ en las Tablas~II y~III.
-\item \textbf{Mixer de QAOA.} La ec.~(14) usa $H_M$ de la ec.~(9),
-  $-\sum_j(\sqrt2L_x+L_z^2)$, pero el código y el Apéndice~B usan $\sum_jL_x^{(j)}$ para QAOA. Conviene
-  unificar el texto.
+\item \textbf{Mezclador de QAOA en Max 3-Cut.} El texto y el código no dicen lo mismo:
+  \begin{enumerate}
+  \item \emph{Lo que dice el texto.} La ec.~(14) del paper define el circuito de QAOA como
+    $\prod_k e^{-i\beta_kH_M}e^{-i\gamma_kH_C}\ket{\phi_g}$, con el $H_M$ de la ec.~(9),
+    $H_M=-\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, cuyo estado fundamental es
+    $\ket{\phi_g}=\ket{+_3}^{\otimes n}$. Así, QAOA es una versión digitalizada de la evolución
+    adiabática que parte de ese estado.
+  \item \emph{Lo que hace el código.} \texttt{funciones/utilidades\_QAOA.py} define dos mezcladores:
+    \texttt{Hm\_qaoa\_jx} (líneas 83--96), $H_M=\sum_jL_x^{(j)}$, y \texttt{Hm\_qaoa\_x\_custom}
+    (líneas 99--110), $H_M=\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, que es el de la ec.~(9) salvo un
+    signo global (irrelevante: sólo invierte $\beta$). \texttt{preparar\_qaoa\_para\_grafo} (línea 113)
+    usa por defecto \texttt{mixer="jx"}, y el lanzador \texttt{cluster/main\_QAOA.py} (líneas 88--94)
+    también.
+  \item \emph{El estado inicial no cambia con el mezclador.} Las líneas 157--160 toman siempre el
+    fundamental de $-\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, es decir $\ket{+_3}^{\otimes n}$. Con el
+    mezclador $\sum_jL_x^{(j)}$, ese estado \emph{no} es su estado fundamental (ni siquiera un
+    autoestado), así que el circuito corrido ya no es la digitalización de una evolución adiabática.
+    Sigue siendo un ansatz variacional válido, pero no el que describe la ec.~(14).
+  \item \emph{Los resultados publicados usan $\sum_jL_x$.} Los dos archivos que carga
+    \texttt{cuadernillos/}\allowbreak\texttt{comparacion\_QAOA.ipynb} para las Figs.~1--3 y la
+    Tabla~I,
+    \texttt{resultados\_qaoa\_n6\_p20\_jx\_r25\_grafos\_1\_all.json} y
+    \texttt{resultados\_qaoa\_regulares\_n6\_p20\_jx\_r25\_grafos\_1\_4.json}, llevan \texttt{jx} en el
+    nombre, y sus 80 registros tienen \texttt{"mixer": "jx"}. El Apéndice~B (compilación de QAOA,
+    Tabla~IV) sí dice $H_M=\sum_jL_x^{(j)}$, que es lo que se corrió.
+  \end{enumerate}
+  Hay dos formas de arreglarlo: corregir el texto de la ec.~(14) para que diga $\sum_jL_x^{(j)}$, o
+  recorrer el QAOA de Max 3-Cut con \texttt{-{}-mixer custom} para que las figuras correspondan a la
+  ec.~(9). La segunda es barata (8 grafos de $n=6$) y además responde si QAOA mejora con el
+  mezclador ``correcto''. El QAOA de MWNP de este informe usa $\sum_jL_x^{(j)}$ para ser
+  consistente con lo publicado, así que le aplica lo mismo.
 \item En la sección~III.B aparece tres veces ``wamr-start''.
 \end{itemize}
 
 \section{Pendientes}
 
 \begin{itemize}
-\item QAOA con el mezclador de la ec.~(9), cuyo estado fundamental es $\ket{+_3}^{\otimes n}$.
+\item \textbf{Mezclador de la ec.~(9) en QAOA} (ver sección~\ref{sec:notas}):
+  \begin{itemize}
+  \item Max 3-Cut: recorrer el QAOA de las Figs.~1--3 del paper con \texttt{-{}-mixer custom} en
+    \texttt{cluster/main\_QAOA.py} (8 grafos, $n=6$; barato), o corregir el texto de la ec.~(14).
+  \item MWNP: repetir el benchmark de QAOA ($p=40$, reinicios e INTERP) con
+    \texttt{-{}-mezclador x} en \texttt{cluster/qaoa\_benchmark\_mwnp.py}; $n\leq11$ toma unas 9~h en
+    BitWit.
+  \end{itemize}
 \item $\ell=3$ en $n=5$--9 (factibilidad en estudio: el pool crece $\sim13$ veces respecto de
   $\ell=2$ y llega a operadores de 6 qutrits).
 \item $n=12$ del benchmark ampliado (ADAPT y QAOA), en curso en BitWit, e INTERP para $n=10$--12.
-\item Subir el tope de $\ell=2$ a 300 parámetros en $n=8,9$.
+\item Subir el tope de $\ell=2$ en $n\geq8$, donde la mayoría de las corridas llega al máximo.
 \item Explicar el estancamiento en $\pex\approx0.5$.
-\item QAOA reoptimizado sobre las instancias del benchmark ($n=5$--$9$), y conteo de compuertas
-  nativas a igual número de parámetros, como en la Tabla~IV del paper.
+\item Conteo de compuertas nativas de ADAPT contra QAOA a igual número de parámetros en MWNP, como
+  en la Tabla~IV del paper.
 \end{itemize}
 
 \end{document}
