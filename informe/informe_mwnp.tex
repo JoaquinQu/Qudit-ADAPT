@@ -33,7 +33,7 @@
 
 \title{\textbf{Qudit-ADAPT para multiway number partitioning ($k=3$)}\\[3pt]
 \large Informe técnico}
-\date{28 de septiembre de 2026}
+\date{30 de septiembre de 2026}
 \author{}
 
 \begin{document}
@@ -56,8 +56,9 @@ instancias de solución única por tamaño, cada una bajo 5 órdenes de sus núm
   \EstColdLDosOtra, $p=$\,\EstColdLDosP) y más que su propia secuencia reoptimizada desde
   $\bm\theta=0$ (\EstFijaLDosWarm{} contra \EstFijaLDosOtra, $p=$\,\EstFijaLDosP). Con $\ell=1$ no
   hay diferencia significativa.
-\item Contra QAOA ($n=5,6$), ADAPT $\ell=2$ supera a un QAOA bien optimizado con un número de
-  parámetros similar.
+\item Contra QAOA con 80 parámetros ($n=5$--$\KNmax$; $n=12$ en curso), ADAPT da un $\pex$ medio
+  órdenes de magnitud mayor: \KRazonNmax{} veces en $n=\KNmax$. QAOA con reinicios aleatorios queda
+  al nivel del azar desde $n=9$; con inicialización INTERP mejora, pero sigue por debajo de ADAPT.
 \item El resultado de una corrida individual depende del orden, arbitrario, en que se asignan los
   números a los qutrits. Todas las tasas se promedian sobre órdenes.
 \end{itemize}
@@ -711,6 +712,96 @@ optimizado (tabla~\ref{tab:qaoa}). La conclusión cualitativa del cuaderno de J.
 sostiene, pero la brecha es menor que la que muestran sus números. Para el paper, la comparación
 con QAOA en MWNP tiene que hacerse con un QAOA bien inicializado.
 
+\subsection{Benchmark ampliado: ADAPT (\texorpdfstring{$k\leq80$}{k<=80}) contra QAOA (\texorpdfstring{$p=40$}{p=40})}
+\label{sec:k80}
+
+Este benchmark es el que pidió el investigador principal: 20 conjuntos de números por $n$, ADAPT
+con $\ell=1$ y $\ell=2$ hasta 80 iteraciones, y QAOA con $p=40$ capas (80 parámetros) y 10 reinicios
+aleatorios, guardando $\pex$ en cada caso. Aquí van $n=5$--$\KNmax$; $n=12$ está corriendo en BitWit.
+
+\paragraph{Protocolo.}
+\begin{itemize}
+\item \textbf{ADAPT:} warm start, $\epsilon=10^{-3}$, tope de 80 parámetros y 5 órdenes por
+  instancia, en total \KCorridasAdapt{} corridas. Para $n\leq9$ se usan las primeras 80 iteraciones
+  de las corridas con tope 150, que son idénticas a una corrida con tope 80 porque ADAPT es
+  determinista y el tope sólo la corta. Para $n\geq10$ las corridas son nuevas, y con $\ell=2$ usan el
+  barrido por soporte, que da el mismo gradiente hasta $10^{-13}$. Los empates exactos se siguen
+  resolviendo por redondeo, como en el resto del informe.
+\item \textbf{QAOA:} el circuito del paper, con mezclador $\sum_jL_x^{(j)}$ y estado inicial
+  $\ket{+_3}^{\otimes n}$. $H_C$ se normaliza por su desviación estándar, se toman 10 puntos iniciales
+  uniformes en $[-\pi,\pi]^{80}$ y se optimiza con L-BFGS-B (cotas $\pm\pi$, gradiente analítico,
+  hasta 1000 iteraciones), en total \KReinicios{} reinicios. ``Mejor de 10'' es el reinicio de menor
+  energía, el que elegiría un experimento sin conocer la solución. Como referencia más fuerte se
+  agrega la cadena INTERP: grilla en $p=1$ y, de $p$ a $p+1$, los óptimos interpolados como punto
+  inicial.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{ADAPT ($k\leq80$) contra QAOA ($p=40$). ``Tasa'' es la fracción con $\pex\geq0.1$: para
+ADAPT, promediada sobre instancias y órdenes; para QAOA, la fracción de instancias cuyo mejor
+reinicio resuelve. ``Media'' es $\pex$ promedio: sobre corridas para ADAPT, sobre todos los reinicios
+para QAOA y sobre instancias para INTERP. ``Tope'' es la fracción de corridas de ADAPT $\ell=2$ que
+llegan a 80 parámetros.}
+\label{tab:k80}
+\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{rlcccccccccc}
+\toprule
+ & & \multicolumn{2}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} &
+ \multicolumn{2}{c}{QAOA, reinicios} & \multicolumn{2}{c}{QAOA, INTERP} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+$n$ & azar & tasa & media & tasa & media & tope & tasa & media & tasa & media \\
+\midrule
+\tabla{tabla_k80.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{k80_qaoa}
+\caption{(a) Fracción con $\pex\geq0.1$ contra $n$, con IC del 95\,\% por bootstrap sobre
+instancias. (b) $\pex$ medio contra $n$, con la probabilidad de acertar al azar.}
+\label{fig:k80}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{k80_parametros}
+\caption{$\pex$ medio contra número de parámetros: ADAPT en cada iteración $k$ (100 corridas por
+curva) y QAOA INTERP con $2p$ parámetros (20 instancias). El triángulo es el promedio de los 200
+reinicios aleatorios con $p=40$.}
+\label{fig:k80param}
+\end{figure}
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item \textbf{ADAPT supera a QAOA en todo $n$} (tabla~\ref{tab:k80}, fig.~\ref{fig:k80}). En
+  $n=\KNmax$, el $\pex$ medio de ADAPT $\ell=2$ es \KMediaDosNmax{}, contra \KMediaQaoaNmax{} de
+  QAOA: \KRazonNmax{} veces más.
+\item \textbf{QAOA con reinicios aleatorios sólo resuelve $n=5$.} Desde $n=9$ su $\pex$ medio queda
+  al nivel del azar. Sólo entre el \KQaoaConvMin{} y el \KQaoaConvMax\,\% de los reinicios converge
+  dentro de 1000 iteraciones, según $n$.
+\item \textbf{El problema de QAOA es la optimización, no el circuito.} Con el mismo circuito, INTERP
+  resuelve todas las instancias en $n=5,6$ y el 80\,\% en $n=7$; en $n=\KInterpN$ su mediana es
+  \KInterpMediana, \KInterpRazon{} veces el azar.
+\item \textbf{A igual número de parámetros} (fig.~\ref{fig:k80param}), ADAPT e INTERP coinciden en los
+  primeros $\sim5$ parámetros. Después ADAPT crece mucho más rápido: con unos 20 parámetros ya
+  supera lo que QAOA INTERP alcanza con 80.
+\item \textbf{ADAPT es ``todo o nada''.} Cada corrida termina resolviendo, con $\pex$ entre $0.5$ y
+  1, o muy por debajo del azar. Por eso su tasa cae con $n$ aunque su $\pex$ medio siga muy por
+  encima de QAOA.
+\item \textbf{En $n\geq10$, $\ell=2$ queda limitado por el tope:} entre el \KTopeMin{} y el
+  \KTopeMax\,\% de sus corridas llega a 80 parámetros. Por eso en $n=10$--11 no se separa de
+  $\ell=1$, que converge antes.
+\end{itemize}
+
+\paragraph{Conclusiones.} Con el mismo presupuesto de 80 parámetros, ADAPT da probabilidades de éxito
+órdenes de magnitud mayores que QAOA. El protocolo de reinicios aleatorios, el mismo del paper para
+Max 3-Cut, no sirve para QAOA en MWNP: en un paisaje de 80 dimensiones casi nunca encuentra un buen
+mínimo. La referencia de QAOA para el paper debería ser INTERP, que es mucho más fuerte y aun así
+queda por debajo de ADAPT.
+
 \subsection{Sensibilidad al orden, a la máquina y al rango}
 \label{sec:sensibilidad}
 
@@ -795,8 +886,8 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
 \item El warm start no es una desventaja. Con $\ell=2$ es claramente mejor que reiniciar desde
   $\bm\theta=0$, tanto en la elección de operadores (ADAPT desde cero se detiene antes) como en la
   optimización de un circuito fijo. Con $\ell=1$ las estrategias son equivalentes.
-\item ADAPT $\ell=2$ supera a un QAOA bien optimizado con un número similar de parámetros. El
-  QAOA de MWNP tiene que inicializarse en la escala de $H_C$.
+\item ADAPT supera a QAOA con el mismo presupuesto de parámetros, y la ventaja crece con $n$. Los
+  reinicios aleatorios no sirven para QAOA en MWNP; la referencia justa es INTERP.
 \item Las corridas individuales dependen del orden de los números y, en casi-empates, de la
   máquina. Las tasas deben promediarse sobre órdenes y compararse dentro de una misma máquina.
 \end{enumerate}
@@ -822,6 +913,7 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
 \section{Pendientes}
 
 \begin{itemize}
+\item $n=12$ del benchmark ampliado (ADAPT y QAOA), en curso en BitWit, e INTERP para $n=10$--12.
 \item Subir el tope de $\ell=2$ a 300 parámetros en $n=8,9$.
 \item Explicar el estancamiento en $\pex\approx0.5$.
 \item QAOA reoptimizado sobre las instancias del benchmark ($n=5$--$9$), y conteo de compuertas

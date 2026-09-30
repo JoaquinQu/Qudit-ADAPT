@@ -704,6 +704,137 @@ def cifras(por, todas):
 
 
 
+# --------------------------------------------------------------------------
+# benchmark ampliado: ADAPT (k <= 80) contra QAOA (p = 40)
+# --------------------------------------------------------------------------
+
+C_QAOA, C_INTERP = "#6b7280", "#7c3aed"
+
+
+def cargar_k80():
+    return json.load(open(RES / "json" / "k80_qaoa.json", encoding="utf-8"))
+
+
+def _boot(t, reps=10000):
+    t = np.asarray(t, dtype=float)
+    medias = np.random.default_rng(0).choice(t, (reps, len(t))).mean(axis=1)
+    return float(t.mean()), np.percentile(medias, [2.5, 97.5])
+
+
+def k80_por_n(d):
+    """Por n: tasas (con IC por instancia) y p_éxito medio de cada método."""
+    fuera = {}
+    for n in sorted({r["n"] for r in d["adapt"]} | {r["n"] for r in d["qaoa"]}):
+        f = {"azar": 6 / 3 ** n}
+        for l in (1, 2):
+            rows = [r for r in d["adapt"] if r["n"] == n and r["l"] == l]
+            if not rows:
+                continue
+            bases = sorted({r["base"] for r in rows})
+            t = [np.mean([r["p"] >= UMBRAL for r in rows if r["base"] == b]) for b in bases]
+            f[f"l{l}"] = {"tasa": _boot(t), "media": float(np.mean([r["p"] for r in rows])),
+                          "tope": float(np.mean([r["k"] >= 80 for r in rows])), "corridas": len(rows)}
+        q = [r for r in d["qaoa"] if r["n"] == n]
+        if q:
+            ids = sorted({r["id"] for r in q})
+            mejor = [min((r for r in q if r["id"] == i), key=lambda r: r["E_j"])["p"] for i in ids]
+            f["qaoa"] = {"tasa_mejor": _boot([m >= UMBRAL for m in mejor]),
+                         "media": float(np.mean([r["p"] for r in q])),
+                         "media_mejor": float(np.mean(mejor)),
+                         "conv": float(np.mean([r["exito"] for r in q])), "reinicios": len(q)}
+        it = [r["curva"][-1]["p_exito"] for r in d["interp"] if r["n"] == n]
+        if it:
+            f["interp"] = {"tasa": _boot([x >= UMBRAL for x in it]), "media": float(np.mean(it)),
+                           "mediana": float(np.median(it))}
+        fuera[n] = f
+    return fuera
+
+
+def fig_k80(por_n):
+    ns = sorted(por_n)
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.2, 3.0))
+    series = [("l1", r"ADAPT $\ell=1$", C_L1, "o", -0.09), ("l2", r"ADAPT $\ell=2$", C_L2, "s", -0.03),
+              ("qaoa", r"QAOA $p=40$, mejor de 10", C_QAOA, "^", 0.03),
+              ("interp", r"QAOA $p=40$, INTERP", C_INTERP, "D", 0.09)]
+    for clave, nombre, c, m, dx in series:
+        xs = [n for n in ns if clave in por_n[n]]
+        if not xs:
+            continue
+        campo = "tasa_mejor" if clave == "qaoa" else "tasa"
+        y = np.array([por_n[n][clave][campo][0] for n in xs])
+        ic = np.array([por_n[n][clave][campo][1] for n in xs])
+        a.errorbar(np.array(xs) + dx, y, yerr=[y - ic[:, 0], ic[:, 1] - y], color=c, marker=m,
+                   ms=4.5, lw=1.4, capsize=2, label=nombre)
+        med = [por_n[n][clave]["media"] for n in xs]
+        b.plot(xs, med, color=c, marker=m, ms=4.5, lw=1.4, label=nombre)
+    b.plot(ns, [por_n[n]["azar"] for n in ns], "k--", lw=1, label=r"azar, $6/3^n$")
+    a.set_ylim(-0.03, 1.03)
+    a.set_ylabel(r"fracci\'on con $p_{\rm \acute{e}xito}\geq 0.1$")
+    b.set_yscale("log")
+    b.set_ylabel(r"$p_{\rm \acute{e}xito}$ medio")
+    for ax, t in ((a, "(a)"), (b, "(b)")):
+        ax.set_xlabel(r"n\'umero de qutrits $n$")
+        ax.set_xticks(ns)
+        ax.set_title(t, loc="left", fontsize=10)
+    b.legend(frameon=False, fontsize=7.5, loc="lower left")
+    fig.tight_layout(w_pad=2.0)
+    guardar(fig, "k80_qaoa")
+
+
+def _trazas_adapt(n, l):
+    tr = []
+    for carpeta in ("mwnp_ordenes_5a9", "mwnp_k80"):
+        for f in glob.glob(str(RES / carpeta / f"n{n}_l{l}_i*.json")):
+            if "_cold" in f or "_fija0" in f:
+                continue
+            t = json.load(open(f, encoding="utf-8"))["trazas"]["p_exito"][:81]
+            tr.append(t + [t[-1]] * (81 - len(t)))
+    return np.array(tr)
+
+
+def fig_k80_parametros(d, ns=(6, 8)):
+    """p_éxito medio contra número de parámetros: ADAPT (k) y QAOA INTERP (2p)."""
+    fig, ejes = plt.subplots(1, len(ns), figsize=(7.2, 2.9), sharey=False)
+    for ax, n in zip(ejes, ns):
+        for l, c, nombre in ((1, C_L1, r"ADAPT $\ell=1$"), (2, C_L2, r"ADAPT $\ell=2$")):
+            T = _trazas_adapt(n, l)
+            if len(T):
+                ax.plot(np.arange(81), T.mean(axis=0), color=c, lw=1.6, label=nombre)
+        cur = [r["curva"] for r in d["interp"] if r["n"] == n]
+        if cur:
+            M = np.array([[e["p_exito"] for e in c] for c in cur])
+            ax.plot(2 * np.arange(1, M.shape[1] + 1), M.mean(axis=0), color=C_INTERP, lw=1.6,
+                    label=r"QAOA, INTERP")
+        q = [r["p"] for r in d["qaoa"] if r["n"] == n]
+        if q:
+            ax.plot([80], [np.mean(q)], "^", color=C_QAOA, ms=7, label=r"QAOA $p=40$, reinicios")
+        ax.axhline(6 / 3 ** n, color="k", ls="--", lw=1, label="azar")
+        ax.set_yscale("log")
+        ax.set_xlabel(r"n\'umero de par\'ametros")
+        ax.set_title(rf"$n={n}$", fontsize=10)
+    ejes[0].set_ylabel(r"$p_{\rm \acute{e}xito}$ medio")
+    h, e = ejes[0].get_legend_handles_labels()
+    fig.legend(h, e, frameon=False, fontsize=8, loc="lower center", ncol=5, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(w_pad=1.5, rect=(0, 0.08, 1, 1))
+    guardar(fig, "k80_parametros")
+
+
+def tabla_k80(por_n):
+    lineas = []
+    for n in sorted(por_n):
+        f = por_n[n]
+        def ad(l):
+            x = f.get(f"l{l}")
+            return "-- & --" if not x else rf"{x['tasa'][0]:.2f} & {_sci(x['media'])}"
+        q = f.get("qaoa")
+        qs = rf"{q['tasa_mejor'][0]:.2f} & {_sci(q['media'])}" if q else "-- & --"
+        it = f.get("interp")
+        its = rf"{it['tasa'][0]:.2f} & {_sci(it['media'])}" if it else "-- & --"
+        tope = f"{f['l2']['tope']:.2f}" if "l2" in f else "--"
+        lineas.append(rf"{n} & {_sci(f['azar'])} & {ad(1)} & {ad(2)} & {tope} & {qs} & {its} \\")
+    return "\n".join(lineas)
+
+
 def main():
     estilo()
     por, todas = cargar_corridas()
@@ -730,7 +861,26 @@ def main():
     (INF / "tabla_instancias.tex").write_text(tabla_instancias(), encoding="utf-8")
     (INF / "tabla_fase1.tex").write_text(tabla_fase1(por), encoding="utf-8")
     (INF / "tabla_fase2.tex").write_text(tabla_fase2(por), encoding="utf-8")
+    k80 = cargar_k80()
+    por_n = k80_por_n(k80)
+    fig_k80(por_n)
+    fig_k80_parametros(k80)
+    (INF / "tabla_k80.tex").write_text(tabla_k80(por_n), encoding="utf-8")
     m = cifras(por, todas)
+    nmax = max(n for n in por_n if "qaoa" in por_n[n] and "l2" in por_n[n])
+    m["KNmax"] = nmax
+    m["KMediaDosNmax"] = _sci(por_n[nmax]["l2"]["media"])
+    m["KMediaQaoaNmax"] = _sci(por_n[nmax]["qaoa"]["media"])
+    m["KRazonNmax"] = f"{por_n[nmax]['l2']['media'] / por_n[nmax]['qaoa']['media']:.0f}"
+    topes = [por_n[n]["l2"]["tope"] for n in por_n if n >= 10 and "l2" in por_n[n]]
+    m["KTopeMin"], m["KTopeMax"] = f"{100 * min(topes):.0f}", f"{100 * max(topes):.0f}"
+    conv = [por_n[n]["qaoa"]["conv"] for n in por_n if "qaoa" in por_n[n]]
+    m["KQaoaConvMin"], m["KQaoaConvMax"] = f"{100 * min(conv):.0f}", f"{100 * max(conv):.0f}"
+    it_n = max(n for n in por_n if "interp" in por_n[n])
+    m["KInterpN"], m["KInterpMediana"] = it_n, _sci(por_n[it_n]["interp"]["mediana"])
+    m["KInterpRazon"] = f"{por_n[it_n]['interp']['mediana'] / por_n[it_n]['azar']:.0f}"
+    m["KCorridasAdapt"] = len(k80["adapt"])
+    m["KReinicios"] = len(k80["qaoa"])
     (INF / "numeros_mwnp.tex").write_text(
         "\n".join(rf"\newcommand{{\{k}}}{{{v}}}" for k, v in m.items()) + "\n", encoding="utf-8")
     for k, v in m.items():
