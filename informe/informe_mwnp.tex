@@ -48,7 +48,7 @@ de solución única por tamaño, cada una bajo 5 órdenes de sus números:
 \item un estudio detallado con $n=5$--$9$ (\TotalTodo{} simulaciones: $\ell=1$ contra $\ell=2$ y
   estrategias de inicialización, secciones 4.1--4.2);
 \item un benchmark ampliado de ADAPT ($k\leq80$) contra QAOA ($p=40$) con $n=5$--$\KNmax$
-  (sección~\ref{sec:k80}); $n=12$ está en curso.
+  (sección~\ref{sec:k80}); INTERP de $n=10$--12 está en curso.
 \end{itemize}
 Resultados principales:
 \begin{itemize}
@@ -58,13 +58,13 @@ Resultados principales:
 \item En $n=5$--9 el pool $\ell=2$ resuelve más instancias que $\ell=1$: gana en \OcSignoDos{}
   instancias contra \OcSignoUno{} (prueba de signo, $p=$\,\OcSignoP). Con ambos pools la tasa de
   éxito cae con $n$. En $n=10$--$\KNmax$, con tope de 80 parámetros, $\ell=2$ queda limitado por el
-  tope y no se separa de $\ell=1$.
+  tope; aun así, en $n=11$ y 12 resuelve algunas instancias y $\ell=1$ casi ninguna.
 \item La conjetura de que el warm start es una desventaja no se sostiene. Con $\ell=2$, warm
   resuelve más que ADAPT desde $\bm\theta=0$ (\EstColdLDosWarm{} instancias contra
   \EstColdLDosOtra, $p=$\,\EstColdLDosP) y más que su propia secuencia reoptimizada desde
   $\bm\theta=0$ (\EstFijaLDosWarm{} contra \EstFijaLDosOtra, $p=$\,\EstFijaLDosP). Con $\ell=1$ no
   hay diferencia significativa.
-\item Contra QAOA con 80 parámetros ($n=5$--$\KNmax$; $n=12$ en curso), ADAPT da un $\pex$ medio
+\item Contra QAOA con 80 parámetros ($n=5$--$\KNmax$), ADAPT da un $\pex$ medio
   mucho mayor que QAOA con reinicios aleatorios: \KRazonNmax{} veces en $n=\KNmax$, donde QAOA queda
   al nivel del azar. Con inicialización INTERP, QAOA mejora mucho. ADAPT le gana en $\pex$ medio en
   todo $n$ y en fracción resuelta desde $n=8$, pero INTERP resuelve más instancias con $\pex\geq0.1$
@@ -820,7 +820,7 @@ con QAOA en MWNP tiene que hacerse con un QAOA bien inicializado.
 
 Este benchmark es el que pidió el investigador principal: 20 conjuntos de números por $n$, ADAPT
 con $\ell=1$ y $\ell=2$ hasta 80 iteraciones, y QAOA con $p=40$ capas (80 parámetros) y 10 reinicios
-aleatorios, guardando $\pex$ en cada caso. Aquí van $n=5$--$\KNmax$; $n=12$ está corriendo en BitWit.
+aleatorios, guardando $\pex$ en cada caso. Aquí van $n=5$--$\KNmax$; falta sólo INTERP para $n\geq10$, que está corriendo en BitWit.
 
 \paragraph{Protocolo.}
 \begin{itemize}
@@ -912,8 +912,8 @@ reinicios aleatorios con $p=40$.}
   1, o muy por debajo del azar. Por eso su tasa cae con $n$ aunque su $\pex$ medio siga muy por
   encima de QAOA.
 \item \textbf{En $n\geq10$, $\ell=2$ queda limitado por el tope:} entre el \KTopeMin{} y el
-  \KTopeMax\,\% de sus corridas llega a 80 parámetros. Por eso en $n=10$--11 no se separa de
-  $\ell=1$, que converge antes.
+  \KTopeMax\,\% de sus corridas llega a 80 parámetros. En $n=10$ no se separa de $\ell=1$; en
+  $n=11$ y 12 sí, porque $\ell=1$ converge antes a estados que casi nunca son la solución.
 \end{itemize}
 
 \paragraph{Conclusiones.} Con el mismo presupuesto de 80 parámetros, ADAPT da probabilidades de éxito
@@ -1075,7 +1075,7 @@ y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
   \end{itemize}
 \item $\ell=3$ en $n=5$--9 (factibilidad en estudio: el pool crece $\sim13$ veces respecto de
   $\ell=2$ y llega a operadores de 6 qutrits).
-\item $n=12$ del benchmark ampliado (ADAPT y QAOA), en curso en BitWit, e INTERP para $n=10$--12.
+\item INTERP para $n=10$--12, en curso en BitWit.
 \item Subir el tope de $\ell=2$ en $n\geq8$, donde la mayoría de las corridas llega al máximo.
 \item Explicar el estancamiento en $\pex\approx0.5$.
 \item Conteo de compuertas nativas de ADAPT contra QAOA a igual número de parámetros en MWNP, como
