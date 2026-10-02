@@ -836,6 +836,166 @@ def tabla_k80(por_n):
     return "\n".join(lineas)
 
 
+# --------------------------------------------------------------------------
+# compuertas nativas y figura estilo paper (mediana y rango intercuartil)
+# --------------------------------------------------------------------------
+
+def cargar_compuertas_qaoa():
+    return {int(k): v for k, v in
+            json.load(open(RES / "json" / "compuertas_qaoa_p40.json", encoding="utf-8")).items()}
+
+
+def fig_compuertas(d, cq):
+    ns = sorted({r["n"] for r in d["adapt"]})
+    fig, ejes = plt.subplots(1, 3, figsize=(7.4, 2.7), sharey=False)
+    for ax, clave, cq_clave, titulo in zip(
+            ejes, ("r_local", "ms", "total"), ("r_dos_niveles", "ms", "total"),
+            (r"locales (rotaciones $R^{(i,j)}$)", r"no locales (MS)", r"totales")):
+        for l, c, m in ((1, C_L1, "o"), (2, C_L2, "s")):
+            q = np.array([np.percentile([r[clave] for r in d["adapt"] if r["n"] == n and r["l"] == l],
+                                        [25, 50, 75]) for n in ns])
+            ax.plot(ns, q[:, 1], color=c, marker=m, ms=4, lw=1.5, label=rf"ADAPT $\ell={l}$")
+            ax.fill_between(ns, q[:, 0], q[:, 2], color=c, alpha=0.2, lw=0)
+        ax.plot(ns, [cq[n]["gellmann"][cq_clave] for n in ns], color=C_QAOA, marker="^", ms=4, lw=1.5,
+                label=r"QAOA $p=40$")
+        ax.set_yscale("log")
+        ax.set_title(titulo, fontsize=9.5)
+        ax.set_xlabel(r"$n$")
+        ax.set_xticks(ns[::2])
+    ejes[0].set_ylabel(r"compuertas nativas")
+    h, e = ejes[0].get_legend_handles_labels()
+    fig.legend(h, e, frameon=False, fontsize=8, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(w_pad=1.0, rect=(0, 0.08, 1, 1))
+    guardar(fig, "compuertas")
+
+
+def fig_compuertas_pexito(d, cq, ns=(7, 10)):
+    """Cada corrida: compuertas totales contra p_éxito."""
+    rng = np.random.default_rng(3)
+    fig, ejes = plt.subplots(1, len(ns), figsize=(7.2, 2.9))
+    for ax, n in zip(ejes, ns):
+        for l, c, m in ((1, C_L1, "o"), (2, C_L2, "s")):
+            r = [x for x in d["adapt"] if x["n"] == n and x["l"] == l]
+            ax.scatter([x["total"] for x in r], [max(x["p"], PISO) for x in r], s=9, color=c, marker=m,
+                       alpha=0.6, lw=0, label=rf"ADAPT $\ell={l}$ (100 corridas)")
+        qs = [max(x["p"], PISO) for x in d["qaoa"] if x["n"] == n]
+        xq = cq[n]["gellmann"]["total"] * (1 + 0.04 * rng.uniform(-1, 1, len(qs)))
+        ax.scatter(xq, qs, s=9, color=C_QAOA, marker="^", alpha=0.6, lw=0,
+                   label=r"QAOA $p=40$ (200 reinicios)")
+        ax.axhline(6 / 3 ** n, color="k", ls="--", lw=1, label="azar")
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_ylim(PISO / 3, 3)
+        ax.set_xlabel("compuertas nativas totales")
+        ax.set_title(rf"$n={n}$", fontsize=10)
+    ejes[0].set_ylabel(r"$p_{\rm \acute{e}xito}$")
+    h, e = ejes[0].get_legend_handles_labels()
+    fig.legend(h, e, frameon=False, fontsize=8, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(w_pad=1.5, rect=(0, 0.08, 1, 1))
+    guardar(fig, "compuertas_pexito")
+
+
+def tabla_compuertas(d, cq):
+    lineas = []
+    for n in sorted({r["n"] for r in d["adapt"]}):
+        celdas = []
+        for l in (1, 2):
+            r = [x for x in d["adapt"] if x["n"] == n and x["l"] == l]
+            for clave in ("r_local", "ms", "total"):
+                celdas.append(f"{np.median([x[clave] for x in r]):.0f}")
+        g = cq[n]["gellmann"]
+        celdas += [str(g["r_dos_niveles"]), str(g["ms"]), str(g["total"])]
+        lineas.append(rf"{n} & " + " & ".join(celdas) + r" \\")
+    return "\n".join(lineas)
+
+
+def _e_unif(a, cache={}):
+    from funciones.utilidades_mwnp import hamiltoniano_joaquin
+    clave = tuple(a)
+    if clave not in cache:
+        cache[clave] = float(np.mean(hamiltoniano_joaquin(a)))
+    return cache[clave]
+
+
+def _qaoa_barrido(n):
+    """p -> listas (p_éxito, E/E_unif) de todos los reinicios a esa profundidad."""
+    fuera = {}
+    carpetas = {int(c.name[1:]): c for c in (RES / "qaoa_barrido").glob("p*")} if (RES / "qaoa_barrido").exists() else {}
+    carpetas[40] = RES / "qaoa_p40"
+    for p, carpeta in carpetas.items():
+        ps, es = [], []
+        for f in carpeta.glob(f"n{n}_i*_r*.json"):
+            dd = json.load(open(f, encoding="utf-8"))
+            ps.append(dd["resultado"]["p_exito"])
+            es.append(dd["resultado"]["E_j"] / _e_unif(dd["instancia"]["a"]))
+        if ps:
+            fuera[p] = (np.array(ps), np.array(es))
+    return dict(sorted(fuera.items()))
+
+
+def _trazas_adapt_pe(n, l):
+    P, E = [], []
+    for carpeta in ("mwnp_ordenes_5a9", "mwnp_k80"):
+        for f in glob.glob(str(RES / carpeta / f"n{n}_l{l}_i*.json")):
+            if "_cold" in f or "_fija0" in f:
+                continue
+            t = json.load(open(f, encoding="utf-8"))["trazas"]
+            p, e = t["p_exito"][:81], [x / t["energia_j"][0] for x in t["energia_j"][:81]]
+            P.append(p + [p[-1]] * (81 - len(p)))
+            E.append(e + [e[-1]] * (81 - len(e)))
+    return np.array(P), np.array(E)
+
+
+def fig_estilo_paper(d, ns=(6, 8, 10)):
+    """
+    Como las Figs. 1-3 del paper: mediana y rango intercuartil contra número de
+    parámetros. ADAPT: 100 corridas (20 instancias x 5 órdenes) en cada k.
+    QAOA: 200 reinicios (20 instancias x 10) en cada p. Arriba p_éxito, abajo
+    la energía relativa a la de la superposición uniforme, E / E_unif.
+    """
+    fig, ejes = plt.subplots(2, len(ns), figsize=(7.4, 5.0))
+    for j, n in enumerate(ns):
+        P, E = {}, {}
+        for l in (1, 2):
+            P[l], E[l] = _trazas_adapt_pe(n, l)
+        qb = _qaoa_barrido(n)
+        it = [r["curva"] for r in d["interp"] if r["n"] == n]
+        for fila, (ax, ylab) in enumerate(((ejes[0, j], r"$p_{\rm \acute{e}xito}$"),
+                                          (ejes[1, j], r"$E/E_{\rm unif}$"))):
+            for l, c in ((1, C_L1), (2, C_L2)):
+                M = P[l] if fila == 0 else E[l]
+                if not len(M):
+                    continue
+                q = np.percentile(np.maximum(M, PISO), [25, 50, 75], axis=0)
+                ax.plot(np.arange(81), q[1], color=c, lw=1.5, label=rf"ADAPT $\ell={l}$")
+                ax.fill_between(np.arange(81), q[0], q[2], color=c, alpha=0.2, lw=0)
+            if qb:
+                xs = np.array([2 * p for p in qb])
+                q = np.array([np.percentile(np.maximum(v[fila], PISO), [25, 50, 75]) for v in qb.values()])
+                ax.plot(xs, q[:, 1], color=C_QAOA, marker="^", ms=3.5, lw=1.3,
+                        label=r"QAOA, 10 reinicios por instancia")
+                ax.fill_between(xs, q[:, 0], q[:, 2], color=C_QAOA, alpha=0.25, lw=0)
+            if it:
+                nums = {i["id"]: i["a"] for i in json.load(open(PROJECT_ROOT / "datos" / "mwnp_instancias_5a12.json",
+                                                                 encoding="utf-8"))["instancias"] if i["n"] == n}
+                Mi = np.array([[e["p_exito"] if fila == 0 else e["E_j"] / _e_unif(nums[r["id"]])
+                                for e in r["curva"]] for r in d["interp"] if r["n"] == n])
+                ax.plot(2 * np.arange(1, Mi.shape[1] + 1), np.median(Mi, axis=0), color=C_INTERP,
+                        lw=1.2, ls="--", label="QAOA INTERP (mediana)")
+            if fila == 0:
+                ax.axhline(6 / 3 ** n, color="k", ls=":", lw=1, label="azar")
+                ax.set_title(rf"$n={n}$", fontsize=10)
+            ax.set_yscale("log")
+            if j == 0:
+                ax.set_ylabel(ylab)
+            if fila == 1:
+                ax.set_xlabel(r"n\'umero de par\'ametros")
+    h, e = ejes[0, 0].get_legend_handles_labels()
+    fig.legend(h, e, frameon=False, fontsize=8, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.01))
+    fig.tight_layout(h_pad=0.8, w_pad=1.0, rect=(0, 0.07, 1, 1))
+    guardar(fig, "estilo_paper")
+
+
 def main():
     estilo()
     por, todas = cargar_corridas()
@@ -867,6 +1027,11 @@ def main():
     fig_k80(por_n)
     fig_k80_parametros(k80)
     (INF / "tabla_k80.tex").write_text(tabla_k80(por_n), encoding="utf-8")
+    cq = cargar_compuertas_qaoa()
+    fig_compuertas(k80, cq)
+    fig_compuertas_pexito(k80, cq)
+    (INF / "tabla_compuertas.tex").write_text(tabla_compuertas(k80, cq), encoding="utf-8")
+    fig_estilo_paper(k80)
     m = cifras(por, todas)
     nmax = max(n for n in por_n if "qaoa" in por_n[n] and "l2" in por_n[n])
     m["KNmax"] = nmax

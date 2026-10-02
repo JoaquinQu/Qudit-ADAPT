@@ -52,8 +52,10 @@ def cargar_adapt():
             if d["config"].get("estrategia", "warm") != "warm":
                 continue
             k = min(K, len(tr["p_exito"]) - 1)
+            cn = d["resultado"]["compuertas_nativas"]       # acumuladas: índice k = primeros k operadores
             filas[(i["n"], d["config"]["l"], i["instancia_base"], i["orden"])] = {
-                "p": tr["p_exito"][k], "k": k, "E_j": tr["energia_j"][k],
+                "p": tr["p_exito"][k], "k": k, "E_j": tr["energia_j"][k], "E_ini_j": tr["energia_j"][0],
+                "r_local": cn["r_dos_niveles"][k], "ms": cn["ms"][k], "total": cn["total"][k],
                 "p_azar": i["p_azar"], "fuente": carpeta.name}
     return filas
 
