@@ -1,0 +1,1446 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{txfonts}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs,multirow}
+\usepackage{caption,subcaption}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{quantikz2}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,citecolor=MidnightBlue,urlcolor=MidnightBlue]{hyperref}
+
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+\renewcommand{\abstractname}{Resumen}
+\renewcommand{\contentsname}{Contenido}
+\captionsetup{font=small,labelfont=bf}
+\setlist{itemsep=2pt,topsep=3pt}
+\graphicspath{{figuras/}}
+
+\input{numeros_mwnp.tex}
+\makeatletter\newcommand{\tabla}[1]{\@@input #1 }\makeatother
+
+\newcommand{\pex}{p_{\rm \acute{e}xito}}
+\renewcommand{\ket}[1]{|#1\rangle}
+\newcommand{\Ly}{L_y}
+\newcommand{\Lz}{L_z}
+\newcommand{\Lx}{L_x}
+
+\title{\textbf{Qudit-ADAPT para multiway number partitioning ($k=3$)}\\[3pt]
+\large Informe técnico}
+\date{30 de septiembre de 2026}
+\author{}
+
+\begin{document}
+\maketitle
+\vspace{-2.5em}
+
+\begin{abstract}
+\noindent Aplicamos Qudit-ADAPT al problema de repartir $n$ números en tres subconjuntos de igual
+suma, con un qutrit por número. Hay dos bloques de simulaciones en BitWit, ambos con 20 instancias
+de solución única por tamaño, cada una bajo 5 órdenes de sus números:
+\begin{itemize}
+\item un estudio detallado con $n=5$--$9$ (\TotalTodo{} simulaciones: $\ell=1$ contra $\ell=2$ y
+  estrategias de inicialización, secciones 4.1--4.2);
+\item un benchmark ampliado de ADAPT ($k\leq80$) contra QAOA ($p=40$) con $n=5$--$\KNmax$
+  (sección~\ref{sec:k80}); INTERP de $n=10$--12 está en curso.
+\end{itemize}
+Resultados principales:
+\begin{itemize}
+\item El problema es Max 3-Cut ponderado sobre el grafo completo $K_n$ (pesos $a_ia_j$) más una
+  constante. El pool es el de $K_n$: $2n^2-n$ operadores con $\ell=1$ y
+  $3n+40\binom{n}{2}+78\binom{n}{3}+32\binom{n}{4}$ con $\ell=2$.
+\item En $n=5$--9 el pool $\ell=2$ resuelve más instancias que $\ell=1$: gana en \OcSignoDos{}
+  instancias contra \OcSignoUno{} (prueba de signo, $p=$\,\OcSignoP). Con ambos pools la tasa de
+  éxito cae con $n$. En $n=10$--$\KNmax$, con tope de 80 parámetros, $\ell=2$ queda limitado por el
+  tope; aun así, en $n=11$ y 12 resuelve algunas instancias y $\ell=1$ casi ninguna.
+\item La conjetura de que el warm start es una desventaja no se sostiene. Con $\ell=2$, warm
+  resuelve más que ADAPT desde $\bm\theta=0$ (\EstColdLDosWarm{} instancias contra
+  \EstColdLDosOtra, $p=$\,\EstColdLDosP) y más que su propia secuencia reoptimizada desde
+  $\bm\theta=0$ (\EstFijaLDosWarm{} contra \EstFijaLDosOtra, $p=$\,\EstFijaLDosP). Con $\ell=1$ no
+  hay diferencia significativa.
+\item Contra QAOA con 80 parámetros ($n=5$--$\KNmax$), ADAPT da un $\pex$ medio
+  mucho mayor que QAOA con reinicios aleatorios: \KRazonNmax{} veces en $n=\KNmax$, donde QAOA queda
+  al nivel del azar. Con inicialización INTERP, QAOA mejora mucho. ADAPT le gana en $\pex$ medio en
+  todo $n$ y en fracción resuelta desde $n=8$, pero INTERP resuelve más instancias con $\pex\geq0.1$
+  en $n\leq7$.
+\item El resultado de una corrida individual depende de qué número se asigna a qué qutrit, una
+  elección arbitraria. Desde la superposición uniforme hay operadores empatados en gradiente, y
+  \texttt{argmax} toma el primero de la lista; cambiar la numeración cambia cuál es el primero y
+  puede convertir un éxito en un fracaso (ejemplo en la sección~3.2). Por eso cada instancia se corre
+  con 5 órdenes y se reporta la fracción que la resuelve.
+\end{itemize}
+\end{abstract}
+
+\tableofcontents
+
+%==============================================================================
+\section{Problema y codificación}
+%==============================================================================
+
+\subsection{El problema}
+
+Dados $n$ enteros positivos $a_1,\dots,a_n$ con suma $S$, se busca asignar a cada uno una caja
+$z_j\in\{0,1,2\}$ de modo que las sumas por caja,
+\begin{equation}
+  \Sigma_i(z)=\sum_{j=1}^n a_j\,\delta_{i,z_j},\qquad i=0,1,2,
+\end{equation}
+sean lo más parejas posible. Una partición es \emph{perfecta} si $\Sigma_0=\Sigma_1=\Sigma_2=S/3$.
+
+Dos propiedades que usamos más adelante:
+\begin{itemize}
+\item \textbf{Degeneración mínima 6.} Permutar los nombres de las tres cajas no cambia las
+  sumas, así que cada partición aparece como $3!=6$ asignaciones $z$ distintas. Una instancia
+  tiene solución \emph{única} si su fundamental tiene degeneración exactamente 6.
+\item \textbf{$n\geq5$ con números distintos.} Una partición perfecta no puede dejar cajas vacías,
+  porque $S/3>0$. Con $n=3$ o $n=4$ hay al menos dos cajas de un solo número, que tendrían que
+  ser iguales. Con $n=5$ la repartición $(2,2,1)$ sí es posible.
+\end{itemize}
+
+\subsection{Costo: de la suma de cuadrados a Max 3-Cut}
+
+Seguimos el costo de J.~Molina, con $\mu=S/3$:
+\begin{equation}
+  C(z)=\sum_{i=0}^{2}\big(\Sigma_i(z)-\mu\big)^2 ,
+  \label{eq:costo}
+\end{equation}
+que vale 0 exactamente en una partición perfecta. Lo reescribimos en siete pasos.
+
+\paragraph{Paso 1: las tres cajas suman $S$.} Cada número está en exactamente una caja, así que
+$\sum_i\delta_{i,z_j}=1$ para todo $j$. Entonces
+\begin{equation}
+  \sum_i\Sigma_i=\sum_ja_j\sum_i\delta_{i,z_j}=\sum_ja_j=S .
+\end{equation}
+
+\paragraph{Paso 2: desarrollar el cuadrado.} Sumar $\mu^2$ sobre las tres cajas da $3\mu^2$:
+\begin{equation}
+  C=\sum_i\Sigma_i^2-2\mu\sum_i\Sigma_i+3\mu^2
+   =\sum_i\Sigma_i^2-2\frac S3S+3\frac{S^2}{9}
+   =\sum_i\Sigma_i^2-\frac{S^2}{3}.
+  \label{eq:paso2}
+\end{equation}
+Todo el problema queda en $\sum_i\Sigma_i^2$, la suma de los cuadrados de las sumas de las cajas.
+
+\paragraph{Paso 3: expandir $\Sigma_i^2$.} Cada $\Sigma_i$ es una suma sobre $j$, y su cuadrado es
+una doble suma:
+\begin{equation}
+  \Sigma_i^2=\Big(\sum_ja_j\delta_{i,z_j}\Big)\Big(\sum_ka_k\delta_{i,z_k}\Big)
+  =\sum_{j,k}a_ja_k\,\delta_{i,z_j}\delta_{i,z_k}.
+\end{equation}
+El producto $\delta_{i,z_j}\delta_{i,z_k}$ vale 1 sólo si $j$ y $k$ están ambos en la caja $i$. Al
+sumar sobre $i$ sobrevive a lo más un término, el de la caja común, y sólo si comparten caja:
+$\sum_i\delta_{i,z_j}\delta_{i,z_k}=\delta_{z_j,z_k}$. Por lo tanto
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_{j,k}a_ja_k\,\delta_{z_j,z_k}.
+\end{equation}
+
+\paragraph{Paso 4: separar $j=k$ de $j\neq k$.} En la diagonal, $\delta_{z_j,z_j}=1$ y queda
+$\sum_ja_j^2$. Fuera de la diagonal, cada par aparece dos veces, como $(j,k)$ y como $(k,j)$:
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_ja_j^2+2\sum_{j<k}a_ja_k\,\delta_{z_j,z_k}.
+\end{equation}
+
+\paragraph{Paso 5: de ``misma caja'' a ``cajas distintas''.} Con $\delta=1-(1-\delta)$, y con
+$w_{jk}=a_ja_k$,
+\begin{equation}
+  \sum_{j<k}w_{jk}\,\delta_{z_j,z_k}=P-W_{\rm cut}(z),\qquad
+  P=\sum_{j<k}w_{jk},\qquad
+  W_{\rm cut}(z)=\sum_{j<k}w_{jk}\big(1-\delta_{z_j,z_k}\big).
+\end{equation}
+$1-\delta_{z_j,z_k}$ vale 1 justo cuando el par queda \emph{cortado} (en cajas distintas). $P$ es el
+peso de todos los pares, y $W_{\rm cut}$ el de los pares cortados.
+
+\paragraph{Paso 6: $P$ sólo depende de los números.} De $S^2=(\sum_ja_j)^2=\sum_ja_j^2+2\sum_{j<k}a_ja_k$,
+\begin{equation}
+  P=\tfrac12\Big(S^2-\sum_ja_j^2\Big).
+\end{equation}
+
+\paragraph{Paso 7: juntar.} Los $\sum_ja_j^2$ se cancelan:
+\begin{equation}
+  \sum_i\Sigma_i^2=\sum_ja_j^2+2\big(P-W_{\rm cut}\big)=S^2-2W_{\rm cut},
+\end{equation}
+y reemplazando en la ec.~\eqref{eq:paso2},
+\begin{equation}
+  \boxed{\;C(z)=\tfrac23S^2-2\,W_{\rm cut}(z)\;}
+  \label{eq:corte}
+\end{equation}
+
+\paragraph{Qué significa.}
+\begin{itemize}
+\item $S$ está fijo por la instancia, así que $\tfrac23S^2$ es una constante y minimizar $C$
+  equivale a maximizar $W_{\rm cut}$.
+\item $W_{\rm cut}$ es un corte ponderado en tres partes: se suma $a_ja_k$ por cada par en cajas
+  distintas. Es Max 3-Cut con peso $a_ja_k$ en la arista $(j,k)$.
+\item Todos los pesos son positivos, así que hay arista entre todos los pares: el grafo es el
+  completo $K_n$.
+\item Como $C\geq0$, siempre $W_{\rm cut}\leq S^2/3$. Una partición perfecta es un corte que alcanza
+  esa cota.
+\end{itemize}
+
+\paragraph{Ejemplo.} La instancia de $n=5$ de la tabla~\ref{tab:instancias}, $a=(2,3,7,8,10)$, tiene
+$S=30$, $\sum_ja_j^2=226$ y $P=(900-226)/2=337$ (tabla~\ref{tab:ejemplo}).
+
+\begin{table}[h]
+\centering
+\caption{Verificación de la ec.~\eqref{eq:corte} en dos particiones de $a=(2,3,7,8,10)$.}
+\label{tab:ejemplo}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+partición & sumas & $C$ directo & pares en la misma caja & $W_{\rm cut}$ & $\tfrac23S^2-2W_{\rm cut}$ \\
+\midrule
+$\{10\},\{3,7\},\{2,8\}$ & 10, 10, 10 & 0 & $3\cdot7+2\cdot8=37$ & $337-37=300$ & $600-600=0$ \\
+$\{10,2\},\{3,7\},\{8\}$ & 12, 10, 8 & $4+0+4=8$ & $10\cdot2+3\cdot7=41$ & $337-41=296$ & $600-592=8$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Codificación en qutrits}
+
+Cada número es un qutrit. El autovalor $m_j\in\{-1,0,1\}$ de $L_z^{(j)}$ fija la caja mediante el
+operador dígito $\hat d_j=L_z^{(j)}+I$, con autovalores $z_j=m_j+1\in\{0,1,2\}$. Como
+$\delta_{z_j,z_k}=\delta_{m_j,m_k}$, basta escribir la delta en términos de $L_z$. Revisando los
+nueve casos $m,m'\in\{-1,0,1\}$ se comprueba que
+\begin{equation}
+  \delta_{m,m'}=1-m^2-m'^2+\tfrac12mm'+\tfrac32m^2m'^2 ,
+\end{equation}
+de modo que el indicador de corte de un par es
+\begin{equation}
+  1-\delta_{z_j,z_k}=-\tfrac12\,h_{jk},\qquad
+  h_{jk}=L_z^{(j)}L_z^{(k)}-2\big[(L_z^{(j)})^2+(L_z^{(k)})^2\big]+3(L_z^{(j)})^2(L_z^{(k)})^2 ,
+\end{equation}
+donde $h_{jk}$ es exactamente el término de arista de la ec.~(28) del paper. Reemplazando en la
+ec.~\eqref{eq:corte},
+\begin{equation}
+  H_C=2H_{\rm 3cut}+\tfrac23S^2,\qquad
+  H_{\rm 3cut}=\tfrac12\sum_{j<k}a_ja_k\,h_{jk}=-W_{\rm cut}.
+  \label{eq:HC}
+\end{equation}
+La constante no cambia ni el estado fundamental ni los gradientes, así que MWNP es la ec.~(28)
+del paper sobre $K_n$ con pesos $a_ja_k$. Numéricamente, la diagonal de la ec.~\eqref{eq:costo}
+y la de $2H_{\rm 3cut}+\frac23S^2$ coinciden con diferencia $0$.
+
+Dos consecuencias:
+\begin{itemize}
+\item Como $E_0=0$, el error relativo $|E-E_0|/|E_0|$ y el approximation ratio $E/E_0$ del paper
+  no están definidos. Usamos $\pex$ (sección~\ref{sec:analisis}).
+\item El estado de referencia y el mixer son los del paper,
+  $H_M=-\sum_j\big[(L_z^{(j)})^2+\sqrt2L_x^{(j)}\big]$, cuyo fundamental es
+  $\ket{+_3}^{\otimes n}$, la superposición uniforme de las $3^n$ asignaciones.
+\end{itemize}
+
+\subsection{El pool de operadores}
+\label{sec:pool}
+
+El pool sale de los conmutadores anidados del Hamiltoniano adiabático
+$H_{\rm ad}(\lambda)=(1-\lambda)H_M+\lambda H_{\rm 3cut}$ (ecs.~12, 17 y 18 del paper), con
+$O_0=\partial_\lambda H_{\rm ad}=H_{\rm 3cut}-H_M$ y $O_k=[H_{\rm ad},O_{k-1}]$. Con $\ell=1$ se usa
+$O_1$; con $\ell=2$, $O_1$ y $O_3$. Cada monomio (string de operadores de momento angular) se
+extrae por separado y se hermitiza, $V=(D+D^\dagger)/2$, eliminando repetidos.
+
+\paragraph{$\ell=1$: de dónde sale $2n^2-n$.}
+Como $[H_M,H_M]=[H_{\rm 3cut},H_{\rm 3cut}]=0$, la dependencia en $\lambda$ se cancela y
+\begin{equation}
+  O_1=[H_M,H_{\rm 3cut}]=-\tfrac12\sum_{j<k}w_{jk}\big([X_j,h_{jk}]+[X_k,h_{jk}]\big),
+  \qquad X_j=(L_z^{(j)})^2+\sqrt2L_x^{(j)} .
+\end{equation}
+El término $(L_z^{(j)})^2$ conmuta con $h_{jk}$, que es diagonal. Con $[L_x,L_z]=-iL_y$ y
+$[L_x,L_z^2]=-i\{L_y,L_z\}$,
+\begin{equation}
+  [X_j,h_{jk}]=-i\sqrt2\Big(L_y^{(j)}L_z^{(k)}-2\{L_y,L_z\}^{(j)}
+  +3\{L_y,L_z\}^{(j)}(L_z^{(k)})^2\Big),
+\end{equation}
+y lo mismo con $j\leftrightarrow k$ (es el Apéndice~A del paper, con pesos). Los monomios
+distintos, ya hermitizados, son de cinco tipos (tabla~\ref{tab:tiposl1}). Los dos órdenes de
+$L_yL_z$ en un mismo sitio dan el mismo $V$, porque $(L_yL_z)^\dagger=L_zL_y$. Cada par $\{j,k\}$
+aporta 4 operadores y cada sitio 1:
+\begin{equation}
+  N_{\ell=1}=4\binom{n}{2}+n=2n^2-n .
+\end{equation}
+El coeficiente del término de un sitio es $\propto\sum_kw_{jk}>0$, así que no se anula. En un
+grafo general, el conteo es $4|E|+n$; para $K_6$ da $66$, como en el paper.
+
+\begin{table}[h]
+\centering
+\caption{Operadores del pool $\ell=1$ sobre $K_n$. El soporte es el número de qutrits sobre los
+que actúa.}
+\label{tab:tiposl1}
+\small
+\begin{tabular}{llcc}
+\toprule
+operador $V$ & sale de & soporte & cuántos \\
+\midrule
+$\tfrac12\{L_y,L_z\}^{(j)}$ & $[L_x^{(j)},(L_z^{(j)})^2]$ & 1 & $n$ \\
+$L_y^{(j)}L_z^{(k)}$, \ $L_z^{(j)}L_y^{(k)}$ & $[L_x,L_z^{(j)}L_z^{(k)}]$ & 2 & $2\binom n2$ \\
+$\tfrac12\{L_y,L_z\}^{(j)}(L_z^{(k)})^2$, \ $(L_z^{(j)})^2\tfrac12\{L_y,L_z\}^{(k)}$ &
+  $[L_x,(L_z^{(j)})^2(L_z^{(k)})^2]$ & 2 & $2\binom n2$ \\
+\midrule
+total & & & $2n^2-n$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{$\ell=2$: de dónde sale el conteo.}
+$O_3=[H_{\rm ad},[H_{\rm ad},O_1]]$ depende de $\lambda$; el pool toma todos los monomios que
+aparecen en algún coeficiente. El soporte crece a lo más en un sitio por conmutador con un
+término de dos sitios: $O_1$ vive en $\leq2$ sitios, $O_2$ en $\leq3$ y $O_3$ en $\leq4$. Como
+$K_n$ es simétrico bajo permutaciones de sitios, cada subconjunto de $w$ sitios aporta el mismo
+número $t_w$ de operadores, y el total es
+\begin{equation}
+  N_{\ell=2}=\sum_{w=1}^{4}t_w\binom nw .
+\end{equation}
+
+\emph{De dónde salen los $t_w$.} Cada operador del pool es un producto de factores locales, uno por
+sitio del soporte (tras hermitizar, el orden de los factores dentro de un sitio no importa). Si se
+agrupan los operadores de un soporte por su \emph{patrón}, el multiconjunto de factores locales sin
+importar a qué sitio va cada uno, $t_w$ es la suma, sobre patrones, del número de formas distintas
+de repartir esos factores entre los $w$ sitios (tabla~\ref{tab:tiposl2}). Por ejemplo, el patrón
+$(L_y,L_z,L_z,L_z)$ de 4 sitios se puede colocar de 4 formas (qué sitio lleva $L_y$), y el patrón
+$(L_z,L_z,L_yL_z,L_z^2)$ de $4!/2!=12$ formas. Los patrones mismos salen de la expansión
+simbólica de $O_1$ y $O_3$.
+
+\begin{table}[h]
+\centering
+\caption{Patrones del pool $\ell=2$ por tamaño de soporte $w$. Se escribe $yz$ por el factor local
+$L_yL_z$ (hermitizado), $zz$ por $L_z^2$, etc. ``Formas'' es el número de maneras de repartir los
+factores de un patrón entre los $w$ sitios ordenados.}
+\label{tab:tiposl2}
+\small
+\begin{tabular}{clccr}
+\toprule
+$w$ & patrones & cuántos & formas & aporte a $t_w$ \\
+\midrule
+1 & $yz$;\ $xyz$;\ $yzzz$ & 3 & 1 & 3 \\
+\midrule
+2 & dos factores distintos, p.ej.\ $(y,z)$, $(x,yz)$, $(yz,zz)$, $(xz,yzz)$ & 20 & 2 & 40 \\
+\midrule
+\multirow{2}{*}{3} & tres factores distintos, p.ej.\ $(x,y,z)$, $(z,xz,yz)$ & 11 & 6 & 66 \\
+ & con dos factores iguales: $(z,z,yz)$, $(yz,zz,zz)$, $(zz,zz,xyz)$, $(zz,zz,yzzz)$ & 4 & 3 & 12 \\
+\midrule
+\multirow{2}{*}{4} & $(z,z,yz,zz)$, $(z,zz,zz,yzz)$ & 2 & 12 & 24 \\
+ & $(y,z,z,z)$, $(zz,zz,zz,yzzz)$ & 2 & 4 & 8 \\
+\midrule
+ & \multicolumn{3}{r}{$t_1,t_2,t_3,t_4$} & 3, 40, 78, 32 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\emph{El polinomio, término a término.} Con
+$\binom n2=\frac{n(n-1)}2$, $\binom n3=\frac{n(n-1)(n-2)}6$ y $\binom n4=\frac{n(n-1)(n-2)(n-3)}{24}$,
+\begin{align*}
+32\binom n4&=\tfrac43\big(n^4-6n^3+11n^2-6n\big)=\tfrac43n^4-8n^3+\tfrac{44}3n^2-8n,\\
+78\binom n3&=13\big(n^3-3n^2+2n\big)=13n^3-39n^2+26n,\\
+40\binom n2&=20\big(n^2-n\big)=20n^2-20n,\\
+3\binom n1&=3n.
+\end{align*}
+Sumando coeficiente por coeficiente,
+\begin{equation}
+  N_{\ell=2}=\underbrace{\tfrac43}_{\text{4 sitios}}n^4
+  +\underbrace{(-8+13)}_{\text{4 y 3 sitios}}n^3
+  +\underbrace{\big(\tfrac{44}3-39+20\big)}_{-13/3}n^2
+  +\underbrace{(-8+26-20+3)}_{1}n
+  =\tfrac43n^4+5n^3-\tfrac{13}{3}n^2+n .
+  \label{eq:nl2}
+\end{equation}
+El término cuártico viene sólo de los operadores de 4 sitios: hay $\binom n4\approx n^4/24$
+conjuntos de 4 qutrits y cada uno aporta 32 operadores. El cúbico mezcla los de 4 sitios (el
+$-6n^3$ de $\binom n4$) con los de 3 sitios, y así hacia abajo. La fórmula reproduce exactamente
+los tamaños contados para $n=5,\dots,10$, y el conteo por soporte se verificó directamente en
+$n=5,6,7$. En el rango $n=5$--$10$ crece como $n^{3.65}$ porque los términos de menor grado todavía
+pesan; asintóticamente va como $\tfrac43n^4$.
+
+\subsubsection*{El tamaño del pool para cualquier orden $\ell$}
+
+\paragraph{El modelo que se cuenta.} El pool que construye el código es combinatorio, y conviene
+fijarlo con precisión. Cada operador es una \emph{palabra} de factores $L_a^{(j)}$, $a\in\{x,y,z\}$.
+Factores de sitios distintos conmutan; dentro de un sitio se conserva el orden. El conmutador se
+calcula con la regla de Leibniz y $[L_x,L_y]=iL_z$ (y cíclicas), sin usar identidades propias de
+espín 1 como $L_z^3=L_z$. El pool de orden $\ell$ son las palabras con coeficiente no nulo en
+$O_1,O_3,\dots,O_{2\ell-1}$, como polinomios en $\lambda$, identificadas por su multiconjunto de
+factores. Escribimos $(a,b,c)$ para el número de $L_x$, $L_y$ y $L_z$ que una palabra tiene en un
+sitio.
+
+\paragraph{Proposición 1 (forma general).} Para $n\geq2$,
+\begin{equation}
+  N_\ell(n)=\sum_{w=1}^{2\ell}t^{(\ell)}_w\binom nw ,
+  \label{eq:nlgeneral}
+\end{equation}
+donde $t^{(\ell)}_w$, el número de operadores con soporte en un conjunto dado de $w$ qutrits, no
+depende de $n$ (salvo eventualmente en un conjunto finito de valores de $n$, por cancelaciones
+accidentales). Como $\binom nw=0$ si $w>n$, la fórmula vale también para $n<2\ell$; no hace falta
+pedir $n\geq2\ell$. Para $n=1$ el pool es vacío, porque $H_C=0$.
+
+\emph{Demostración.}
+\begin{enumerate}
+\item \emph{El soporte nunca se achica.} $[L_a^{(s)},\cdot]$ sólo reemplaza un factor del sitio $s$
+  por otro del mismo sitio, y los demás factores de un término se multiplican. Por eso el soporte de
+  cada palabra de $[T,M]$ contiene al de $M$ y al de $T$.
+\item \emph{El soporte crece a lo más en uno por conmutador.} Factores de sitios disjuntos conmutan,
+  así que $[T,M]\neq0$ exige que $T$ comparta un sitio con $M$. Como los términos de $H_{\rm ad}$
+  tienen a lo más dos sitios, cada conmutador agrega a lo más uno. Además
+  $O_1=[H_{\rm ad},H_C-H_M]=[H_M,H_C]$, porque los términos en $\lambda$ se cancelan, y vive en
+  $\leq2$ sitios. Luego $O_k$ vive en $\leq k+1$ sitios, y el pool de orden $\ell$ en $\leq2\ell$.
+\item \emph{Las palabras con soporte $S$ sólo ven lo que pasa dentro de $S$.} Por el paso 1, sólo
+  contribuyen los términos de $H_{\rm ad}$ contenidos en $S$. De los pares $\{j,m\}$ con $m\notin S$
+  sobrevive únicamente su parte de un sitio, $-2(L_z^{(j)})^2$, que cambia el coeficiente de
+  $(L_z^{(j)})^2$ a $\mu=3-2n$ en $O_0$ y a $-1+\lambda\mu$ en $H_{\rm ad}$. El conteo dentro de $S$ es
+  entonces el de $K_w$, con $\mu$ como parámetro. Los coeficientes de las palabras son polinomios en
+  $(\lambda,\mu)$; uno que no es idénticamente nulo sólo se anula para finitos valores de $\mu$, es
+  decir, de $n$. Por la simetría de $K_n$, todos los subconjuntos de $w$ sitios dan el mismo
+  $t^{(\ell)}_w$. \hfill$\square$
+\end{enumerate}
+Numéricamente, los $t^{(\ell)}_w$ de $\ell=2,3$ son idénticos para $n=w,\dots,60$.
+
+\paragraph{Proposición 2 (operadores de un qutrit).} Un operador de un sitio $(a,b,c)$ está en el pool
+de orden $\ell$ si y sólo si $b$ y $c$ son impares y $2a+2b+c\leq2\ell+1$. En consecuencia
+\begin{equation}
+  t^{(\ell)}_1=\#\{(a,\beta,\gamma)\in\mathbb N^3:\ a+2\beta+\gamma\leq\ell-1\}
+  =\left\lfloor\frac{(\ell+1)(\ell+3)(2\ell+1)}{24}\right\rfloor ,
+  \label{eq:t1}
+\end{equation}
+que da $1,3,7,13,22,34,\dots$ para $\ell=1,2,\dots$, y crece como $\ell^3/12$.
+
+\emph{Demostración.} Por el paso 1 de la Proposición~1, las palabras de un sitio sólo provienen de
+palabras de un sitio y de los términos de un sitio. El problema se reduce a un qutrit: se parte de
+$O_0=\mu L_z^2+\sqrt2L_x$ y se aplica $\mathrm{ad}_A$, con $A=\alpha L_z^2+\beta L_x$,
+$\alpha=-1+\lambda\mu$ y $\beta=-\sqrt2(1-\lambda)$.
+\begin{itemize}
+\item \emph{Lo que cambia en cada paso.} $\mathrm{ad}_{L_x}$ cambia una $y$ por una $z$ o una $z$ por una
+  $y$. $\mathrm{ad}_{L_z^2}$ cambia una $x$ por una $y$ o al revés, y agrega una $z$. En ambos casos $b$
+  y $c$ cambian de paridad, y $\varphi=2a+2b+c$ sube a lo más en 1. Como $O_0$ tiene $b=c=0$ y
+  $\varphi=2$, toda palabra de $O_k$ tiene $b\equiv c\equiv k\pmod2$ y $\varphi\leq k+2$.
+\item \emph{Necesidad.} Si $(a,b,c)$ aparece en algún $O_k$ con $k\leq2\ell-1$ impar, entonces $b$ y $c$
+  son impares y $\varphi\leq2\ell+1$.
+\item \emph{Suficiencia.} Hay tres movimientos que suben $\varphi$ en exactamente 1:
+  $Z$: $z\to y$, que lleva $(a,b,c)\mapsto(a,b+1,c-1)$; $S_2$: $y\to x$ más una $z$,
+  $(a+1,b-1,c+1)$; y $S_1$: $x\to y$ más una $z$, $(a-1,b+1,c+1)$. Sea $(a,b,c)$ con $b=2\beta+1$,
+  $c=2\gamma+1$. Partiendo de $L_z^2=(0,0,2)$:
+  \begin{itemize}
+  \item $Z$ lleva a $(0,1,1)$;
+  \item $(S_2S_1)^{\gamma+\beta}$ lleva a $(0,1,1+2\gamma+2\beta)$;
+  \item $Z^{2\beta}$ lleva a $(0,1+2\beta,1+2\gamma)$;
+  \item $(S_2Z)^{a}$ lleva a $(a,b,c)$.
+  \end{itemize}
+  Son $1+2(\gamma+\beta)+2\beta+2a=\varphi-2$ pasos, así que $(a,b,c)$ aparece en $O_{\varphi-2}$, con
+  $\varphi-2\leq2\ell-1$ impar.
+\item \emph{No hay cancelación.} En ese nivel superior todos los caminos usan el mismo número de
+  pasos de cada tipo, así que todas sus contribuciones a una misma palabra tienen la misma fase y
+  peso positivo. Los dos términos de partida dan potencias distintas, $\alpha^s\beta^{k-s}$ y
+  $\alpha^{s\pm1}\beta^{k-s\mp1}$, y $\alpha$ y $\beta$ son polinomios en $\lambda$ linealmente
+  independientes salvo si $\mu=1$, es decir, salvo si $n=1$.
+\end{itemize}
+El conteo de $a+2\beta+\gamma\leq L$ da $(q+1)(q+2)(4q+3)/6$ si $L=2q$ y $(q+1)(q+2)(4q+9)/6$ si
+$L=2q+1$, que es la expresión con piso de la ec.~\eqref{eq:t1}. \hfill$\square$
+
+\paragraph{Proposición 3 (soporte máximo).}
+\begin{equation}
+  t^{(\ell)}_{2\ell}=2\ell\cdot2^{2\ell-1}=\ell\,4^\ell ,
+  \label{eq:t2l}
+\end{equation}
+es decir $4,32,192,1024,\dots$, y por lo tanto
+$N_\ell(n)=\ell\,4^\ell\,n^{2\ell}/(2\ell)!+O(n^{2\ell-1})$.
+
+\emph{Demostración.} Una palabra de $O_{2\ell-1}$ con $2\ell$ sitios exige que cada uno de los
+$2\ell-2$ conmutadores posteriores a $O_1$ agregue un sitio nuevo $q$. Lo hace con un término de par
+$\{p,q\}$, con $p$ ya presente. Hay dos posibilidades:
+\begin{itemize}
+\item $[L_z^{(p)}L_z^{(q)},M]=[L_z^{(p)},M]\,L_z^{(q)}$: el sitio nuevo recibe $z$;
+\item el término $(L_z^{(p)})^2(L_z^{(q)})^2$: el sitio nuevo recibe $zz$, y $p$ una $z$ adicional.
+\end{itemize}
+En ambos casos se aplica $\mathrm{ad}_{L_z}$ al sitio $p$, que anula todo sitio que sólo tiene
+factores $z$. Las palabras de dos sitios de $O_1=[H_M,H_C]$ son ``$y$ en un sitio, $z$ en el otro'' o
+``$yz$ en uno, $zz$ en el otro''. Por lo tanto sólo el sitio con la $y$ (la \emph{raíz}) puede recibir
+sitios nuevos, y la palabra final es una estrella:
+\begin{itemize}
+\item la raíz lleva una $y$ (cada $\mathrm{ad}_{L_z}$ alterna $y\leftrightarrow x$, y son un número par)
+  y tantas $z$ como hojas de tipo $zz$;
+\item cada una de las $2\ell-1$ hojas es $z$ o $zz$.
+\end{itemize}
+El multiconjunto queda determinado por la raíz ($2\ell$ opciones) y el tipo de cada hoja ($2^{2\ell-1}$
+opciones). Todas las contribuciones a una misma palabra tienen la misma fase y coeficiente
+positivo, así que no se cancelan. \hfill$\square$
+
+\begin{table}[h]
+\centering
+\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$. En negrita, los valores que
+coinciden con las Proposiciones 2 y 3. Los de $\ell\leq3$ salen de la expansión simbólica, y los de
+$\ell\geq4$ del enumerador numérico (\texttt{cluster/pool\_numerico.py}), que reproduce exactamente a
+la simbólica en $\ell\leq3$. ``$\cdot$'': no calculado (los $t_w$ intermedios de $\ell\geq5$ superan
+la memoria de BitWit con este método). La última columna es $t_{2\ell}$ cuando $2\ell>8$.}
+\label{tab:tw}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{crrrrrrrrr}
+\toprule
+$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $t_7$ & $t_8$ & $t_{2\ell}$ \\
+\midrule
+\tabla{tabla_tw.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Los valores calculados confirman las dos fórmulas cerradas fuera de los casos usados para
+encontrarlas: $t^{(5)}_1=22$ y $t^{(6)}_1=34$, y $t^{(4)}_8=1024=4\cdot4^4$ y
+$t^{(5)}_{10}=5120=5\cdot4^5$. Con la tabla completa de $\ell=4$,
+$N_4(n)=13n+756\binom n2+8489\binom n3+35444\binom n4+63990\binom n5+48110\binom n6+13174\binom n7
++1024\binom n8$. Los $t^{(\ell)}_w$ intermedios ($2\leq w\leq2\ell-1$) no tienen todavía fórmula cerrada. Se pueden
+atacar igual que el soporte máximo, clasificando las palabras según cuántos conmutadores no agregan
+sitio; queda como trabajo pendiente.
+
+\paragraph{Los pesos no cambian el pool.}
+El pool se construye una vez por $n$ con $K_n$ sin pesos y se reutiliza para todas las
+instancias. Para descartar cancelaciones que sólo ocurran con pesos iguales, lo reconstruimos
+con pesos genéricos (primos distintos por arista) en $n=4$ y $5$, con $\ell=1$ y $\ell=2$: el
+conjunto de operadores es idéntico.
+
+\paragraph{Duplicados en el pool $\ell=2$.}
+El código arma el pool $\ell=2$ como la lista de $O_1$ seguida de la de $O_3$, y todos los
+operadores de $O_1$ vuelven a aparecer en $O_3$. La lista tiene entonces $N_{\ell=1}$ entradas
+repetidas (tabla~\ref{tab:pool}). Esto no cambia ningún resultado: la copia tiene un índice mayor y
+\texttt{argmax} elige siempre la primera. Sí infla el tamaño reportado del pool y el número de
+mediciones de gradiente (ver sección~\ref{sec:notas}).
+
+\begin{table}[h]
+\centering
+\caption{Tamaño del pool de $K_n$. ``Lista'' es la longitud de la lista que usa el código, con
+los operadores de $O_1$ repetidos.}
+\label{tab:pool}
+\small
+\begin{tabular}{rrrrr}
+\toprule
+$n$ & $N_{\ell=1}$ & $N_{\ell=2}$ (distintos) & lista $\ell=2$ & $N_{\ell=2}/N_{\ell=1}$ \\
+\midrule
+\tabla{tabla_pool.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\section{Implementación}
+%==============================================================================
+
+\subsection{El algoritmo}
+\label{sec:algoritmo}
+
+\begin{enumerate}
+\item Preparar $\ket{\psi_0}=\ket{+_3}^{\otimes n}$ y fijar $k=0$.
+\item Medir el gradiente de cada operador del pool en $\theta=0$,
+  \begin{equation}
+    g_j=\frac{\partial}{\partial\theta}\bra{\psi_k}e^{i\theta V_j}H_Ce^{-i\theta V_j}\ket{\psi_k}\Big|_{\theta=0}
+    =i\bra{\psi_k}[V_j,H_C]\ket{\psi_k} .
+  \end{equation}
+\item Si $\|\bm g\|_2<\epsilon$, terminar.
+\item Elegir $j^*=\arg\max_j|g_j|$. Si hay empates, gana el menor índice. Agregar
+  $e^{-i\theta_{k+1}V_{j^*}}$ al circuito.
+\item Minimizar $E(\bm\theta)=\bra{\psi(\bm\theta)}H_C\ket{\psi(\bm\theta)}$ sobre los $k+1$
+  parámetros con BFGS, partiendo de $(\bm\theta^*_k,0)$ (warm) o de $\bm 0$ (ver
+  sección~\ref{sec:estrategias-def}).
+\item Registrar la energía, $\pex$, los parámetros y el operador elegido. Hacer $k\to k+1$ y
+  volver al paso 2, hasta un tope de 150 parámetros.
+\end{enumerate}
+
+\subsection{El circuito}
+
+El circuito que produce ADAPT tras $k$ iteraciones se muestra en la fig.~\ref{fig:circuito}. $W$
+es cualquier unitario de un qutrit con $W\ket0=\ket{+_3}$. Cada compuerta
+$e^{-i\theta V_j}$ actúa sobre el soporte de $V_j$, de 1 a 4 qutrits no necesariamente vecinos.
+Al final se mide cada qutrit en la base de $L_z$, y la cadena medida es directamente una
+asignación de cajas.
+
+\begin{figure}[h]
+\centering
+\begin{quantikz}[row sep=0.22cm, column sep=0.32cm]
+\lstick{$\ket{0}_1$} & \gate{W} & \gate[3]{e^{-i\theta_1 V_{j_1}}} & \gate[2]{e^{-i\theta_2 V_{j_2}}} & \qw\ \cdots\ & \gate[4]{e^{-i\theta_k V_{j_k}}} & \meter{} \\
+\lstick{$\ket{0}_2$} & \gate{W} & & & \qw\ \cdots\ & & \meter{} \\
+\lstick{$\ket{0}_3$} & \gate{W} & & \qw & \qw\ \cdots\ & & \meter{} \\
+\lstick{$\ket{0}_n$} & \gate{W} & \qw & \qw & \qw\ \cdots\ & & \meter{}
+\end{quantikz}
+\caption{Circuito de Qudit-ADAPT tras $k$ iteraciones. Los operadores $V_{j_1},V_{j_2},\dots$ y
+sus soportes los elige el algoritmo; los que se muestran son sólo ilustrativos.}
+\label{fig:circuito}
+\end{figure}
+
+Para contar compuertas nativas usamos la compilación del Apéndice~B del paper, sobre el conjunto
+nativo de iones atrapados: rotaciones de dos niveles $R^{(i,j)}(\theta,\phi)$ y compuertas
+Mølmer--Sørensen (MS). Si el generador factoriza, $V=\bigotimes_{s\in S}M_s$ con
+$M_s=U_sD_sU_s^\dagger$, entonces
+\begin{equation}
+  e^{-i\theta V}=\Big(\bigotimes_sU_s\Big)\,e^{-i\theta\bigotimes_sD_s}\,\Big(\bigotimes_sU_s^\dagger\Big),
+\end{equation}
+y la fase diagonal se aplica con una escalera de $2(w-1)$ compuertas MS alrededor de una sola
+rotación parametrizada (fig.~\ref{fig:compilacion}). Si $g(M_s)$ es el número de rotaciones de
+dos niveles que diagonalizan $M_s$, el costo es
+$R=2\sum_sg(M_s)+1$ rotaciones y $2(w-1)$ MS. Todos los operadores de $\ell=1$ factorizan
+(tabla~\ref{tab:tiposl1}). En $\ell=2$ hay operadores con dos sitios no hermíticos, que no
+factorizan; para ellos el conteo es un modelo, como advierte el paper.
+
+\begin{figure}[h]
+\centering
+\begin{quantikz}[row sep=0.25cm, column sep=0.3cm]
+\lstick{$s_1$} & \gate{U_1^\dagger} & \gate[2]{\mathrm{MS}} & \qw & \qw & \qw & \gate[2]{\mathrm{MS}} & \gate{U_1} & \qw \\
+\lstick{$s_2$} & \gate{U_2^\dagger} & & \gate[2]{\mathrm{MS}} & \qw & \gate[2]{\mathrm{MS}} & & \gate{U_2} & \qw \\
+\lstick{$s_3$} & \gate{U_3^\dagger} & \qw & & \gate{R(\theta)} & & \qw & \gate{U_3} & \qw
+\end{quantikz}
+\caption{Compilación de $e^{-i\theta V}$ para un generador de soporte $w=3$ que factoriza
+(modelo del Apéndice~B del paper): diagonalización local, escalera de $2(w-1)=4$ compuertas MS
+con una rotación parametrizada al centro, y deshacer la diagonalización.}
+\label{fig:compilacion}
+\end{figure}
+
+\subsection{Simulación clásica}
+
+El simulador reproduce exactamente el estado del circuito, sin matrices de $3^n\times3^n$:
+\begin{itemize}
+\item \textbf{Estado.} Un vector complejo de $3^n$ entradas, visto como tensor de $n$ índices.
+\item \textbf{$H_C$.} Es diagonal en la base computacional, así que se guarda como vector
+  $h(z)=C(z)$, calculado directamente de la ec.~\eqref{eq:costo} en $O(n3^n)$. $E_0=\min_zh(z)$
+  y $H_C\ket\psi$ es un producto elemento a elemento.
+\item \textbf{Compuertas.} Cada $V_j$ se guarda como su bloque hermitizado de $3^w\times3^w$ sobre
+  su soporte, diagonalizado una vez, $B_j=Q_j\Lambda_jQ_j^\dagger$. Para aplicar
+  $e^{-i\theta V_j}$ se forma $Q_je^{-i\theta\Lambda_j}Q_j^\dagger$, se llevan los $w$ ejes del
+  soporte al frente, se contrae como matriz de $3^w\times3^{n-w}$ y se deshace la permutación. Es
+  exacto también para los operadores que no factorizan, y cuesta $3^{n+w}$ operaciones.
+\item \textbf{Gradiente del pool (paso 2).} Con $H_C$ diagonal,
+  $g_j=-2\,{\rm Im}\bra{V_j\psi}H_C\psi\rangle$: una aplicación de $V_j$ por operador. Un barrido
+  completo cuesta $\sum_j3^{n+w_j}$.
+\item \textbf{Gradiente de la energía (paso 5), método adjunto.} Con
+  $\ket{\phi_m}=U_m\cdots U_1\ket{\psi_0}$ y $\ket{\lambda_m}=U_{m+1}^\dagger\cdots U_k^\dagger H_C\ket{\psi}$,
+  \begin{equation}
+    \frac{\partial E}{\partial\theta_m}=2\,{\rm Im}\bra{\lambda_m}V_m\ket{\phi_m}.
+  \end{equation}
+  Una pasada hacia adelante y otra hacia atrás dan los $k$ componentes con unas $3k$
+  aplicaciones de bloques: el costo de unas tres evaluaciones de la energía, en vez de $k+1$ con
+  diferencias finitas. Se entrega a BFGS (\texttt{scipy}, \texttt{jac=True},
+  \texttt{gtol}$=10^{-10}$, hasta 1000 iteraciones). Coincide con diferencias finitas a
+  $10^{-8}$.
+\item \textbf{Memoria.} El estado más los $k+1$ estados intermedios de la pasada hacia adelante:
+  en $n=9$, $k=150$, unos 50\,MB.
+\end{itemize}
+
+\paragraph{Validación.} J.~Molina guardó los operadores y parámetros finales de sus 40 corridas.
+Reconstruimos esos 40 estados con nuestro simulador, y las energías coinciden con las suyas con
+diferencia máxima \SanidadMaxDif. Además, corriendo nuestro ADAPT sobre sus instancias con sus
+mismos ajustes, $\pex$ coincide ($\pm0.05$) en \CompEmpates{} de \CompTotal{} casos.
+
+%==============================================================================
+\section{Protocolo}
+%==============================================================================
+
+\subsection{Instancias}
+
+Cada instancia cumple tres condiciones, que se verifican por enumeración de las $3^n$
+asignaciones:
+\begin{enumerate}
+\item \textbf{Enteros distintos.} Números repetidos agregan degeneración: dos números iguales
+  intercambiados dan otra asignación óptima. Eso sube la probabilidad de acertar por azar y hace
+  la instancia más fácil de un modo que no depende del algoritmo.
+\item \textbf{Partición perfecta.} Garantiza $E_0=0$ conocido. Son las instancias ``balanceadas''
+  del trabajo de J.~Molina.
+\item \textbf{Solución única} (degeneración exactamente 6). Es el caso más exigente para cada $n$:
+  la probabilidad de acertar midiendo la superposición uniforme es la mínima posible,
+  $\pex^{\rm azar}=6/3^n$, y la métrica de éxito queda sin ambigüedad.
+\end{enumerate}
+
+\paragraph{Por qué el rango $[1,3n]$.} El rango tiene que ser $\geq n$ para que quepan $n$
+números distintos. Con un rango chico las sumas coinciden a menudo y aparecen varias particiones
+perfectas, lo que rompe la unicidad. Con un rango grande, la partición perfecta se vuelve rara y
+la escala de energía de $H_C$ crece como $R^2$. La tabla~\ref{tab:rangos} muestra, para
+\RangoMuestras{} sorteos por celda, qué fracción de conjuntos de números distintos cumple las
+tres condiciones:
+\begin{itemize}
+\item Con el rango fijo $[1,15]$ de J.~Molina, en $n=10$ no aparece \emph{ninguna} instancia
+  válida (\RangoQuinceDiez\,\%).
+\item Con $[1,2n]$ la fracción cae a \RangoDosnDiez\,\% en $n=10$ y va en bajada: con números tan
+  chicos muchas sumas coinciden y la solución deja de ser única.
+\item Con $[1,3n]$ la fracción se mantiene entre \RangoTresMin{} y \RangoTresMax\,\% en todo
+  $n=5$--$10$: hay que sortear entre $\sim$10 y $\sim$30 conjuntos por instancia aceptada. Rangos
+  mayores también sirven, con números más grandes (tabla~\ref{tab:rangos}).
+\item No hay un rango ``correcto'': elegimos el menor de los probados que se mantiene estable al
+  crecer $n$, para tener números chicos (y energías chicas) sin quedarnos sin instancias.
+\end{itemize}
+Queda la pregunta de si el rango elegido sesga la dificultad. Lo probamos en $n=6$: las 9
+instancias válidas que existen con números en $[1,8]$ no se resuelven con más frecuencia que las de
+$[1,18]$ (sección~\ref{sec:sensibilidad}). Dentro de lo que medimos, el rango decide cuántas
+instancias válidas hay, no cuán difíciles son.
+
+\begin{table}[h]
+\centering
+\caption{Porcentaje de conjuntos de $n$ enteros distintos sorteados en $[1,R]$ que cumplen las
+tres condiciones (partición perfecta única). Cada celda es una estimación de Monte Carlo con
+\RangoMuestras{} sorteos, con error estándar de a lo más $\pm\RangoErrorMax$ puntos. En $n=5$ las
+columnas $R=3n$ y $R=15$ son el mismo rango y se calculan con los mismos sorteos. En negrita, el
+rango usado.}
+\label{tab:rangos}
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+$n$ & $R=2n$ & $R=3n$ & $R=4n$ & $R=6n$ & $R=15$ \\
+\midrule
+\tabla{tabla_rangos.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+Las instancias se generan de forma determinista por $(\text{semilla},n,\text{índice})$: la
+instancia 7 de $n=8$ es siempre la misma. Usamos 20 por tamaño para $n=5$--$9$. La
+tabla~\ref{tab:instancias} muestra una de cada tamaño.
+
+\begin{table}[h]
+\centering
+\caption{Una instancia por tamaño y su partición óptima.}
+\label{tab:instancias}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rllll}
+\toprule
+$n$ & rango & $\pex^{\rm azar}$ & números & cajas óptimas \\
+\midrule
+\tabla{tabla_instancias.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Órdenes}
+
+Qué número se asigna a qué qutrit es arbitrario y no cambia el problema: permutar los qutrits
+permuta las cadenas, pero la solución es la misma. Lo que sí cambia es la \emph{numeración} de los
+operadores del pool, porque la lista está ordenada por índice de qutrit.
+
+\paragraph{Por qué eso importa.} En el paso 4, ADAPT elige el operador de mayor $|g_j|$. Desde
+$\ket{+_3}^{\otimes n}$ hay operadores con exactamente el mismo gradiente por simetría: en todas
+nuestras corridas hay empates en la primera iteración (la mediana es de 4 operadores empatados).
+Ante un empate, \texttt{argmax} toma el primero de la lista, y cuál es el primero depende de qué
+número quedó en qué qutrit.
+
+\paragraph{Ejemplo real} ($n=6$, $\ell=1$, $a=\{2,3,5,7,9,10\}$). En $k=1$ empatan
+$L_z^{(9)}L_y^{(10)}$ y $L_y^{(9)}L_z^{(10)}$, es decir, $L_z$ sobre el qutrit que lleva el 9 y $L_y$
+sobre el que lleva el 10, o al revés; ambos actúan sobre el par de mayor producto, $9\cdot10$. En los
+5 órdenes, ADAPT tomó el que pone $L_z$ en el qutrit de menor índice. Cuando el 10 quedó antes que
+el 9 (órdenes 1 y 4), el primer operador fue $L_z^{(10)}L_y^{(9)}$ y la corrida resolvió la
+instancia ($\pex=0.49$). Cuando el 9 quedó antes (órdenes 0, 2 y 3), fue $L_z^{(9)}L_y^{(10)}$ y la
+corrida falló ($\pex\approx0$). Un único empate, decidido por una numeración arbitraria, separa el
+éxito del fracaso.
+
+\paragraph{Qué significa en la práctica.}
+\begin{itemize}
+\item Una corrida sola no caracteriza a una instancia: con otra numeración de los qutrits el
+  resultado puede ser el opuesto.
+\item Por eso cada instancia se corre bajo 5 órdenes de sus números (el ascendente y 4
+  permutaciones aleatorias deterministas), y se reporta la fracción de órdenes que la resuelven.
+\item En un experimento pasaría lo mismo: el resultado dependería de cómo se cableen los números en
+  el procesador. Habría que promediar sobre órdenes o fijar un desempate explícito, por ejemplo al
+  azar. En el paper conviene mencionarlo.
+\end{itemize}
+
+\subsection{Ajustes y estrategias de inicialización}
+\label{sec:estrategias-def}
+
+$\epsilon=10^{-3}$ sobre la norma del gradiente, en la escala de la ec.~\eqref{eq:costo}, y tope de
+150 parámetros. Comparamos tres estrategias:
+\begin{itemize}
+\item \textbf{warm}: $\bm\theta_{k+1}^{(0)}=(\bm\theta^*_k,0)$. Es el ADAPT estándar del paper.
+\item \textbf{(ii) ADAPT desde $\bm\theta=0$}: $\bm\theta_{k+1}^{(0)}=\bm0$ en cada iteración,
+  es decir, se reoptimiza desde $\ket{+_3}^{\otimes n}$. Como el estado optimizado cambia, el paso
+  2 elige otros operadores: es otro algoritmo, y es el que pone a prueba la conjetura.
+\item \textbf{(i) secuencia fija desde $\bm\theta=0$}: se toma la secuencia elegida por warm y,
+  para cada $k$, se reoptimiza ese circuito desde $\bm0$. Aísla el efecto del punto de partida
+  sobre un circuito dado. Es el ``cold start'' de las Figs.~5--6 del paper.
+\end{itemize}
+
+\subsection{Análisis de datos}
+\label{sec:analisis}
+
+\paragraph{Métrica.} $\pex=\sum_{z\in\text{óptimos}}|\langle z|\psi\rangle|^2$ es la probabilidad
+de que una medición entregue una partición óptima. Una corrida \emph{resuelve} la instancia si
+$\pex\geq0.1$. La probabilidad de ver la solución al menos una vez en $M$ mediciones es
+$1-(1-\pex)^M$, que con $\pex=0.1$ y $M=50$ ya es $0.995$. Verificar cuál de las cadenas medidas es
+óptima es trivial en un computador clásico. Un criterio más estricto, exigir que la cadena más
+probable sea la correcta, cuenta como falla un estado con la mitad de su peso sobre la solución.
+
+\paragraph{Tasa por instancia.} Las 5 corridas de una misma instancia (una por orden) no son
+independientes: comparten los números. Tratar las 100 corridas de un $n$ como independientes
+exageraría la significancia. La unidad estadística es la instancia $i$, con tasa
+$\tau_i=\frac15\sum_{o=1}^5\mathbb 1[\pex^{(i,o)}\geq0.1]$. La tasa de un $n$ es
+$\bar\tau=\frac1{20}\sum_i\tau_i$.
+
+\paragraph{Intervalos de confianza.} Bootstrap sobre instancias: se remuestrean las 20 instancias
+con reemplazo $10^4$ veces, y el IC del 95\,\% son los percentiles 2.5 y 97.5 de $\bar\tau$.
+
+\paragraph{Comparaciones pareadas.} Para comparar dos variantes $A$ y $B$ (dos pools o dos
+estrategias) sobre las mismas instancias y órdenes, se cuenta en cuántas instancias
+$\tau_i^A>\tau_i^B$ y en cuántas al revés, descartando los empates. Bajo la hipótesis nula de que
+ninguna es mejor, ese conteo es binomial con probabilidad $1/2$. El valor $p$ es el de la prueba de
+signo bilateral. No supone ninguna distribución para $\tau_i$.
+
+\paragraph{Respuestas perdidas.} Una corrida que falla tuvo la respuesta ``al alcance'' si
+$\max_k\pex(k)\geq0.1$ en alguna iteración intermedia.
+
+%==============================================================================
+\section{Resultados}
+%==============================================================================
+
+\subsection{\texorpdfstring{$\ell=1$ contra $\ell=2$}{l=1 contra l=2}}
+
+Esta sección y la siguiente cubren $n=5$--9 con tope de 150 parámetros. Los resultados de $\ell=1$
+contra $\ell=2$ para $n=10$ y $\KNmax$, con tope de 80, están en la sección~\ref{sec:k80}
+(tabla~\ref{tab:k80} y fig.~\ref{fig:k80}).
+
+\begin{table}[h]
+\centering
+\caption{Warm start, 20 instancias $\times$ 5 órdenes por fila. ``Siempre / depende / nunca''
+cuenta las instancias resueltas en los 5 órdenes, en algunos o en ninguno. ``Conv.'' son las
+corridas que terminaron por el criterio de gradiente y no por el tope. $k$, nativas, MS y tiempo
+son medianas; las compuertas se cuentan como en la fig.~\ref{fig:compilacion}.}
+\label{tab:ordenes}
+\small\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{rrcccrrrrr}
+\toprule
+$n$ & $\ell$ & tasa & IC 95\,\% & siempre / depende / nunca & conv. & $k$ & nativas & MS & tiempo \\
+\midrule
+\tabla{tabla_ordenes.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{ordenes_5a9}
+\caption{(a) Tasa de éxito $\bar\tau$ contra $n$, con IC del 95\,\%. (b) $\tau_i$ con $\ell=1$
+contra $\ell=2$, una instancia por punto: sobre la diagonal gana $\ell=2$. Los puntos llevan un
+pequeño desplazamiento aleatorio para separar los superpuestos.}
+\label{fig:ordenes59}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{ordenes_iteracion}
+\caption{Fracción de corridas con $\pex\geq0.1$ en cada iteración ADAPT, 100 corridas por curva.
+Una corrida que ya terminó conserva su valor final.}
+\label{fig:iteracion}
+\end{figure}
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item $\ell=2$ supera a $\ell=1$ en todo $n$ (tabla~\ref{tab:ordenes}, fig.~\ref{fig:ordenes59}a).
+  Por instancia, $\ell=2$ gana en \OcSignoDos{}, $\ell=1$ en \OcSignoUno{}, y el resto empata
+  ($p=$\,\OcSignoP). La mayor diferencia se da en $n=8$.
+\item La tasa cae con $n$ para ambos pools. En $n=9$ ninguno pasa de un cuarto.
+\item Con $\ell=1$ la fracción resuelta se estanca hacia $k\approx30$; con $\ell=2$ sigue subiendo
+  hasta $k\approx50$ ($n\leq7$), $k\approx80$ ($n=8$) y $k\approx110$ ($n=9$)
+  (fig.~\ref{fig:iteracion}).
+\item Con $\ell=2$, en $n=8$ y $9$ sólo \OcConvDosOcho{} y \OcConvDosNueve{} de 100 corridas
+  convergen antes del tope de 150.
+\item $\ell=2$ cuesta entre 1.6 y 6.6 veces más compuertas nativas que $\ell=1$, y su pool es de
+  30 a 80 veces más grande (tabla~\ref{tab:pool}).
+\end{itemize}
+
+\paragraph{Conclusiones.} Los operadores de tres y cuatro sitios de $O_3$ son los que permiten
+seguir mejorando cuando $\ell=1$ se estanca. Es el mismo comportamiento que la Fig.~4b del paper
+muestra para Max 3-Cut. El precio es un pool mucho mayor (más mediciones de gradiente) y
+circuitos más caros. Como la curva de $\ell=2$ ya se aplanó en $k=150$, subir el tope
+probablemente dé ganancias modestas.
+
+\subsection{Warm start contra \texorpdfstring{$\bm\theta=0$}{theta=0}}
+\label{sec:estrategias}
+
+\begin{table}[h]
+\centering
+\caption{Tasa de éxito $\bar\tau$ de cada estrategia y comparación por instancia contra warm,
+en la forma ``gana warm / gana la otra / igual''. La fila ``todos'' suma sobre $n$ y da la
+prueba de signo.}
+\label{tab:estrategias}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{rrccccc}
+\toprule
+ & & \multicolumn{3}{c}{tasa} & \multicolumn{2}{c}{por instancia, contra warm} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-7}
+$\ell$ & $n$ & warm & (ii) & (i) & (ii) ADAPT desde 0 & (i) secuencia fija \\
+\midrule
+\tabla{tabla_estrategias.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{estrategias}
+\caption{Tasa de éxito de las estrategias contra $n$, con IC del 95\,\%.}
+\label{fig:estrategias}
+\end{figure}
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item \textbf{(ii) con $\ell=2$.} Warm resuelve más en todo $n$; la diferencia es grande en
+  $n=6$, 8 y 9 y mínima en $n=7$ (tabla~\ref{tab:estrategias}). Por instancia gana warm en
+  \EstColdLDosWarm{} y (ii) en \EstColdLDosOtra{} ($p=$\,\EstColdLDosP).
+\item \textbf{(ii) con $\ell=1$.} No hay diferencia significativa: \EstColdLUnoWarm{} contra
+  \EstColdLUnoOtra{} ($p=$\,\EstColdLUnoP). El signo cambia con $n$; (ii) gana en $n=6$, que es lo
+  que se había visto con 10 instancias y un solo orden.
+\item \textbf{Mecanismo, con $\ell=2$.} La desventaja de (ii) no es de presupuesto. Termina por el
+  criterio de gradiente en \ConvColdDos/\TotColdDos{} corridas, contra \ConvWarmDos/\TotWarmDos{}
+  de warm, y con circuitos más cortos ($k$ mediano \KColdOcho{} contra \KWarmOcho{} en $n=8$).
+  Encuentra la solución a mitad de camino casi tan seguido como warm: en $n=8$ superan
+  $\pex=0.1$ en algún momento el \PmaxColdOcho{} de sus corridas contra el \PmaxWarmOcho{} de
+  warm. Pero la pierde más: termina resuelta en \FinColdOcho{} contra \FinWarmOcho.
+\item \textbf{(i) con $\ell=2$.} Sobre el mismo circuito, partir del óptimo anterior es mejor que
+  partir de cero: warm gana en \EstFijaLDosWarm{} instancias y (i) en \EstFijaLDosOtra{}
+  ($p=$\,\EstFijaLDosP). La diferencia se concentra en $n\geq7$. Reoptimizar desde cero termina
+  con menor energía que warm sólo en el \EFijaDosMin--\EFijaDosMax\,\% de las corridas, según $n$.
+\item \textbf{(i) con $\ell=1$.} No hay diferencia significativa: \EstFijaLUnoWarm{} contra
+  \EstFijaLUnoOtra{} ($p=$\,\EstFijaLUnoP), con la mayoría de las instancias empatadas. Aun así,
+  (i) termina con menor energía sólo en el \EFijaUnoMin--\EFijaUnoMax\,\% de las corridas.
+\end{itemize}
+
+\paragraph{Conclusiones.} La conjetura de que partir del óptimo anterior es una desventaja no se
+sostiene. Con $\ell=2$ ocurre lo contrario, y por dos vías independientes:
+\begin{itemize}
+\item \emph{En la selección de operadores} (ii): al reoptimizar desde cero, BFGS cae en puntos
+  donde todo el pool tiene gradiente pequeño, y el criterio de parada detiene ADAPT antes.
+\item \emph{En la optimización de un circuito dado} (i): con los mismos operadores, partir del
+  óptimo anterior lleva a mínimos más bajos que partir de cero. Es el análogo de las Figs.~5--6 del
+  paper.
+\end{itemize}
+Ambas son el mecanismo de \emph{burrowing} (Grimsley \emph{et al.}) que el paper invoca para Max
+3-Cut: cada nuevo operador deforma el paisaje y warm sigue descendiendo desde donde estaba. Con
+$\ell=1$ las estrategias son equivalentes en tasa de éxito, aunque reoptimizar desde cero rara vez
+llega a menor energía que warm.
+
+\subsection{Comparación con QAOA}
+
+J.~Molina corrió QAOA para qutrits sobre sus 20 instancias de $n=5,6$: mixer
+$\sum_jL_x^{(j)}$, estado inicial $\ket{+_3}^{\otimes n}$, $p\leq10$ capas, CMA-ES con 25
+reinicios y parámetros sorteados en $[-\pi,\pi]$. Reconstruimos sus estados a partir de los
+parámetros guardados; las energías coinciden con las suyas a \QaoaDif.
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item Su energía óptima \emph{sube} al agregar capas en \QaoaSube{} de \QaoaPasos{} pasos. Eso no
+  puede ocurrir con un optimizador que converja, porque el circuito de $p$ capas contiene al de
+  $p-1$ (basta anular la última capa).
+\item La causa es de escala. Las energías de $H_C$ son del orden de cientos, así que el $\gamma$
+  útil es $\sim10^{-2}$ (del orden de $1/{\rm std}(H_C)$). Un sorteo en $[-\pi,\pi]$ cae casi
+  siempre en una región donde $e^{-i\gamma H_C}$ oscila demasiado rápido.
+\item Lo reoptimizamos con el mismo circuito: barrido en grilla de $(\gamma,\beta)$ para $p=1$,
+  luego inicialización INTERP (Zhou \emph{et al.}, PRX 2020) para pasar de $p$ a $p+1$, y BFGS.
+  Así la energía baja monótonamente, entre \QaoaBajaMin{} y \QaoaBajaMax{} veces de $p=1$ a
+  $p=10$.
+\item El QAOA de Max 3-Cut del paper (L-BFGS-B) no tiene este problema: su mejor energía baja
+  monótonamente con $p$ en los 8 grafos.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{Instancias de J.~Molina (10 por $n$, genéricas y balanceadas): $\pex$ mediana y, entre
+paréntesis, instancias con $\pex\geq0.1$. QAOA con $p=10$ (20 parámetros). ADAPT con warm start
+y tope de 30 parámetros, como en sus corridas; $k$ es la mediana de parámetros usados.}
+\label{tab:qaoa}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{rccccrcr}
+\toprule
+$n$ & QAOA (J.~Molina) & QAOA reoptimizado & ADAPT $\ell=1$ & $k$ & ADAPT $\ell=2$ & $k$ \\
+\midrule
+\tabla{tabla_qaoa.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Conclusiones.} Con un número similar de parámetros, ADAPT $\ell=2$ supera a un QAOA bien
+optimizado (tabla~\ref{tab:qaoa}). La conclusión cualitativa del cuaderno de J.~Molina se
+sostiene, pero la brecha es menor que la que muestran sus números. Para el paper, la comparación
+con QAOA en MWNP tiene que hacerse con un QAOA bien inicializado.
+
+\subsection{Benchmark ampliado: ADAPT (\texorpdfstring{$k\leq80$}{k<=80}) contra QAOA (\texorpdfstring{$p=40$}{p=40})}
+\label{sec:k80}
+
+Este benchmark es el que pidió el investigador principal: 20 conjuntos de números por $n$, ADAPT
+con $\ell=1$ y $\ell=2$ hasta 80 iteraciones, y QAOA con $p=40$ capas (80 parámetros) y 10 reinicios
+aleatorios, guardando $\pex$ en cada caso. Aquí van $n=5$--$\KNmax$; falta sólo INTERP para $n\geq10$, que está corriendo en BitWit.
+
+\paragraph{Protocolo.}
+\begin{itemize}
+\item \textbf{ADAPT:} warm start, $\epsilon=10^{-3}$, tope de 80 parámetros y 5 órdenes por
+  instancia, en total \KCorridasAdapt{} corridas. Para $n\leq9$ se usan las primeras 80 iteraciones
+  de las corridas con tope 150, que son idénticas a una corrida con tope 80 porque ADAPT es
+  determinista y el tope sólo la corta. Para $n\geq10$ las corridas son nuevas, y con $\ell=2$ usan el
+  barrido por soporte, que da el mismo gradiente hasta $10^{-13}$. Los empates exactos se siguen
+  resolviendo por redondeo, como en el resto del informe.
+\item \textbf{QAOA:} el circuito del código del paper para Max 3-Cut, con mezclador
+  $\sum_jL_x^{(j)}$ y estado inicial $\ket{+_3}^{\otimes n}$. Lo elegimos por consistencia con los
+  resultados de QAOA ya publicados. Con este mezclador, $\ket{+_3}^{\otimes n}$ \emph{no} es su estado
+  fundamental, así que el circuito no es una versión digitalizada de la evolución adiabática. El
+  mezclador de la ec.~(9) del paper, $-\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, sí lo es; correrlo
+  queda pendiente. $H_C$ se normaliza por su desviación estándar, se toman 10 puntos iniciales
+  uniformes en $[-\pi,\pi]^{80}$ y se optimiza con L-BFGS-B (cotas $\pm\pi$, gradiente analítico,
+  hasta 1000 iteraciones), en total \KReinicios{} reinicios. ``Mejor de 10'' es el reinicio de menor
+  energía, el que elegiría un experimento sin conocer la solución. Como referencia más fuerte se
+  agrega la cadena INTERP: grilla en $p=1$ y, de $p$ a $p+1$, los óptimos interpolados como punto
+  inicial.
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{ADAPT ($k\leq80$) contra QAOA ($p=40$). ``Tasa'' es la fracción con $\pex\geq0.1$: para
+ADAPT, promediada sobre instancias y órdenes; para QAOA, la fracción de instancias cuyo mejor
+reinicio resuelve. ``Media'' es $\pex$ promedio: sobre corridas para ADAPT, sobre todos los reinicios
+para QAOA y sobre instancias para INTERP. ``Tope'' es la fracción de corridas de ADAPT $\ell=2$ que
+llegan a 80 parámetros.}
+\label{tab:k80}
+\small\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{rlcccccccccc}
+\toprule
+ & & \multicolumn{2}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} &
+ \multicolumn{2}{c}{QAOA, reinicios} & \multicolumn{2}{c}{QAOA, INTERP} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-7}\cmidrule(lr){8-9}\cmidrule(lr){10-11}
+$n$ & azar & tasa & media & tasa & media & tope & tasa & media & tasa & media \\
+\midrule
+\tabla{tabla_k80.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{k80_qaoa}
+\caption{(a) Fracción con $\pex\geq0.1$ contra $n$, con IC del 95\,\% por bootstrap sobre
+instancias. (b) $\pex$ medio contra $n$, con la probabilidad de acertar al azar.}
+\label{fig:k80}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{k80_parametros}
+\caption{$\pex$ medio contra número de parámetros: ADAPT en cada iteración $k$ (100 corridas por
+curva) y QAOA INTERP con $2p$ parámetros (20 instancias). El triángulo es el promedio de los 200
+reinicios aleatorios con $p=40$.}
+\label{fig:k80param}
+\end{figure}
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item \textbf{Contra QAOA con reinicios aleatorios, ADAPT gana en todo $n$ y en toda métrica}
+  (tabla~\ref{tab:k80}, fig.~\ref{fig:k80}). En $n=\KNmax$, el $\pex$ medio de ADAPT $\ell=2$ es
+  \KMediaDosNmax{}, contra \KMediaQaoaNmax{} de QAOA: \KRazonNmax{} veces más.
+\item \textbf{Contra QAOA INTERP, el resultado depende de la métrica.}
+  \begin{itemize}
+  \item En la fracción con $\pex\geq0.1$ (fig.~\ref{fig:k80}a), INTERP gana en $n=5$--7. Su $\pex$
+    es moderado pero nunca colapsa: en $n=5$ el mínimo sobre las 20 instancias es
+    \KMinInterpCinco, y en $n=6$, \KMinInterpSeis.
+  \item Con un umbral más exigente, $\pex\geq0.5$, gana ADAPT $\ell=2$ en todo $n$: \KMedioAdaptCinco{}
+    contra \KMedioInterpCinco{} en $n=5$, \KMedioAdaptSeis{} contra \KMedioInterpSeis{} en $n=6$ y
+    \KMedioAdaptSiete{} contra \KMedioInterpSiete{} en $n=7$.
+  \item En $\pex$ medio (fig.~\ref{fig:k80}b) gana ADAPT en todo $n$. Desde $n=8$ INTERP ya no
+    resuelve ninguna instancia, y ADAPT $\ell=2$ sigue resolviendo más de la mitad en $n=8$.
+  \item ADAPT usa además menos parámetros: en $n\leq7$ converge con una mediana de 10 a 42 parámetros, contra
+    los 80 de QAOA.
+  \end{itemize}
+\item \textbf{QAOA con reinicios aleatorios sólo resuelve $n=5$.} Desde $n=9$ su $\pex$ medio queda
+  al nivel del azar. Sólo entre el \KQaoaConvMin{} y el \KQaoaConvMax\,\% de los reinicios converge
+  dentro de 1000 iteraciones, según $n$.
+\item \textbf{El problema de QAOA es la optimización, no el circuito.} Con el mismo circuito, INTERP
+  resuelve todas las instancias en $n=5,6$ y el 80\,\% en $n=7$; en $n=\KInterpN$ su mediana es
+  \KInterpMediana, \KInterpRazon{} veces el azar.
+\item \textbf{A igual número de parámetros} (fig.~\ref{fig:k80param}), ADAPT e INTERP coinciden en los
+  primeros $\sim5$ parámetros. Después ADAPT crece mucho más rápido: con unos 20 parámetros ya
+  supera lo que QAOA INTERP alcanza con 80.
+\item \textbf{ADAPT es ``todo o nada''.} Cada corrida termina resolviendo, con $\pex$ entre $0.5$ y
+  1, o muy por debajo del azar. Por eso su tasa cae con $n$ aunque su $\pex$ medio siga muy por
+  encima de QAOA.
+\item \textbf{En $n\geq10$, $\ell=2$ queda limitado por el tope:} entre el \KTopeMin{} y el
+  \KTopeMax\,\% de sus corridas llega a 80 parámetros. En $n=10$ no se separa de $\ell=1$; en
+  $n=11$ y 12 sí, porque $\ell=1$ converge antes a estados que casi nunca son la solución.
+\end{itemize}
+
+\paragraph{Conclusiones.} Con el mismo presupuesto de 80 parámetros, ADAPT da probabilidades de éxito
+órdenes de magnitud mayores que QAOA con reinicios aleatorios. Ese protocolo, el mismo del paper
+para Max 3-Cut, no sirve para QAOA en MWNP: en un paisaje de 80 dimensiones casi nunca encuentra un
+buen mínimo. La referencia de QAOA para el paper debería ser INTERP, que es mucho más fuerte. Contra
+INTERP la comparación es más matizada: ADAPT concentra más probabilidad en la solución y escala
+mejor con $n$, pero en $n\leq7$ INTERP logra un $\pex$ moderado en más instancias. Qué método
+``gana'' depende de si interesa la probabilidad por disparo o la fracción de instancias con al
+menos una probabilidad baja de acierto.
+
+\subsection{Compuertas nativas}
+\label{sec:compuertas}
+
+Contamos las compuertas de cada corrida igual que en el Apéndice~B del paper: rotaciones de dos
+niveles $R^{(i,j)}$ (locales, de un qutrit) y compuertas Mølmer--Sørensen (no locales, de dos
+qutrits). Para ADAPT se toma el circuito en $k=\min(80,k_{\rm final})$. Para QAOA el número de
+compuertas no depende de la instancia ni de los ángulos, sólo de $n$ y $p$; se cuenta en su forma
+más barata (capa de costo en la base de Gell-Mann), como en la Tabla~IV del paper.
+
+\begin{table}[h]
+\centering
+\caption{Compuertas nativas: medianas sobre las 100 corridas de cada $n$ para ADAPT, y el valor
+(único) de QAOA con $p=40$.}
+\label{tab:compuertas}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rrrrrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} & \multicolumn{3}{c}{QAOA $p=40$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+$n$ & locales & MS & total & locales & MS & total & locales & MS & total \\
+\midrule
+\tabla{tabla_compuertas.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{compuertas}
+\caption{Compuertas nativas contra $n$: mediana (línea) y rango intercuartil (banda) de ADAPT, y
+QAOA con $p=40$.}
+\label{fig:compuertas}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{compuertas_pexito}
+\caption{Cada corrida: compuertas totales contra $\pex$. Los reinicios de QAOA tienen todos el mismo
+número de compuertas; se desplazan levemente en $x$ para verlos.}
+\label{fig:compuertaspex}
+\end{figure}
+
+\begin{itemize}
+\item ADAPT usa entre 13 y 60 veces menos compuertas que QAOA con 80 parámetros, tanto locales como
+  MS (tabla~\ref{tab:compuertas}). La razón es estructural: cada capa de QAOA aplica $H_C$ completo,
+  con un término por cada uno de los $\binom n2$ pares, mientras que cada parámetro de ADAPT es un
+  solo operador de 1 a 4 qutrits.
+\item Las compuertas de ADAPT $\ell=2$ se estancan en $\sim1500$ desde $n=8$ porque la mayoría de
+  sus corridas llega al tope de 80 operadores (fig.~\ref{fig:compuertas}).
+\item Con muchas menos compuertas, ADAPT alcanza $\pex$ que QAOA no alcanza
+  (fig.~\ref{fig:compuertaspex}). Las corridas de ADAPT que fallan, en cambio, quedan muy por debajo
+  del azar (sección~\ref{sec:bajoazar}).
+\end{itemize}
+
+\subsection{Comparación al estilo del paper}
+\label{sec:estilopaper}
+
+Las Figs.~1--3 del paper grafican, contra el número de parámetros, la mediana de QAOA sobre
+reinicios aleatorios con el rango intercuartil sombreado. Para hacer lo mismo corrimos QAOA con 10
+reinicios por instancia en $p=1,2,3,4,5,6,8,10,12,15,20,25,30,35$ y 40, para $n=5$--10
+(fig.~\ref{fig:estilopaper}). En ADAPT la mediana y el rango se toman sobre las 100 corridas en
+cada iteración $k$. Como $E_0=0$, en lugar del error relativo se usa $E/E_{\rm unif}$: la energía
+dividida por la de la superposición uniforme (el estado inicial). Vale 1 si el algoritmo no mejoró
+nada y tiende a 0 en la solución.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{estilo_paper}
+\caption{Mediana (línea) y rango intercuartil (banda) contra número de parámetros. Arriba, $\pex$;
+abajo, $E/E_{\rm unif}$. ADAPT: 100 corridas por curva. QAOA con reinicios: 200 por punto (20
+instancias $\times$ 10). La línea discontinua es la mediana de QAOA INTERP sobre las 20 instancias.}
+\label{fig:estilopaper}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{QAOA con reinicios aleatorios casi no baja la energía.} Su mediana de $E/E_{\rm unif}$
+  queda entre $\sim0.4$ ($n=6$) y $\sim1$ ($n=10$), y su $\pex$ se despega poco del azar. En $n=8$ y
+  10 es incluso peor con más capas: baja a $\sim0.5$ en $p=1$--2 y vuelve a $\sim1$ desde $p\approx4$,
+  porque con más parámetros el punto de partida aleatorio cae en un paisaje peor.
+\item \textbf{INTERP mejora de forma suave y consistente:} su energía baja con $p$ y su $\pex$ queda
+  siempre por encima del azar.
+\item \textbf{ADAPT baja la energía mucho más que ambos} ($E/E_{\rm unif}\sim10^{-2}$ o menos), pero su
+  $\pex$ es bimodal: la mediana sigue a la mitad que falla. En $n=10$ la mediana de $\pex$ de ADAPT
+  queda bajo el azar, mientras la de INTERP queda sobre él, aunque en $\pex$ \emph{medio} ADAPT
+  gana (fig.~\ref{fig:k80}b). La mediana describe la corrida típica y la media lo que se espera
+  medir en promedio; con ADAPT las dos cuentan historias distintas.
+\end{itemize}
+
+\subsection{Una métrica normalizada}
+\label{sec:metricag}
+
+Propuesta del grupo:
+\begin{equation}
+  G=\frac{p_f-p_i}{p_M-p_i},\qquad p_i=\frac{6}{3^n},\quad p_M=1,
+\end{equation}
+donde $p_f$ es el $\pex$ final, $p_i$ el de la superposición uniforme (el azar) y $p_M$ el máximo
+posible. $G=1$ es resolver con certeza, $G=0$ es no mejorar al azar y $G<0$ es empeorarlo. Como $p_i$
+es muy chico para $n\geq7$, el valor medio de $G$ es prácticamente el $\pex$ medio; lo que aporta $G$
+es el \emph{signo}: cuántas corridas terminan peor que el azar (fig.~\ref{fig:metricag}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{metrica_g}
+\caption{(a) $G$ medio contra $n$, en escala simétrica logarítmica. (b) Fracción de corridas o
+reinicios con $G<0$, es decir, peor que el azar.}
+\label{fig:metricag}
+\end{figure}
+
+\begin{itemize}
+\item En $G$ medio, ADAPT (con el mejor de sus dos pools) queda primero en todo $n$, e INTERP
+  segundo.
+\item Pero la fracción de corridas \emph{peor que el azar} crece con $n$ para ADAPT: más del 80\,\% en
+  $n\geq10$. INTERP nunca empeora el azar, y los reinicios de QAOA quedan en medio.
+\item ADAPT es una estrategia de alto riesgo y alto retorno: concentra el estado; si acierta gana
+  mucho, y si no, deja la solución con menos peso que el que tenía al partir.
+\end{itemize}
+
+\subsection{¿Por qué ADAPT puede terminar peor que el azar?}
+\label{sec:bajoazar}
+
+Llama la atención que en $n=12$ el $\pex$ medio de ADAPT $\ell=1$ quede bajo el azar
+(fig.~\ref{fig:k80}b): el máximo sobre sus 100 corridas es \DgPMax, contra \DgAzar{} del azar. No es
+que ADAPT esté maximizando la energía. En esas mismas corridas:
+\begin{itemize}
+\item la energía baja a una mediana de $E/E_{\rm unif}=\DgEunif$: ADAPT sí minimiza;
+\item las \DgTopN{} cadenas más probables suman una mediana del \DgTop\,\% de la probabilidad: el
+  estado está muy concentrado;
+\item esas cadenas son particiones \emph{casi} buenas: la más probable tiene un desbalance (suma de la
+  caja más llena menos la más vacía) típicamente entre \DgDesLo{} y \DgDesHi, contra 0 de la solución;
+\item el \DgConv\,\% de las corridas termina por el criterio de gradiente: es un mínimo local.
+\end{itemize}
+La superposición uniforme reparte la probabilidad en partes iguales, así que la solución tiene
+$6/3^n$. ADAPT concentra casi toda la probabilidad en unas pocas particiones de baja energía; si la
+solución no está entre ellas, su peso cae muy por debajo de $6/3^n$. Bajar la energía \emph{media}
+no obliga a acercarse a la solución exacta, porque el fondo del espectro es denso en particiones
+casi balanceadas. Es el mismo mecanismo de las ``respuestas perdidas'' (fig.~\ref{fig:trazas}): en
+esa corrida la solución llegó a tener $\pex=0.11$, y después el estado se concentró en otras
+particiones de energía aún menor en promedio, hasta dejarla en $\sim10^{-22}$.
+
+\subsection{Varios órdenes como reinicios}
+\label{sec:multiorden}
+
+Los 5 órdenes de cada instancia funcionan como 5 reinicios de ADAPT. Un experimento que no conoce
+la solución puede quedarse con el de menor energía final, igual que se hace con los reinicios de
+QAOA. La tabla~\ref{tab:multiorden} compara la tasa por orden con ese ``mejor de 5''.
+
+\begin{table}[h]
+\centering
+\caption{Fracción de instancias resueltas ($\pex\geq0.1$). ``Tasa'': promedio sobre órdenes.
+``Mejor de 5'': el orden de menor energía final, sin usar la solución. ``Alguno'': resuelve en al
+menos un orden (cota superior). Para QAOA, el reinicio de menor energía de 10.}
+\label{tab:multiorden}
+\small
+\begin{tabular}{rccccccc}
+\toprule
+ & \multicolumn{3}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} & QAOA $p=40$ \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-8}
+$n$ & tasa & mejor de 5 & alguno & tasa & mejor de 5 & alguno & mejor de 10 \\
+\midrule
+\tabla{tabla_multiorden.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item Elegir por energía recupera casi todos los éxitos posibles: ``mejor de 5'' queda muy cerca de
+  ``alguno''. Cuando una corrida resuelve, en general también es la de menor energía.
+\item En $n\geq9$ la tasa casi se duplica: el éxito de ADAPT en $n$ grande depende sobre todo de
+  acertar el desempate correcto, y probar varios órdenes es una forma barata de explorarlo.
+\item Con 5 corridas de ADAPT se resuelven más instancias que con 10 reinicios de QAOA en todo
+  $n\geq6$ (en $n=5$ empatan con $\ell=2$), y con muchas menos compuertas por corrida
+  (sección~\ref{sec:compuertas}).
+\end{itemize}
+
+\subsection{Varianza del gradiente: mapa en \texorpdfstring{$n$}{n} y \texorpdfstring{$k$}{k}}
+\label{sec:varmapa}
+
+Un barren plateau es una varianza del gradiente que cae exponencialmente con el número de qudits,
+para circuitos de profundidad suficiente. Para un circuito que se acerca a un 2-diseño en qutrits,
+cae como $3^{-n}$. Medimos esa varianza en función de $n$ y del número de operadores (capas) $k$:
+\begin{itemize}
+\item $n=5$--12, con las \VmInstancias{} instancias del benchmark por tamaño;
+\item $k=1,2,4,8,16,32,64$;
+\item dos familias de circuitos: (i) $k$ operadores sorteados al azar del pool ($\ell=1$ y $\ell=2$),
+  la pregunta de barren plateau para el pool; (ii) los primeros $k$ operadores que eligió ADAPT en
+  la corrida real de cada instancia, el circuito que de verdad se usa;
+\item 100 puntos de parámetros uniformes en $[-\pi,\pi]^k$ por circuito, gradiente exacto, y $H_C$
+  normalizado por su rango espectral para que la escala no crezca con $n$.
+\end{itemize}
+Para cada circuito se promedia ${\rm Var}[\partial_{\theta_j}E]$ sobre los parámetros $j$, y se
+reporta la mediana sobre instancias (figs.~\ref{fig:varmapa} y~\ref{fig:varcortes}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\textwidth]{varianza_mapa}
+\caption{$\log_{10}$ de la mediana de ${\rm Var}[\partial_\theta E]$ en función de $n$ y $k$. Arriba,
+circuitos sorteados del pool; abajo, los circuitos que eligió ADAPT (faltan las celdas con $k$ mayor
+que el largo de la corrida).}
+\label{fig:varmapa}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{varianza_cortes}
+\caption{Cortes del mapa para circuitos sorteados: varianza contra $n$ para cada $k$, con la
+referencia $\propto3^{-n}$ anclada en $n=5$, $k=64$.}
+\label{fig:varcortes}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{La varianza decrece con $n$ en todas las familias, pero más lento que un 2-diseño.} Para
+  $k=16$, un ajuste $e^{-\alpha n}$ da $\alpha=\VmAlfaUno$ ($\ell=1$) y $\alpha=\VmAlfaDos$
+  ($\ell=2$), contra $\ln3\approx1.10$. Con $k=64$ y $\ell=2$ la caída se acerca a $3^{-n}$ hasta
+  $n\approx9$ y luego se aplana.
+\item \textbf{Los circuitos que elige ADAPT tienen más gradiente que los aleatorios:} para $k=16$, la
+  mediana es \VmAdaptSobreAleatUno{} veces ($\ell=1$) y \VmAdaptSobreAleatDos{} veces ($\ell=2$) la de
+  circuitos sorteados del mismo pool, y decrece con $\alpha=\VmAlfaAdaptUno$ y $\VmAlfaAdaptDos$.
+\item \textbf{El pool $\ell=2$ es más propenso a aplanarse con profundidad:} sus circuitos sorteados
+  con $k=64$ tienen la menor varianza del mapa en $n=12$. Es lo esperable: sus operadores de 3 y 4
+  qutrits hacen al circuito más expresivo.
+\item \textbf{Límites:} $k\leq64$ puede no alcanzar la profundidad de un 2-diseño en $n=12$, y con
+  $n\leq12$ no se distingue un decaimiento exponencial lento de uno polinomial. Los puntos aleatorios
+  no son los que recorre la optimización real, que parte de $\bm\theta=0$ (warm start).
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{varianza_superficie}
+\caption{La misma información como superficie: $\log_{10}{\rm Var}$ contra $n$ y $\log_2k$, circuitos
+sorteados del pool $\ell=1$.}
+\label{fig:varsuperficie}
+\end{figure}
+
+\subsection{Sensibilidad al orden, a la máquina y al rango}
+\label{sec:sensibilidad}
+
+\paragraph{Resultados.}
+\begin{itemize}
+\item \textbf{Orden.} En $n=6$, con 10 órdenes por instancia y $\ell=1$, \OrdSiempre{} instancias
+  se resuelven siempre, \OrdNunca{} nunca y \OrdDepende{} dependen del orden
+  (fig.~\ref{fig:ordenes}). En el experimento principal, entre 3 y 8 instancias por
+  $(n,\ell)$ dependen del orden (tabla~\ref{tab:ordenes}).
+\item El orden ascendente no es sistemáticamente peor: difiere de los otros órdenes en
+  $\leq\OcAscDifMax$ en todos los casos salvo $n=6$, $\ell=1$ (\OcAscSeisAsc{} contra
+  \OcAscSeisOtros).
+\item \textbf{Máquina.} Entre 1 y 2 hilos de BLAS en la misma máquina cambia el veredicto en
+  \HilosFlips/\MaquinaTotal{} corridas; entre la laptop y BitWit, en \MaquinaFlips/\MaquinaTotal.
+  Las corridas en orden ascendente reproducen el veredicto de las corridas anteriores en
+  \OcReproVeredicto/\OcReproTotal{} casos.
+\item \textbf{Rango.} En $n=6$, las 9 instancias posibles en $[1,8]$ no son más fáciles que las de
+  $[1,18]$: con $\ell=1$ se resuelven \RangoOchoLUno{} contra \RangoDiecLUno, y con $\ell=2$,
+  \RangoOchoLDos{} contra \RangoDiecLDos.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\textwidth]{ordenes}
+\caption{$\pex$ de las 20 instancias de $n=6$ ($\ell=1$, warm) bajo 10 órdenes. La primera
+columna es el orden ascendente.}
+\label{fig:ordenes}
+\end{figure}
+
+\paragraph{Conclusiones.} El criterio $\arg\max$ de ADAPT es sensible a empates y casi-empates.
+Una corrida individual mide tanto el algoritmo como un desempate arbitrario, y con distintas
+máquinas incluso el redondeo de BLAS puede decidir el empate. Toda tasa y toda comparación deben
+promediarse sobre órdenes, o sobre un desempate aleatorio con semilla, y compararse dentro de una
+misma máquina.
+
+\subsection{Otras observaciones}
+
+\begin{itemize}
+\item \textbf{Respuestas perdidas.} Entre las corridas warm que fallan, \OcPerdidasUno/\OcFallasUno{}
+  ($\ell=1$) y \OcPerdidasDos/\OcFallasDos{} ($\ell=2$) superaron $\pex=0.1$ en alguna iteración y
+  la perdieron mientras la energía seguía bajando (fig.~\ref{fig:trazas}). Minimizar
+  $\langle H_C\rangle$ no obliga a concentrar el estado en la solución: el fondo del espectro es
+  denso, y bajar la energía se logra repartiendo peso entre configuraciones casi óptimas.
+\item \textbf{$\pex\approx0.5$.} \OcMitad{} de \OcLDosCorridas{} corridas con $\ell=2$ terminan
+  con el peso repartido por mitades entre la solución y una partición que intercambia dos números
+  que difieren en 1. Parece un punto estacionario por simetría; queda por analizar.
+\item \textbf{Varianza del gradiente:} ver la sección~\ref{sec:varmapa}, que reemplaza la medición
+  anterior con 3 instancias aleatorias.
+\item \textbf{$n=13$, $\ell=1$}: una corrida convergió en \NTreceK{} parámetros
+  (\NTreceHoras\,h). $\pex$ alcanzó \NTrecePmax{} en $k=\NTreceKmax$ y terminó en \NTrecePfin.
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\textwidth]{trazas_n6_i03}
+\caption{$\pex$ contra número de parámetros, $n=6$, una instancia (orden ascendente), $\ell=1$, con
+las tres estrategias. Warm llega a $0.11$ y la pierde mientras la energía sigue bajando (ver la
+sección~\ref{sec:bajoazar}); ADAPT desde $\bm\theta=0$ termina en $0.97$. Los valores menores que
+$10^{-12}$ se dibujan en ese piso. Es un ejemplo de un solo orden, no un promedio.}
+\label{fig:trazas}
+\end{figure}
+
+%==============================================================================
+\section{Conclusiones}
+%==============================================================================
+
+\begin{enumerate}
+\item MWNP con $k=3$ es Max 3-Cut ponderado sobre $K_n$ (ec.~\ref{eq:HC}), y entra en el paper con
+  el mismo pool, mixer y estado de referencia. Como $E_0=0$, la métrica tiene que ser $\pex$.
+\item El pool $\ell=2$ es significativamente mejor que $\ell=1$, gracias a sus operadores de tres
+  y cuatro sitios, a cambio de un pool de 30 a 80 veces más grande. Ambos pierden eficacia con
+  $n$.
+\item El warm start no es una desventaja. Con $\ell=2$ es claramente mejor que reiniciar desde
+  $\bm\theta=0$, tanto en la elección de operadores (ADAPT desde cero se detiene antes) como en la
+  optimización de un circuito fijo. Con $\ell=1$ las estrategias son equivalentes.
+\item ADAPT supera ampliamente a QAOA con reinicios aleatorios, que no sirven en MWNP. Contra QAOA
+  INTERP, la referencia justa, ADAPT gana en $\pex$ medio y a $n\geq8$, e INTERP gana en fracción
+  resuelta (umbral 0.1) a $n\leq7$.
+\item Las corridas individuales dependen del orden de los números y, en casi-empates, de la
+  máquina. Las tasas deben promediarse sobre órdenes y compararse dentro de una misma máquina.
+\end{enumerate}
+
+%==============================================================================
+\section{Notas para el manuscrito}
+\label{sec:notas}
+%==============================================================================
+
+\begin{itemize}
+\item \textbf{Tamaño del pool $\ell=2$.} El código del paper
+  (\texttt{utilidades\_bp.build\_cd\_pool}) concatena las listas de $O_1$ y $O_3$, y $O_1\subset O_3$.
+  El pool $\ell=2$ reportado cuenta cada operador de $\ell=1$ dos veces: para $K_6$ son 2658
+  operadores distintos, no 2724, y para $G_2$ (Tabla~II) son 1550, no 1600. La dinámica no cambia,
+  porque \texttt{argmax} elige siempre la primera copia. Sí cambian el tamaño reportado y las
+  mediciones de gradiente: $16\times1550=24\,800$ en vez de $25\,600$ en las Tablas~II y~III.
+\item \textbf{Mezclador de QAOA en Max 3-Cut.} El texto y el código no dicen lo mismo:
+  \begin{enumerate}
+  \item \emph{Lo que dice el texto.} La ec.~(14) del paper define el circuito de QAOA como
+    $\prod_k e^{-i\beta_kH_M}e^{-i\gamma_kH_C}\ket{\phi_g}$, con el $H_M$ de la ec.~(9),
+    $H_M=-\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, cuyo estado fundamental es
+    $\ket{\phi_g}=\ket{+_3}^{\otimes n}$. Así, QAOA es una versión digitalizada de la evolución
+    adiabática que parte de ese estado.
+  \item \emph{Lo que hace el código.} \texttt{funciones/utilidades\_QAOA.py} define dos mezcladores:
+    \texttt{Hm\_qaoa\_jx} (líneas 83--96), $H_M=\sum_jL_x^{(j)}$, y \texttt{Hm\_qaoa\_x\_custom}
+    (líneas 99--110), $H_M=\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, que es el de la ec.~(9) salvo un
+    signo global (irrelevante: sólo invierte $\beta$). \texttt{preparar\_qaoa\_para\_grafo} (línea 113)
+    usa por defecto \texttt{mixer="jx"}, y el lanzador \texttt{cluster/main\_QAOA.py} (líneas 88--94)
+    también.
+  \item \emph{El estado inicial no cambia con el mezclador.} Las líneas 157--160 toman siempre el
+    fundamental de $-\sum_j[(L_z^{(j)})^2+\sqrt2L_x^{(j)}]$, es decir $\ket{+_3}^{\otimes n}$. Con el
+    mezclador $\sum_jL_x^{(j)}$, ese estado \emph{no} es su estado fundamental (ni siquiera un
+    autoestado), así que el circuito corrido ya no es la digitalización de una evolución adiabática.
+    Sigue siendo un ansatz variacional válido, pero no el que describe la ec.~(14).
+  \item \emph{Los resultados publicados usan $\sum_jL_x$.} Los dos archivos que carga
+    \texttt{cuadernillos/}\allowbreak\texttt{comparacion\_QAOA.ipynb} para las Figs.~1--3 y la
+    Tabla~I,
+    \texttt{resultados\_qaoa\_n6\_p20\_jx\_r25\_grafos\_1\_all.json} y
+    \texttt{resultados\_qaoa\_regulares\_n6\_p20\_jx\_r25\_grafos\_1\_4.json}, llevan \texttt{jx} en el
+    nombre, y sus 80 registros tienen \texttt{"mixer": "jx"}. El Apéndice~B (compilación de QAOA,
+    Tabla~IV) sí dice $H_M=\sum_jL_x^{(j)}$, que es lo que se corrió.
+  \end{enumerate}
+  Hay dos formas de arreglarlo: corregir el texto de la ec.~(14) para que diga $\sum_jL_x^{(j)}$, o
+  recorrer el QAOA de Max 3-Cut con \texttt{-{}-mixer custom} para que las figuras correspondan a la
+  ec.~(9). La segunda es barata (8 grafos de $n=6$) y además responde si QAOA mejora con el
+  mezclador ``correcto''. El QAOA de MWNP de este informe usa $\sum_jL_x^{(j)}$ para ser
+  consistente con lo publicado, así que le aplica lo mismo.
+\item En la sección~III.B aparece tres veces ``wamr-start''.
+\end{itemize}
+
+\section{Pendientes}
+
+\begin{itemize}
+\item \textbf{Mezclador de la ec.~(9) en QAOA} (ver sección~\ref{sec:notas}):
+  \begin{itemize}
+  \item Max 3-Cut: recorrer el QAOA de las Figs.~1--3 del paper con \texttt{-{}-mixer custom} en
+    \texttt{cluster/main\_QAOA.py} (8 grafos, $n=6$; barato), o corregir el texto de la ec.~(14).
+  \item MWNP: repetir el benchmark de QAOA ($p=40$, reinicios e INTERP) con
+    \texttt{-{}-mezclador x} en \texttt{cluster/qaoa\_benchmark\_mwnp.py}; $n\leq11$ toma unas 9~h en
+    BitWit.
+  \end{itemize}
+\item $\ell=3$ en $n=5$--9 (factibilidad en estudio: el pool crece $\sim13$ veces respecto de
+  $\ell=2$ y llega a operadores de 6 qutrits).
+\item INTERP para $n=10$--12, en curso en BitWit.
+\item Subir el tope de $\ell=2$ en $n\geq8$, donde la mayoría de las corridas llega al máximo.
+\item Explicar el estancamiento en $\pex\approx0.5$.
+\item Conteo de compuertas nativas de ADAPT contra QAOA a igual número de parámetros en MWNP, como
+  en la Tabla~IV del paper.
+\end{itemize}
+
+\end{document}

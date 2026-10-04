@@ -1,0 +1,257 @@
+{
+ "instancia": {
+  "n": 5,
+  "indice": 10,
+  "seed": 0,
+  "rango": 15,
+  "a": [
+   2,
+   3,
+   8,
+   9,
+   11
+  ],
+  "suma": 33,
+  "suma_por_caja": 11,
+  "degeneracion": 6,
+  "particion_optima": "21120",
+  "cajas_optimas": [
+   [
+    11
+   ],
+   [
+    3,
+    8
+   ],
+   [
+    2,
+    9
+   ]
+  ],
+  "p_azar": 0.024691358024691357,
+  "id": 10
+ },
+ "reinicio": 1,
+ "config": {
+  "p": 4,
+  "mezclador": "jx",
+  "normalizacion": "H_C / std(H_C)",
+  "sigma": 152.67394451357222,
+  "cota": 3.141592653589793,
+  "maxiter": 1000,
+  "gtol": 1e-08,
+  "ftol": 1e-12,
+  "optimizador": "L-BFGS-B, jac anal\u00edtico (adjunto)",
+  "inicializacion": "uniforme en [-pi, pi]",
+  "semilla": [
+   0,
+   5,
+   10,
+   1
+  ]
+ },
+ "resultado": {
+  "p_exito": 0.0920169812173444,
+  "E_j": 58.31473224215621,
+  "cadena_mas_probable": "20021",
+  "encontro_la_particion": true,
+  "top_particiones": [
+   {
+    "indice": 73,
+    "trits": "20021",
+    "probabilidad": 0.01979796884481951,
+    "clases": [
+     2,
+     0,
+     0,
+     2,
+     1
+    ],
+    "cajas": [
+     [
+      3,
+      8
+     ],
+     [
+      11
+     ],
+     [
+      2,
+      9
+     ]
+    ],
+    "sumas": [
+     11.0,
+     11.0,
+     11.0
+    ],
+    "desbalance": 0.0
+   },
+   {
+    "indice": 169,
+    "trits": "02201",
+    "probabilidad": 0.01979796884481949,
+    "clases": [
+     0,
+     2,
+     2,
+     0,
+     1
+    ],
+    "cajas": [
+     [
+      2,
+      9
+     ],
+     [
+      11
+     ],
+     [
+      3,
+      8
+     ]
+    ],
+    "sumas": [
+     11.0,
+     11.0,
+     11.0
+    ],
+    "desbalance": 0.0
+   },
+   {
+    "indice": 181,
+    "trits": "02021",
+    "probabilidad": 0.01970092753426688,
+    "clases": [
+     0,
+     2,
+     0,
+     2,
+     1
+    ],
+    "cajas": [
+     [
+      2,
+      8
+     ],
+     [
+      11
+     ],
+     [
+      3,
+      9
+     ]
+    ],
+    "sumas": [
+     10.0,
+     11.0,
+     12.0
+    ],
+    "desbalance": 2.0
+   },
+   {
+    "indice": 61,
+    "trits": "20201",
+    "probabilidad": 0.019700927534266874,
+    "clases": [
+     2,
+     0,
+     2,
+     0,
+     1
+    ],
+    "cajas": [
+     [
+      3,
+      9
+     ],
+     [
+      11
+     ],
+     [
+      2,
+      8
+     ]
+    ],
+    "sumas": [
+     12.0,
+     11.0,
+     10.0
+    ],
+    "desbalance": 2.0
+   },
+   {
+    "indice": 142,
+    "trits": "10201",
+    "probabilidad": 0.01656298486595337,
+    "clases": [
+     1,
+     0,
+     2,
+     0,
+     1
+    ],
+    "cajas": [
+     [
+      3,
+      9
+     ],
+     [
+      2,
+      11
+     ],
+     [
+      8
+     ]
+    ],
+    "sumas": [
+     12.0,
+     13.0,
+     8.0
+    ],
+    "desbalance": 5.0
+   }
+  ],
+  "E_norm": 0.3819560202492326,
+  "E0_j": 0.0,
+  "p_azar": 0.024691358024691357,
+  "particion_correcta": "21120"
+ },
+ "optimizador": {
+  "nit": 50,
+  "nfev": 66,
+  "exito": true,
+  "mensaje": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+  "t_s": 0.04945230484008789
+ },
+ "parametros": {
+  "x0": [
+   0.15165094076550645,
+   1.1517834570310752,
+   0.2581907406430455,
+   -1.28016174673979,
+   -2.6358079174776443,
+   -0.2422721757176718,
+   -1.2835436716239228,
+   -1.5191033139874672
+  ],
+  "x": [
+   0.854311059985693,
+   1.825934713200738,
+   -0.33600630056958836,
+   -1.4256432759374813,
+   -2.0311064493440028,
+   -0.7586189449443521,
+   -2.2932887995837925,
+   -1.5719433115069479
+  ]
+ },
+ "ejecucion": {
+  "runtime_s": 0.04984736442565918,
+  "commit": "fe858e944951e64abcd487cf17936a6b592ef1ba",
+  "host": "BitWit",
+  "hilos_blas": 1,
+  "numpy": "2.5.1",
+  "fecha_utc": "2026-10-02T13:45:15+00:00"
+ }
+}

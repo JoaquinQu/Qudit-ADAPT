@@ -1,0 +1,98 @@
+{
+ "5": {
+  "gellmann": {
+   "r_dos_niveles": 5400,
+   "ms": 1600,
+   "total": 7000
+  },
+  "angular": {
+   "r_dos_niveles": 10200,
+   "ms": 1600,
+   "total": 11800
+  }
+ },
+ "6": {
+  "gellmann": {
+   "r_dos_niveles": 7920,
+   "ms": 2400,
+   "total": 10320
+  },
+  "angular": {
+   "r_dos_niveles": 15120,
+   "ms": 2400,
+   "total": 17520
+  }
+ },
+ "7": {
+  "gellmann": {
+   "r_dos_niveles": 10920,
+   "ms": 3360,
+   "total": 14280
+  },
+  "angular": {
+   "r_dos_niveles": 21000,
+   "ms": 3360,
+   "total": 24360
+  }
+ },
+ "8": {
+  "gellmann": {
+   "r_dos_niveles": 14400,
+   "ms": 4480,
+   "total": 18880
+  },
+  "angular": {
+   "r_dos_niveles": 27840,
+   "ms": 4480,
+   "total": 32320
+  }
+ },
+ "9": {
+  "gellmann": {
+   "r_dos_niveles": 18360,
+   "ms": 5760,
+   "total": 24120
+  },
+  "angular": {
+   "r_dos_niveles": 35640,
+   "ms": 5760,
+   "total": 41400
+  }
+ },
+ "10": {
+  "gellmann": {
+   "r_dos_niveles": 22800,
+   "ms": 7200,
+   "total": 30000
+  },
+  "angular": {
+   "r_dos_niveles": 44400,
+   "ms": 7200,
+   "total": 51600
+  }
+ },
+ "11": {
+  "gellmann": {
+   "r_dos_niveles": 27720,
+   "ms": 8800,
+   "total": 36520
+  },
+  "angular": {
+   "r_dos_niveles": 54120,
+   "ms": 8800,
+   "total": 62920
+  }
+ },
+ "12": {
+  "gellmann": {
+   "r_dos_niveles": 33120,
+   "ms": 10560,
+   "total": 43680
+  },
+  "angular": {
+   "r_dos_niveles": 64800,
+   "ms": 10560,
+   "total": 75360
+  }
+ }
+}

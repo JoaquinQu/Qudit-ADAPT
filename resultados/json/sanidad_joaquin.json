@@ -1,0 +1,665 @@
+{
+ "max_dif_energia": 7.705835969318287e-12,
+ "filas": [
+  {
+   "archivo": "resultados_multiway_l1_n5_5casos.json",
+   "instancia": 0,
+   "a": [
+    11,
+    2,
+    1,
+    12,
+    5
+   ],
+   "E_suya": 9.473881696038159,
+   "E_nuestra": 9.473881696038916,
+   "dif": 7.567280135845067e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_5casos.json",
+   "instancia": 1,
+   "a": [
+    4,
+    4,
+    3,
+    12,
+    2
+   ],
+   "E_suya": 22.306582705815103,
+   "E_nuestra": 22.306582705815117,
+   "dif": 1.4210854715202004e-14,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_5casos.json",
+   "instancia": 2,
+   "a": [
+    11,
+    12,
+    15,
+    9,
+    2
+   ],
+   "E_suya": 32.323520918038355,
+   "E_nuestra": 32.323520918033864,
+   "dif": 4.490630090003833e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_5casos.json",
+   "instancia": 3,
+   "a": [
+    10,
+    7,
+    1,
+    1,
+    2
+   ],
+   "E_suya": 20.303665622678086,
+   "E_nuestra": 20.303665622678068,
+   "dif": 1.7763568394002505e-14,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_5casos.json",
+   "instancia": 4,
+   "a": [
+    4,
+    4,
+    9,
+    10,
+    1
+   ],
+   "E_suya": 3.4336701367656364,
+   "E_nuestra": 3.433670136765727,
+   "dif": 9.059419880941277e-14,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_balanceados_5casos.json",
+   "instancia": 0,
+   "a": [
+    1,
+    2,
+    1,
+    1,
+    1
+   ],
+   "E_suya": 0.3333333333404305,
+   "E_nuestra": 0.3333333333403772,
+   "dif": 5.334621633323877e-14,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_balanceados_5casos.json",
+   "instancia": 1,
+   "a": [
+    13,
+    2,
+    11,
+    12,
+    1
+   ],
+   "E_suya": 0.05719095841800617,
+   "E_nuestra": 0.05719095841686794,
+   "dif": 1.1382284004213261e-12,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_balanceados_5casos.json",
+   "instancia": 2,
+   "a": [
+    14,
+    13,
+    1,
+    13,
+    1
+   ],
+   "E_suya": 0.05719095907105057,
+   "E_nuestra": 0.05719095906988514,
+   "dif": 1.1654288645246424e-12,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_balanceados_5casos.json",
+   "instancia": 3,
+   "a": [
+    7,
+    2,
+    15,
+    15,
+    6
+   ],
+   "E_suya": 1.9857007358808507,
+   "E_nuestra": 1.9857007358796182,
+   "dif": 1.2325696019388488e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n5_balanceados_5casos.json",
+   "instancia": 4,
+   "a": [
+    4,
+    1,
+    5,
+    6,
+    2
+   ],
+   "E_suya": 2.1143819168372815,
+   "E_nuestra": 2.1143819168374023,
+   "dif": 1.2079226507921703e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_5casos.json",
+   "instancia": 0,
+   "a": [
+    1,
+    5,
+    12,
+    13,
+    3,
+    8
+   ],
+   "E_suya": 2.2320346393965167,
+   "E_nuestra": 2.2320346393946693,
+   "dif": 1.8474111129762605e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_5casos.json",
+   "instancia": 1,
+   "a": [
+    6,
+    11,
+    12,
+    13,
+    2,
+    8
+   ],
+   "E_suya": 12.666666666671365,
+   "E_nuestra": 12.666666666669926,
+   "dif": 1.4388490399142029e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_5casos.json",
+   "instancia": 2,
+   "a": [
+    10,
+    8,
+    10,
+    1,
+    9,
+    7
+   ],
+   "E_suya": 25.00000000001183,
+   "E_nuestra": 25.00000000001114,
+   "dif": 6.892264536872972e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_5casos.json",
+   "instancia": 3,
+   "a": [
+    10,
+    6,
+    10,
+    14,
+    9,
+    15
+   ],
+   "E_suya": 7.666666666667557,
+   "E_nuestra": 7.666666666664696,
+   "dif": 2.8608226898541034e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_5casos.json",
+   "instancia": 4,
+   "a": [
+    13,
+    7,
+    7,
+    3,
+    1,
+    14
+   ],
+   "E_suya": 2.232034639396551,
+   "E_nuestra": 2.232034639395124,
+   "dif": 1.4268586312482512e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_balanceados_5casos.json",
+   "instancia": 0,
+   "a": [
+    14,
+    10,
+    5,
+    4,
+    5,
+    4
+   ],
+   "E_suya": 6.387846762080418,
+   "E_nuestra": 6.387846762076606,
+   "dif": 3.8120617773529375e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_balanceados_5casos.json",
+   "instancia": 1,
+   "a": [
+    4,
+    2,
+    3,
+    1,
+    6,
+    5
+   ],
+   "E_suya": 2.23203463939764,
+   "E_nuestra": 2.2320346393974546,
+   "dif": 1.851852005074761e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_balanceados_5casos.json",
+   "instancia": 2,
+   "a": [
+    3,
+    1,
+    4,
+    2,
+    2,
+    6
+   ],
+   "E_suya": 1.2518040504932109,
+   "E_nuestra": 1.2518040504929786,
+   "dif": 2.3225865675158275e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_balanceados_5casos.json",
+   "instancia": 3,
+   "a": [
+    5,
+    15,
+    9,
+    13,
+    3,
+    9
+   ],
+   "E_suya": 4.857864376269824,
+   "E_nuestra": 4.857864376267344,
+   "dif": 2.4806823262224498e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l1_n6_balanceados_5casos.json",
+   "instancia": 4,
+   "a": [
+    8,
+    4,
+    6,
+    2,
+    1,
+    3
+   ],
+   "E_suya": 2.345427440650611,
+   "E_nuestra": 2.345427440648791,
+   "dif": 1.8198775819655566e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_5casos.json",
+   "instancia": 0,
+   "a": [
+    11,
+    2,
+    1,
+    12,
+    5
+   ],
+   "E_suya": 8.66666666666901,
+   "E_nuestra": 8.666666666669812,
+   "dif": 8.01136934569513e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_5casos.json",
+   "instancia": 1,
+   "a": [
+    4,
+    4,
+    3,
+    12,
+    2
+   ],
+   "E_suya": 20.666666666675237,
+   "E_nuestra": 20.666666666676463,
+   "dif": 1.2256862191861728e-12,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_5casos.json",
+   "instancia": 2,
+   "a": [
+    11,
+    12,
+    15,
+    9,
+    2
+   ],
+   "E_suya": 20.666666666669347,
+   "E_nuestra": 20.666666666673336,
+   "dif": 3.9896974612929625e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_5casos.json",
+   "instancia": 3,
+   "a": [
+    10,
+    7,
+    1,
+    1,
+    2
+   ],
+   "E_suya": 18.00000000000455,
+   "E_nuestra": 18.00000000000506,
+   "dif": 5.080380560684716e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_5casos.json",
+   "instancia": 4,
+   "a": [
+    4,
+    4,
+    9,
+    10,
+    1
+   ],
+   "E_suya": 0.6666666666667029,
+   "E_nuestra": 0.6666666666668561,
+   "dif": 1.532107773982716e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_balanceados_5casos.json",
+   "instancia": 0,
+   "a": [
+    1,
+    2,
+    1,
+    1,
+    1
+   ],
+   "E_suya": 4.353598910922738e-11,
+   "E_nuestra": 4.3588244125203346e-11,
+   "dif": 5.225501597596477e-14,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_balanceados_5casos.json",
+   "instancia": 1,
+   "a": [
+    13,
+    2,
+    11,
+    12,
+    1
+   ],
+   "E_suya": 7.360046114824158e-14,
+   "E_nuestra": 1.5916157281026244e-12,
+   "dif": 1.5180152669543829e-12,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_balanceados_5casos.json",
+   "instancia": 2,
+   "a": [
+    14,
+    13,
+    1,
+    13,
+    1
+   ],
+   "E_suya": 7.829782901334969e-13,
+   "E_nuestra": 9.094947017729282e-13,
+   "dif": 1.2651641163943136e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_balanceados_5casos.json",
+   "instancia": 3,
+   "a": [
+    7,
+    2,
+    15,
+    15,
+    6
+   ],
+   "E_suya": 3.93014630690972e-12,
+   "E_nuestra": 5.6843418860808015e-12,
+   "dif": 1.7541955791710815e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n5_balanceados_5casos.json",
+   "instancia": 4,
+   "a": [
+    4,
+    1,
+    5,
+    6,
+    2
+   ],
+   "E_suya": 1.1387916610524808e-11,
+   "E_nuestra": 1.1937117960769683e-11,
+   "dif": 5.492013502448746e-13,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_5casos.json",
+   "instancia": 0,
+   "a": [
+    1,
+    5,
+    12,
+    13,
+    3,
+    8
+   ],
+   "E_suya": 2.114381916850579,
+   "E_nuestra": 2.1143819168528353,
+   "dif": 2.256417275248168e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_5casos.json",
+   "instancia": 1,
+   "a": [
+    6,
+    11,
+    12,
+    13,
+    2,
+    8
+   ],
+   "E_suya": 10.71231936169536,
+   "E_nuestra": 10.712319361703067,
+   "dif": 7.705835969318287e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_5casos.json",
+   "instancia": 2,
+   "a": [
+    10,
+    8,
+    10,
+    1,
+    9,
+    7
+   ],
+   "E_suya": 25.55403060013938,
+   "E_nuestra": 25.554030600144188,
+   "dif": 4.806821607417078e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_5casos.json",
+   "instancia": 3,
+   "a": [
+    10,
+    6,
+    10,
+    14,
+    9,
+    15
+   ],
+   "E_suya": 8.666666666666954,
+   "E_nuestra": 8.666666666671517,
+   "dif": 4.5634607204192434e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_5casos.json",
+   "instancia": 4,
+   "a": [
+    13,
+    7,
+    7,
+    3,
+    1,
+    14
+   ],
+   "E_suya": 2.114381916839753,
+   "E_nuestra": 2.114381916841694,
+   "dif": 1.9411139362546237e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_balanceados_5casos.json",
+   "instancia": 0,
+   "a": [
+    14,
+    10,
+    5,
+    4,
+    5,
+    4
+   ],
+   "E_suya": 9.874104616623596e-14,
+   "E_nuestra": 1.8189894035458565e-12,
+   "dif": 1.7202483573796205e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_balanceados_5casos.json",
+   "instancia": 1,
+   "a": [
+    4,
+    2,
+    3,
+    1,
+    6,
+    5
+   ],
+   "E_suya": 0.039176165115729966,
+   "E_nuestra": 0.039176165116941775,
+   "dif": 1.2118084313783584e-12,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_balanceados_5casos.json",
+   "instancia": 2,
+   "a": [
+    3,
+    1,
+    4,
+    2,
+    2,
+    6
+   ],
+   "E_suya": 2.7121241971557636e-11,
+   "E_nuestra": 2.76543232757831e-11,
+   "dif": 5.330813042254635e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_balanceados_5casos.json",
+   "instancia": 3,
+   "a": [
+    5,
+    15,
+    9,
+    13,
+    3,
+    9
+   ],
+   "E_suya": 4.000000000016456,
+   "E_nuestra": 4.000000000018645,
+   "dif": 2.1884716261411086e-12,
+   "misma_cadena": false,
+   "misma_prob": true
+  },
+  {
+   "archivo": "resultados_multiway_l2_n6_balanceados_5casos.json",
+   "instancia": 4,
+   "a": [
+    8,
+    4,
+    6,
+    2,
+    1,
+    3
+   ],
+   "E_suya": 1.4732568820360071e-12,
+   "E_nuestra": 1.7621459846850485e-12,
+   "dif": 2.8888910264904135e-13,
+   "misma_cadena": true,
+   "misma_prob": true
+  }
+ ]
+}

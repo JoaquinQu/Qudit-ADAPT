@@ -1,0 +1,298 @@
+{
+ "criterios": {
+  "numeros_distintos": true,
+  "rango": "[1, 8]",
+  "degeneracion": 6,
+  "enumeracion": "exhaustiva"
+ },
+ "instancias": [
+  {
+   "n": 6,
+   "id": 0,
+   "rango": 8,
+   "a": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "suma": 21,
+   "suma_por_caja": 7,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     3,
+     4
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     1,
+     6
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 1,
+   "rango": 8,
+   "a": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    8
+   ],
+   "suma": 24,
+   "suma_por_caja": 8,
+   "degeneracion": 6,
+   "particion_optima": "212210",
+   "cajas_optimas": [
+    [
+     8
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     1,
+     3,
+     4
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 2,
+   "rango": 8,
+   "a": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7
+   ],
+   "suma": 24,
+   "suma_por_caja": 8,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     3,
+     5
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     1,
+     7
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 3,
+   "rango": 8,
+   "a": [
+    1,
+    2,
+    3,
+    6,
+    7,
+    8
+   ],
+   "suma": 27,
+   "suma_por_caja": 9,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     3,
+     6
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     1,
+     8
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 4,
+   "rango": 8,
+   "a": [
+    1,
+    2,
+    4,
+    5,
+    7,
+    8
+   ],
+   "suma": 27,
+   "suma_por_caja": 9,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     4,
+     5
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     1,
+     8
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 5,
+   "rango": 8,
+   "a": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    8
+   ],
+   "suma": 27,
+   "suma_por_caja": 9,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     4,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     1,
+     8
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 6,
+   "rango": 8,
+   "a": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "suma": 27,
+   "suma_por_caja": 9,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     4,
+     5
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     2,
+     7
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 7,
+   "rango": 8,
+   "a": [
+    2,
+    3,
+    4,
+    6,
+    7,
+    8
+   ],
+   "suma": 30,
+   "suma_por_caja": 10,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     4,
+     6
+    ],
+    [
+     3,
+     7
+    ],
+    [
+     2,
+     8
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  },
+  {
+   "n": 6,
+   "id": 8,
+   "rango": 8,
+   "a": [
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "suma": 33,
+   "suma_por_caja": 11,
+   "degeneracion": 6,
+   "particion_optima": "210012",
+   "cajas_optimas": [
+    [
+     5,
+     6
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     3,
+     8
+    ]
+   ],
+   "p_azar": 0.00823045267489712
+  }
+ ]
+}
