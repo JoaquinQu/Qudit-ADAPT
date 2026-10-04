@@ -354,47 +354,139 @@ los tamaños contados para $n=5,\dots,10$, y el conteo por soporte se verificó 
 $n=5,6,7$. En el rango $n=5$--$10$ crece como $n^{3.65}$ porque los términos de menor grado todavía
 pesan; asintóticamente va como $\tfrac43n^4$.
 
-\paragraph{Para cualquier orden $\ell$.} El mismo argumento vale en general. El pool de orden $\ell$
-usa $O_1,O_3,\dots,O_{2\ell-1}$, y $O_{2\ell-1}$ vive en a lo más $2\ell$ sitios: $O_1$ en 2, y cada
-conmutador adicional con un término de dos sitios agrega a lo más uno. Por la simetría de $K_n$,
+\subsubsection*{El tamaño del pool para cualquier orden $\ell$}
+
+\paragraph{El modelo que se cuenta.} El pool que construye el código es combinatorio, y conviene
+fijarlo con precisión. Cada operador es una \emph{palabra} de factores $L_a^{(j)}$, $a\in\{x,y,z\}$.
+Factores de sitios distintos conmutan; dentro de un sitio se conserva el orden. El conmutador se
+calcula con la regla de Leibniz y $[L_x,L_y]=iL_z$ (y cíclicas), sin usar identidades propias de
+espín 1 como $L_z^3=L_z$. El pool de orden $\ell$ son las palabras con coeficiente no nulo en
+$O_1,O_3,\dots,O_{2\ell-1}$, como polinomios en $\lambda$, identificadas por su multiconjunto de
+factores. Escribimos $(a,b,c)$ para el número de $L_x$, $L_y$ y $L_z$ que una palabra tiene en un
+sitio.
+
+\paragraph{Proposición 1 (forma general).} Para $n\geq2$,
 \begin{equation}
   N_\ell(n)=\sum_{w=1}^{2\ell}t^{(\ell)}_w\binom nw ,
-  \qquad
-  N_\ell(n)\;\xrightarrow{\;n\to\infty\;}\;\frac{t^{(\ell)}_{2\ell}}{(2\ell)!}\,n^{2\ell},
   \label{eq:nlgeneral}
 \end{equation}
-un polinomio de grado $2\ell$ en $n$. Los coeficientes $t^{(\ell)}_w$ no dependen de $n$; se obtienen
-contando la expansión simbólica para un $n\geq2\ell$ (tabla~\ref{tab:tw}). Verificamos que son
-constantes comparando $n=5$ y $n=6$ para $\ell=3$.
+donde $t^{(\ell)}_w$, el número de operadores con soporte en un conjunto dado de $w$ qutrits, no
+depende de $n$ (salvo eventualmente en un conjunto finito de valores de $n$, por cancelaciones
+accidentales). Como $\binom nw=0$ si $w>n$, la fórmula vale también para $n<2\ell$; no hace falta
+pedir $n\geq2\ell$. Para $n=1$ el pool es vacío, porque $H_C=0$.
+
+\emph{Demostración.}
+\begin{enumerate}
+\item \emph{El soporte nunca se achica.} $[L_a^{(s)},\cdot]$ sólo reemplaza un factor del sitio $s$
+  por otro del mismo sitio, y los demás factores de un término se multiplican. Por eso el soporte de
+  cada palabra de $[T,M]$ contiene al de $M$ y al de $T$.
+\item \emph{El soporte crece a lo más en uno por conmutador.} Factores de sitios disjuntos conmutan,
+  así que $[T,M]\neq0$ exige que $T$ comparta un sitio con $M$. Como los términos de $H_{\rm ad}$
+  tienen a lo más dos sitios, cada conmutador agrega a lo más uno. Además
+  $O_1=[H_{\rm ad},H_C-H_M]=[H_M,H_C]$, porque los términos en $\lambda$ se cancelan, y vive en
+  $\leq2$ sitios. Luego $O_k$ vive en $\leq k+1$ sitios, y el pool de orden $\ell$ en $\leq2\ell$.
+\item \emph{Las palabras con soporte $S$ sólo ven lo que pasa dentro de $S$.} Por el paso 1, sólo
+  contribuyen los términos de $H_{\rm ad}$ contenidos en $S$. De los pares $\{j,m\}$ con $m\notin S$
+  sobrevive únicamente su parte de un sitio, $-2(L_z^{(j)})^2$, que cambia el coeficiente de
+  $(L_z^{(j)})^2$ a $\mu=3-2n$ en $O_0$ y a $-1+\lambda\mu$ en $H_{\rm ad}$. El conteo dentro de $S$ es
+  entonces el de $K_w$, con $\mu$ como parámetro. Los coeficientes de las palabras son polinomios en
+  $(\lambda,\mu)$; uno que no es idénticamente nulo sólo se anula para finitos valores de $\mu$, es
+  decir, de $n$. Por la simetría de $K_n$, todos los subconjuntos de $w$ sitios dan el mismo
+  $t^{(\ell)}_w$. \hfill$\square$
+\end{enumerate}
+Numéricamente, los $t^{(\ell)}_w$ de $\ell=2,3$ son idénticos para $n=w,\dots,60$.
+
+\paragraph{Proposición 2 (operadores de un qutrit).} Un operador de un sitio $(a,b,c)$ está en el pool
+de orden $\ell$ si y sólo si $b$ y $c$ son impares y $2a+2b+c\leq2\ell+1$. En consecuencia
+\begin{equation}
+  t^{(\ell)}_1=\#\{(a,\beta,\gamma)\in\mathbb N^3:\ a+2\beta+\gamma\leq\ell-1\}
+  =\left\lfloor\frac{(\ell+1)(\ell+3)(2\ell+1)}{24}\right\rfloor ,
+  \label{eq:t1}
+\end{equation}
+que da $1,3,7,13,22,34,\dots$ para $\ell=1,2,\dots$, y crece como $\ell^3/12$.
+
+\emph{Demostración.} Por el paso 1 de la Proposición~1, las palabras de un sitio sólo provienen de
+palabras de un sitio y de los términos de un sitio. El problema se reduce a un qutrit: se parte de
+$O_0=\mu L_z^2+\sqrt2L_x$ y se aplica $\mathrm{ad}_A$, con $A=\alpha L_z^2+\beta L_x$,
+$\alpha=-1+\lambda\mu$ y $\beta=-\sqrt2(1-\lambda)$.
+\begin{itemize}
+\item \emph{Lo que cambia en cada paso.} $\mathrm{ad}_{L_x}$ cambia una $y$ por una $z$ o una $z$ por una
+  $y$. $\mathrm{ad}_{L_z^2}$ cambia una $x$ por una $y$ o al revés, y agrega una $z$. En ambos casos $b$
+  y $c$ cambian de paridad, y $\varphi=2a+2b+c$ sube a lo más en 1. Como $O_0$ tiene $b=c=0$ y
+  $\varphi=2$, toda palabra de $O_k$ tiene $b\equiv c\equiv k\pmod2$ y $\varphi\leq k+2$.
+\item \emph{Necesidad.} Si $(a,b,c)$ aparece en algún $O_k$ con $k\leq2\ell-1$ impar, entonces $b$ y $c$
+  son impares y $\varphi\leq2\ell+1$.
+\item \emph{Suficiencia.} Hay tres movimientos que suben $\varphi$ en exactamente 1:
+  $Z$: $z\to y$, que lleva $(a,b,c)\mapsto(a,b+1,c-1)$; $S_2$: $y\to x$ más una $z$,
+  $(a+1,b-1,c+1)$; y $S_1$: $x\to y$ más una $z$, $(a-1,b+1,c+1)$. Sea $(a,b,c)$ con $b=2\beta+1$,
+  $c=2\gamma+1$. Partiendo de $L_z^2=(0,0,2)$:
+  \begin{itemize}
+  \item $Z$ lleva a $(0,1,1)$;
+  \item $(S_2S_1)^{\gamma+\beta}$ lleva a $(0,1,1+2\gamma+2\beta)$;
+  \item $Z^{2\beta}$ lleva a $(0,1+2\beta,1+2\gamma)$;
+  \item $(S_2Z)^{a}$ lleva a $(a,b,c)$.
+  \end{itemize}
+  Son $1+2(\gamma+\beta)+2\beta+2a=\varphi-2$ pasos, así que $(a,b,c)$ aparece en $O_{\varphi-2}$, con
+  $\varphi-2\leq2\ell-1$ impar.
+\item \emph{No hay cancelación.} En ese nivel superior todos los caminos usan el mismo número de
+  pasos de cada tipo, así que todas sus contribuciones a una misma palabra tienen la misma fase y
+  peso positivo. Los dos términos de partida dan potencias distintas, $\alpha^s\beta^{k-s}$ y
+  $\alpha^{s\pm1}\beta^{k-s\mp1}$, y $\alpha$ y $\beta$ son polinomios en $\lambda$ linealmente
+  independientes salvo si $\mu=1$, es decir, salvo si $n=1$.
+\end{itemize}
+El conteo de $a+2\beta+\gamma\leq L$ da $(q+1)(q+2)(4q+3)/6$ si $L=2q$ y $(q+1)(q+2)(4q+9)/6$ si
+$L=2q+1$, que es la expresión con piso de la ec.~\eqref{eq:t1}. \hfill$\square$
+
+\paragraph{Proposición 3 (soporte máximo).}
+\begin{equation}
+  t^{(\ell)}_{2\ell}=2\ell\cdot2^{2\ell-1}=\ell\,4^\ell ,
+  \label{eq:t2l}
+\end{equation}
+es decir $4,32,192,1024,\dots$, y por lo tanto
+$N_\ell(n)=\ell\,4^\ell\,n^{2\ell}/(2\ell)!+O(n^{2\ell-1})$.
+
+\emph{Demostración.} Una palabra de $O_{2\ell-1}$ con $2\ell$ sitios exige que cada uno de los
+$2\ell-2$ conmutadores posteriores a $O_1$ agregue un sitio nuevo $q$. Lo hace con un término de par
+$\{p,q\}$, con $p$ ya presente. Hay dos posibilidades:
+\begin{itemize}
+\item $[L_z^{(p)}L_z^{(q)},M]=[L_z^{(p)},M]\,L_z^{(q)}$: el sitio nuevo recibe $z$;
+\item el término $(L_z^{(p)})^2(L_z^{(q)})^2$: el sitio nuevo recibe $zz$, y $p$ una $z$ adicional.
+\end{itemize}
+En ambos casos se aplica $\mathrm{ad}_{L_z}$ al sitio $p$, que anula todo sitio que sólo tiene
+factores $z$. Las palabras de dos sitios de $O_1=[H_M,H_C]$ son ``$y$ en un sitio, $z$ en el otro'' o
+``$yz$ en uno, $zz$ en el otro''. Por lo tanto sólo el sitio con la $y$ (la \emph{raíz}) puede recibir
+sitios nuevos, y la palabra final es una estrella:
+\begin{itemize}
+\item la raíz lleva una $y$ (cada $\mathrm{ad}_{L_z}$ alterna $y\leftrightarrow x$, y son un número par)
+  y tantas $z$ como hojas de tipo $zz$;
+\item cada una de las $2\ell-1$ hojas es $z$ o $zz$.
+\end{itemize}
+El multiconjunto queda determinado por la raíz ($2\ell$ opciones) y el tipo de cada hoja ($2^{2\ell-1}$
+opciones). Todas las contribuciones a una misma palabra tienen la misma fase y coeficiente
+positivo, así que no se cancelan. \hfill$\square$
 
 \begin{table}[h]
 \centering
-\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$, y tamaño del pool en $n=9$.
-Para $\ell=4$ sólo se conoce $t_1$ y $t_2$ (la expansión de orden 7 es muy costosa).}
+\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$. En negrita, los valores que dan
+las Proposiciones 2 y 3. Los de $\ell\leq3$ coinciden con la expansión simbólica; los de $\ell\geq4$
+salen del enumerador numérico (\texttt{cluster/pool\_numerico.py}).}
 \label{tab:tw}
 \small
-\begin{tabular}{crrrrrrr}
+\begin{tabular}{crrrrrrrr}
 \toprule
-$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $N_\ell(9)$ \\
+$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $t_7$ & $t_8$ \\
 \midrule
-1 & 1 & 4 & & & & & 153 \\
-2 & 3 & 40 & 78 & 32 & & & 12\,051 \\
-3 & 7 & 208 & 1156 & 2132 & 1270 & 192 & 549\,435 \\
-4 & 13 & 756 & & & & & \\
+1 & \textbf{1} & \textbf{4} & & & & & & \\
+2 & \textbf{3} & 40 & 78 & \textbf{32} & & & & \\
+3 & \textbf{7} & 208 & 1156 & 2132 & 1270 & \textbf{192} & & \\
+4 & \textbf{13} & 756 & 8489 & \TwCuatroCuatro & \TwCuatroCinco & \TwCuatroSeis & \TwCuatroSiete & \textbf{1024} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Dos regularidades aparecen en los datos, por ahora como conjeturas:
-\begin{itemize}
-\item operadores de un sitio: $t^{(\ell)}_1=1,3,7,13$, es decir $t^{(\ell)}_1=\ell^2-\ell+1$;
-\item soporte máximo: $t^{(\ell)}_{2\ell}=4,32,192$, es decir $t^{(\ell)}_{2\ell}=\ell\,4^\ell$ (verificado
-  hasta $\ell=3$).
-\end{itemize}
-Si la segunda se mantiene, el pool crece asintóticamente como
-$N_\ell\simeq\ell\,4^\ell n^{2\ell}/(2\ell)!$: $\tfrac43n^4$ para $\ell=2$ y $\tfrac4{15}n^6$ para
-$\ell=3$. Una fórmula cerrada para todos los $t^{(\ell)}_w$ requiere contar qué strings de momento
-angular sobreviven en cada conmutador, y queda abierta.
+Los $t^{(\ell)}_w$ intermedios ($2\leq w\leq2\ell-1$) no tienen todavía fórmula cerrada. Se pueden
+atacar igual que el soporte máximo, clasificando las palabras según cuántos conmutadores no agregan
+sitio; queda como trabajo pendiente.
 
 \paragraph{Los pesos no cambian el pool.}
 El pool se construye una vez por $n$ con $K_n$ sin pesos y se reutiliza para todas las

@@ -1236,6 +1236,12 @@ def main():
         m[f"KMinInterp{nom}"] = f"{min(pi):.2f}"
     m.update(cifras_diagnostico(k80))
     m.update(cifras_varianza_mapa(vm))
+    tw = {}
+    f_tw = RES / "json" / "pool_tw.json"
+    if f_tw.exists():
+        tw = {(r["l"], r["w"]): r["t_w"] for r in json.load(open(f_tw, encoding="utf-8"))}
+    for w, nom in ((4, "Cuatro"), (5, "Cinco"), (6, "Seis"), (7, "Siete")):
+        m[f"TwCuatro{nom}"] = str(tw.get((4, w), "--"))
     m["KCorridasAdapt"] = len(k80["adapt"])
     m["KReinicios"] = len(k80["qaoa"])
     (INF / "numeros_mwnp.tex").write_text(
