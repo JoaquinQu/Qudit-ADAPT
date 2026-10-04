@@ -467,24 +467,27 @@ positivo, así que no se cancelan. \hfill$\square$
 
 \begin{table}[h]
 \centering
-\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$. En negrita, los valores que dan
-las Proposiciones 2 y 3. Los de $\ell\leq3$ coinciden con la expansión simbólica; los de $\ell\geq4$
-salen del enumerador numérico (\texttt{cluster/pool\_numerico.py}).}
+\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$. En negrita, los valores que
+coinciden con las Proposiciones 2 y 3. Los de $\ell\leq3$ salen de la expansión simbólica, y los de
+$\ell\geq4$ del enumerador numérico (\texttt{cluster/pool\_numerico.py}), que reproduce exactamente a
+la simbólica en $\ell\leq3$. ``$\cdot$'': no calculado (los $t_w$ intermedios de $\ell\geq5$ superan
+la memoria de BitWit con este método). La última columna es $t_{2\ell}$ cuando $2\ell>8$.}
 \label{tab:tw}
-\small
-\begin{tabular}{crrrrrrrr}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{crrrrrrrrr}
 \toprule
-$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $t_7$ & $t_8$ \\
+$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $t_7$ & $t_8$ & $t_{2\ell}$ \\
 \midrule
-1 & \textbf{1} & \textbf{4} & & & & & & \\
-2 & \textbf{3} & 40 & 78 & \textbf{32} & & & & \\
-3 & \textbf{7} & 208 & 1156 & 2132 & 1270 & \textbf{192} & & \\
-4 & \textbf{13} & 756 & 8489 & \TwCuatroCuatro & \TwCuatroCinco & \TwCuatroSeis & \TwCuatroSiete & \textbf{1024} \\
+\tabla{tabla_tw.tex}
 \bottomrule
 \end{tabular}
 \end{table}
 
-Los $t^{(\ell)}_w$ intermedios ($2\leq w\leq2\ell-1$) no tienen todavía fórmula cerrada. Se pueden
+Los valores calculados confirman las dos fórmulas cerradas fuera de los casos usados para
+encontrarlas: $t^{(5)}_1=22$ y $t^{(6)}_1=34$, y $t^{(4)}_8=1024=4\cdot4^4$ y
+$t^{(5)}_{10}=5120=5\cdot4^5$. Con la tabla completa de $\ell=4$,
+$N_4(n)=13n+756\binom n2+8489\binom n3+35444\binom n4+63990\binom n5+48110\binom n6+13174\binom n7
++1024\binom n8$. Los $t^{(\ell)}_w$ intermedios ($2\leq w\leq2\ell-1$) no tienen todavía fórmula cerrada. Se pueden
 atacar igual que el soporte máximo, clasificando las palabras según cuántos conmutadores no agregan
 sitio; queda como trabajo pendiente.
 
@@ -1233,6 +1236,65 @@ $n$ & tasa & mejor de 5 & alguno & tasa & mejor de 5 & alguno & mejor de 10 \\
   (sección~\ref{sec:compuertas}).
 \end{itemize}
 
+\subsection{Varianza del gradiente: mapa en \texorpdfstring{$n$}{n} y \texorpdfstring{$k$}{k}}
+\label{sec:varmapa}
+
+Un barren plateau es una varianza del gradiente que cae exponencialmente con el número de qudits,
+para circuitos de profundidad suficiente. Para un circuito que se acerca a un 2-diseño en qutrits,
+cae como $3^{-n}$. Medimos esa varianza en función de $n$ y del número de operadores (capas) $k$:
+\begin{itemize}
+\item $n=5$--12, con las \VmInstancias{} instancias del benchmark por tamaño;
+\item $k=1,2,4,8,16,32,64$;
+\item dos familias de circuitos: (i) $k$ operadores sorteados al azar del pool ($\ell=1$ y $\ell=2$),
+  la pregunta de barren plateau para el pool; (ii) los primeros $k$ operadores que eligió ADAPT en
+  la corrida real de cada instancia, el circuito que de verdad se usa;
+\item 100 puntos de parámetros uniformes en $[-\pi,\pi]^k$ por circuito, gradiente exacto, y $H_C$
+  normalizado por su rango espectral para que la escala no crezca con $n$.
+\end{itemize}
+Para cada circuito se promedia ${\rm Var}[\partial_{\theta_j}E]$ sobre los parámetros $j$, y se
+reporta la mediana sobre instancias (figs.~\ref{fig:varmapa} y~\ref{fig:varcortes}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\textwidth]{varianza_mapa}
+\caption{$\log_{10}$ de la mediana de ${\rm Var}[\partial_\theta E]$ en función de $n$ y $k$. Arriba,
+circuitos sorteados del pool; abajo, los circuitos que eligió ADAPT (faltan las celdas con $k$ mayor
+que el largo de la corrida).}
+\label{fig:varmapa}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{varianza_cortes}
+\caption{Cortes del mapa para circuitos sorteados: varianza contra $n$ para cada $k$, con la
+referencia $\propto3^{-n}$ anclada en $n=5$, $k=64$.}
+\label{fig:varcortes}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{La varianza decrece con $n$ en todas las familias, pero más lento que un 2-diseño.} Para
+  $k=16$, un ajuste $e^{-\alpha n}$ da $\alpha=\VmAlfaUno$ ($\ell=1$) y $\alpha=\VmAlfaDos$
+  ($\ell=2$), contra $\ln3\approx1.10$. Con $k=64$ y $\ell=2$ la caída se acerca a $3^{-n}$ hasta
+  $n\approx9$ y luego se aplana.
+\item \textbf{Los circuitos que elige ADAPT tienen más gradiente que los aleatorios:} para $k=16$, la
+  mediana es \VmAdaptSobreAleatUno{} veces ($\ell=1$) y \VmAdaptSobreAleatDos{} veces ($\ell=2$) la de
+  circuitos sorteados del mismo pool, y decrece con $\alpha=\VmAlfaAdaptUno$ y $\VmAlfaAdaptDos$.
+\item \textbf{El pool $\ell=2$ es más propenso a aplanarse con profundidad:} sus circuitos sorteados
+  con $k=64$ tienen la menor varianza del mapa en $n=12$. Es lo esperable: sus operadores de 3 y 4
+  qutrits hacen al circuito más expresivo.
+\item \textbf{Límites:} $k\leq64$ puede no alcanzar la profundidad de un 2-diseño en $n=12$, y con
+  $n\leq12$ no se distingue un decaimiento exponencial lento de uno polinomial. Los puntos aleatorios
+  no son los que recorre la optimización real, que parte de $\bm\theta=0$ (warm start).
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\textwidth]{varianza_superficie}
+\caption{La misma información como superficie: $\log_{10}{\rm Var}$ contra $n$ y $\log_2k$, circuitos
+sorteados del pool $\ell=1$.}
+\label{fig:varsuperficie}
+\end{figure}
+
 \subsection{Sensibilidad al orden, a la máquina y al rango}
 \label{sec:sensibilidad}
 
@@ -1279,29 +1341,20 @@ misma máquina.
 \item \textbf{$\pex\approx0.5$.} \OcMitad{} de \OcLDosCorridas{} corridas con $\ell=2$ terminan
   con el peso repartido por mitades entre la solución y una partición que intercambia dos números
   que difieren en 1. Parece un punto estacionario por simetría; queda por analizar.
-\item \textbf{Varianza del gradiente} ($n=6$--$14$, $\ell=1$, puntos aleatorios): decae como
-  $e^{-\alpha n}$ con $\alpha=\AlfaVar$, contra $\ln3\approx1.10$ para un 2-diseño. En $n=14$ es
-  \RazonVarDiseno{} veces la de un 2-diseño, y no depende de la profundidad
-  (fig.~\ref{fig:varianza}). Con 9 puntos no se distingue un decaimiento exponencial lento de uno
-  polinomial.
+\item \textbf{Varianza del gradiente:} ver la sección~\ref{sec:varmapa}, que reemplaza la medición
+  anterior con 3 instancias aleatorias.
 \item \textbf{$n=13$, $\ell=1$}: una corrida convergió en \NTreceK{} parámetros
   (\NTreceHoras\,h). $\pex$ alcanzó \NTrecePmax{} en $k=\NTreceKmax$ y terminó en \NTrecePfin.
 \end{itemize}
 
 \begin{figure}[h]
 \centering
-\begin{minipage}[t]{0.49\textwidth}\centering
-\includegraphics[width=\textwidth]{trazas_n6_i03}
-\caption{$\pex$ contra número de parámetros, $n=6$, una instancia, $\ell=1$. Warm llega a $0.11$
-y la pierde; ADAPT desde $\bm\theta=0$ termina en $0.97$.}
+\includegraphics[width=0.55\textwidth]{trazas_n6_i03}
+\caption{$\pex$ contra número de parámetros, $n=6$, una instancia (orden ascendente), $\ell=1$, con
+las tres estrategias. Warm llega a $0.11$ y la pierde mientras la energía sigue bajando (ver la
+sección~\ref{sec:bajoazar}); ADAPT desde $\bm\theta=0$ termina en $0.97$. Los valores menores que
+$10^{-12}$ se dibujan en ese piso. Es un ejemplo de un solo orden, no un promedio.}
 \label{fig:trazas}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\textwidth}\centering
-\includegraphics[width=\textwidth]{varianza}
-\caption{Varianza del gradiente en puntos aleatorios contra $n$, con la referencia de un
-2-diseño anclada en $n=6$.}
-\label{fig:varianza}
-\end{minipage}
 \end{figure}
 
 %==============================================================================

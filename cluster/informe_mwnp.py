@@ -1107,8 +1107,9 @@ def fig_varianza_mapa(filas):
     if not filas:
         return
     fig, ejes = plt.subplots(2, 2, figsize=(7.2, 5.6))
-    vmin = np.log10(min(r["var"] for r in filas if r["var"] > 0))
-    vmax = np.log10(max(r["var"] for r in filas))
+    mapas = [_mapa(filas, l, fam)[2] for fam in ("aleatoria", "adapt") for l in (1, 2)]
+    vmin = np.nanmin([np.nanmin(np.log10(M)) for M in mapas])
+    vmax = np.nanmax([np.nanmax(np.log10(M)) for M in mapas])
     for i, familia in enumerate(("aleatoria", "adapt")):
         for j, l in enumerate((1, 2)):
             ns, ks, M = _mapa(filas, l, familia)
@@ -1171,7 +1172,44 @@ def cifras_varianza_mapa(filas):
         m[f"VmAlfa{nom}"] = f"{alfa:.2f}"
         m[f"VmRazon{nom}"] = f"{M[i][ok][-1] / (M[i][ok][0] * 3.0 ** (-(np.array(ns)[ok][-1] - np.array(ns)[ok][0]))):.0f}"
     m["VmInstancias"] = len({(r["n"], r["inst"]) for r in filas}) // len({r["n"] for r in filas})
+    for l, nom in ((1, "Uno"), (2, "Dos")):
+        ns, ks, Ma = _mapa(filas, l, "adapt")
+        _, _, Mr = _mapa(filas, l, "aleatoria")
+        i = ks.index(16)
+        ok = ~np.isnan(Ma[i])
+        m[f"VmAlfaAdapt{nom}"] = f"{-np.polyfit(np.array(ns)[ok], np.log(Ma[i][ok]), 1)[0]:.2f}"
+        m[f"VmAdaptSobreAleat{nom}"] = f"{np.nanmedian(Ma[i] / Mr[i]):.0f}"
+    lo, hi = np.nanmin([_mapa(filas, l, "aleatoria")[2] for l in (1, 2)]), \
+        np.nanmax([_mapa(filas, l, "aleatoria")[2] for l in (1, 2)])
+    m["VmMin"], m["VmMax"] = _sci(float(lo)), _sci(float(hi))
     return m
+
+
+def tabla_tw():
+    """t_w^{(l)}: l <= 3 de la expansión simbólica, l >= 4 del enumerador numérico (BitWit)."""
+    from math import floor
+    conocidos = {(1, 1): 1, (1, 2): 4, (2, 1): 3, (2, 2): 40, (2, 3): 78, (2, 4): 32,
+                 (3, 1): 7, (3, 2): 208, (3, 3): 1156, (3, 4): 2132, (3, 5): 1270, (3, 6): 192}
+    f_tw = RES / "json" / "pool_tw.json"
+    if f_tw.exists():
+        conocidos.update({(r["l"], r["w"]): r["t_w"] for r in json.load(open(f_tw, encoding="utf-8"))})
+    lineas = []
+    for l in sorted({k[0] for k in conocidos}):
+        celdas = []
+        for w in range(1, 9):
+            v = conocidos.get((l, w))
+            if w > 2 * l:
+                celdas.append("")
+            elif v is None:
+                celdas.append(r"$\cdot$")
+            else:
+                teorema = (w == 1 and v == floor((l + 1) * (l + 3) * (2 * l + 1) / 24)) or \
+                          (w == 2 * l and v == l * 4 ** l)
+                celdas.append(rf"\textbf{{{v}}}" if teorema else str(v))
+        maximo = conocidos.get((l, 2 * l))
+        extra = rf"\textbf{{{maximo}}}" if (2 * l > 8 and maximo is not None) else ("" if 2 * l <= 8 else r"$\cdot$")
+        lineas.append(rf"{l} & " + " & ".join(celdas) + rf" & {extra} \\")
+    return "\n".join(lineas)
 
 
 def main():
@@ -1211,6 +1249,7 @@ def main():
     (INF / "tabla_compuertas.tex").write_text(tabla_compuertas(k80, cq), encoding="utf-8")
     fig_estilo_paper(k80)
     fig_metrica_g(k80)
+    (INF / "tabla_tw.tex").write_text(tabla_tw(), encoding="utf-8")
     (INF / "tabla_multiorden.tex").write_text(tabla_multiorden(k80), encoding="utf-8")
     vm = cargar_varianza_mapa()
     fig_varianza_mapa(vm)
