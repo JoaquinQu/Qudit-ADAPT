@@ -996,6 +996,184 @@ def fig_estilo_paper(d, ns=(6, 8, 10)):
     guardar(fig, "estilo_paper")
 
 
+# --------------------------------------------------------------------------
+# métrica normalizada, varios órdenes y diagnóstico de "peor que el azar"
+# --------------------------------------------------------------------------
+
+def _g(p, n):
+    """G = (p_f - p_i) / (p_M - p_i), con p_i = 6/3^n (azar) y p_M = 1."""
+    pi = 6 / 3 ** n
+    return (np.asarray(p) - pi) / (1 - pi)
+
+
+def fig_metrica_g(d):
+    ns = sorted({r["n"] for r in d["adapt"]})
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.2, 2.9))
+    series = []
+    for l, c, m in ((1, C_L1, "o"), (2, C_L2, "s")):
+        series.append((rf"ADAPT $\ell={l}$", c, m,
+                       {n: [r["p"] for r in d["adapt"] if r["n"] == n and r["l"] == l] for n in ns}))
+    series.append((r"QAOA $p=40$, reinicios", C_QAOA, "^",
+                   {n: [r["p"] for r in d["qaoa"] if r["n"] == n] for n in ns}))
+    series.append((r"QAOA INTERP", C_INTERP, "D",
+                   {n: [r["curva"][-1]["p_exito"] for r in d["interp"] if r["n"] == n] for n in ns}))
+    for nombre, c, m, dat in series:
+        xs = [n for n in ns if dat[n]]
+        a.plot(xs, [np.mean(_g(dat[n], n)) for n in xs], color=c, marker=m, ms=4, lw=1.4, label=nombre)
+        b.plot(xs, [np.mean(_g(dat[n], n) < 0) for n in xs], color=c, marker=m, ms=4, lw=1.4)
+    a.axhline(0, color="k", lw=0.8)
+    a.set_yscale("symlog", linthresh=1e-4)
+    a.set_ylabel(r"$G$ medio")
+    b.set_ylabel(r"fracci\'on con $G<0$ (peor que el azar)")
+    b.set_ylim(-0.03, 1.03)
+    for ax, t in ((a, "(a)"), (b, "(b)")):
+        ax.set_xlabel(r"n\'umero de qutrits $n$")
+        ax.set_xticks(ns)
+        ax.set_title(t, loc="left", fontsize=10)
+    h, e = a.get_legend_handles_labels()
+    fig.legend(h, e, frameon=False, fontsize=8, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(w_pad=2.0, rect=(0, 0.08, 1, 1))
+    guardar(fig, "metrica_g")
+
+
+def tabla_multiorden(d):
+    g = defaultdict(dict)
+    for r in d["adapt"]:
+        g[(r["n"], r["l"], r["base"])][r["orden"]] = r
+    lineas = []
+    for n in sorted({r["n"] for r in d["adapt"]}):
+        celdas = []
+        for l in (1, 2):
+            bases = sorted({k[2] for k in g if k[0] == n and k[1] == l})
+            tasa = np.mean([np.mean([x["p"] >= UMBRAL for x in g[(n, l, b)].values()]) for b in bases])
+            mejor = np.mean([min(g[(n, l, b)].values(), key=lambda x: x["E_j"])["p"] >= UMBRAL for b in bases])
+            alguno = np.mean([any(x["p"] >= UMBRAL for x in g[(n, l, b)].values()) for b in bases])
+            celdas += [f"{tasa:.2f}", f"{mejor:.2f}", f"{alguno:.2f}"]
+        q = [x for x in d["qaoa"] if x["n"] == n]
+        ids = sorted({x["id"] for x in q})
+        qm = np.mean([min((x for x in q if x["id"] == i), key=lambda x: x["E_j"])["p"] >= UMBRAL for i in ids])
+        lineas.append(rf"{n} & " + " & ".join(celdas) + rf" & {qm:.2f} \\")
+    return "\n".join(lineas)
+
+
+def cifras_diagnostico(d):
+    """ADAPT l = 1 en n = 12: energía, concentración y desbalance de lo que encuentra."""
+    m = {}
+    E, top, des, conv = [], [], [], []
+    for f in glob.glob(str(RES / "mwnp_k80" / "n12_l1_i*.json")):
+        dd = json.load(open(f, encoding="utf-8"))
+        t, r = dd["trazas"], dd["resultado"]
+        E.append(t["energia_j"][-1] / t["energia_j"][0])
+        top.append(sum(x["probabilidad"] for x in r["top_particiones"]))
+        des.append(r["top_particiones"][0]["desbalance"])
+        conv.append(r["stop_reason"] == "gradient_norm_below_epsilon")
+    m["DgEunif"] = _sci(float(np.median(E)))
+    m["DgTop"] = f"{100 * np.median(top):.0f}"
+    m["DgTopN"] = len(r["top_particiones"])
+    q = np.percentile(des, [25, 75])
+    m["DgDesLo"], m["DgDesHi"] = f"{q[0]:.0f}", f"{q[1]:.0f}"
+    m["DgConv"] = f"{100 * np.mean(conv):.0f}"
+    m["DgPMax"] = _sci(float(max(r2["p"] for r2 in d["adapt"] if r2["n"] == 12 and r2["l"] == 1)))
+    m["DgAzar"] = _sci(6 / 3 ** 12)
+    return m
+
+
+# --------------------------------------------------------------------------
+# mapa de la varianza del gradiente (n, k)
+# --------------------------------------------------------------------------
+
+def cargar_varianza_mapa():
+    filas = []
+    for f in (RES / "varianza_mapa").glob("*.json"):
+        d = json.load(open(f, encoding="utf-8"))
+        for r in d["filas"]:
+            filas.append({"n": d["n"], "l": d["l"], "familia": d["familia"], "inst": d["instancia"], **r})
+    return filas
+
+
+def _mapa(filas, l, familia):
+    ns = sorted({r["n"] for r in filas})
+    ks = sorted({r["k"] for r in filas})
+    M = np.full((len(ks), len(ns)), np.nan)
+    for i, k in enumerate(ks):
+        for j, n in enumerate(ns):
+            v = [r["var"] for r in filas if r["n"] == n and r["k"] == k and r["l"] == l and r["familia"] == familia]
+            if len(v) >= 5:
+                M[i, j] = np.median(v)
+    return ns, ks, M
+
+
+def fig_varianza_mapa(filas):
+    if not filas:
+        return
+    fig, ejes = plt.subplots(2, 2, figsize=(7.2, 5.6))
+    vmin = np.log10(min(r["var"] for r in filas if r["var"] > 0))
+    vmax = np.log10(max(r["var"] for r in filas))
+    for i, familia in enumerate(("aleatoria", "adapt")):
+        for j, l in enumerate((1, 2)):
+            ns, ks, M = _mapa(filas, l, familia)
+            ax = ejes[i, j]
+            im = ax.imshow(np.log10(M), origin="lower", aspect="auto", cmap="viridis", vmin=vmin, vmax=vmax)
+            ax.set_xticks(range(len(ns)))
+            ax.set_xticklabels(ns)
+            ax.set_yticks(range(len(ks)))
+            ax.set_yticklabels(ks)
+            ax.set_title(("circuitos aleatorios" if familia == "aleatoria" else "circuitos de ADAPT")
+                         + rf", $\ell={l}$", fontsize=9.5)
+            if i == 1:
+                ax.set_xlabel(r"n\'umero de qutrits $n$")
+            if j == 0:
+                ax.set_ylabel(r"capas $k$")
+    cb = fig.colorbar(im, ax=ejes, fraction=0.03, pad=0.02)
+    cb.set_label(r"$\log_{10}$ Var$[\partial_\theta E]$ (mediana)")
+    guardar(fig, "varianza_mapa")
+
+    # cortes: Var contra n para cada k, l = 1 y 2, circuitos aleatorios, con la referencia 3^{-n}
+    fig, ejes = plt.subplots(1, 2, figsize=(7.2, 2.9), sharey=True)
+    cmap = plt.get_cmap("viridis")
+    for ax, l in zip(ejes, (1, 2)):
+        ns, ks, M = _mapa(filas, l, "aleatoria")
+        for i, k in enumerate(ks):
+            ax.plot(ns, M[i], marker="o", ms=3, lw=1.3, color=cmap(i / (len(ks) - 1) * 0.9), label=rf"$k={k}$")
+        ref = M[-1, 0] * 3.0 ** (-(np.array(ns) - ns[0]))
+        ax.plot(ns, ref, "r--", lw=1, label=r"$\propto3^{-n}$")
+        ax.set_yscale("log")
+        ax.set_xlabel(r"$n$")
+        ax.set_title(rf"circuitos aleatorios, $\ell={l}$", fontsize=9.5)
+    ejes[0].set_ylabel(r"Var$[\partial_\theta E]$ (mediana)")
+    ejes[1].legend(frameon=False, fontsize=7, loc="center left", bbox_to_anchor=(1.0, 0.5))
+    fig.tight_layout(w_pad=1.0)
+    guardar(fig, "varianza_cortes")
+
+    # superficie 3D pedida: l = 1, circuitos aleatorios
+    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+    ns, ks, M = _mapa(filas, 1, "aleatoria")
+    X, Y = np.meshgrid(ns, np.log2(ks))
+    fig = plt.figure(figsize=(5.0, 3.8))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot_surface(X, Y, np.log10(M), cmap="viridis", edgecolor="k", lw=0.3, alpha=0.9)
+    ax.set_xlabel(r"$n$")
+    ax.set_ylabel(r"$\log_2 k$")
+    ax.set_zlabel(r"$\log_{10}$ Var")
+    ax.view_init(elev=25, azim=-130)
+    guardar(fig, "varianza_superficie")
+
+
+def cifras_varianza_mapa(filas):
+    m = {}
+    if not filas:
+        return m
+    for l, nom in ((1, "Uno"), (2, "Dos")):
+        ns, ks, M = _mapa(filas, l, "aleatoria")
+        i = ks.index(16) if 16 in ks else len(ks) - 1
+        ok = ~np.isnan(M[i])
+        alfa = -np.polyfit(np.array(ns)[ok], np.log(M[i][ok]), 1)[0]
+        m[f"VmAlfa{nom}"] = f"{alfa:.2f}"
+        m[f"VmRazon{nom}"] = f"{M[i][ok][-1] / (M[i][ok][0] * 3.0 ** (-(np.array(ns)[ok][-1] - np.array(ns)[ok][0]))):.0f}"
+    m["VmInstancias"] = len({(r["n"], r["inst"]) for r in filas}) // len({r["n"] for r in filas})
+    return m
+
+
 def main():
     estilo()
     por, todas = cargar_corridas()
@@ -1032,6 +1210,10 @@ def main():
     fig_compuertas_pexito(k80, cq)
     (INF / "tabla_compuertas.tex").write_text(tabla_compuertas(k80, cq), encoding="utf-8")
     fig_estilo_paper(k80)
+    fig_metrica_g(k80)
+    (INF / "tabla_multiorden.tex").write_text(tabla_multiorden(k80), encoding="utf-8")
+    vm = cargar_varianza_mapa()
+    fig_varianza_mapa(vm)
     m = cifras(por, todas)
     nmax = max(n for n in por_n if "qaoa" in por_n[n] and "l2" in por_n[n])
     m["KNmax"] = nmax
@@ -1052,6 +1234,8 @@ def main():
         m[f"KMedioAdapt{nom}"] = f"{np.mean(np.array(pa) >= 0.5):.2f}"
         m[f"KMedioInterp{nom}"] = f"{np.mean(np.array(pi) >= 0.5):.2f}"
         m[f"KMinInterp{nom}"] = f"{min(pi):.2f}"
+    m.update(cifras_diagnostico(k80))
+    m.update(cifras_varianza_mapa(vm))
     m["KCorridasAdapt"] = len(k80["adapt"])
     m["KReinicios"] = len(k80["qaoa"])
     (INF / "numeros_mwnp.tex").write_text(

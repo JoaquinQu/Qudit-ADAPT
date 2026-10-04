@@ -354,6 +354,48 @@ los tamaños contados para $n=5,\dots,10$, y el conteo por soporte se verificó 
 $n=5,6,7$. En el rango $n=5$--$10$ crece como $n^{3.65}$ porque los términos de menor grado todavía
 pesan; asintóticamente va como $\tfrac43n^4$.
 
+\paragraph{Para cualquier orden $\ell$.} El mismo argumento vale en general. El pool de orden $\ell$
+usa $O_1,O_3,\dots,O_{2\ell-1}$, y $O_{2\ell-1}$ vive en a lo más $2\ell$ sitios: $O_1$ en 2, y cada
+conmutador adicional con un término de dos sitios agrega a lo más uno. Por la simetría de $K_n$,
+\begin{equation}
+  N_\ell(n)=\sum_{w=1}^{2\ell}t^{(\ell)}_w\binom nw ,
+  \qquad
+  N_\ell(n)\;\xrightarrow{\;n\to\infty\;}\;\frac{t^{(\ell)}_{2\ell}}{(2\ell)!}\,n^{2\ell},
+  \label{eq:nlgeneral}
+\end{equation}
+un polinomio de grado $2\ell$ en $n$. Los coeficientes $t^{(\ell)}_w$ no dependen de $n$; se obtienen
+contando la expansión simbólica para un $n\geq2\ell$ (tabla~\ref{tab:tw}). Verificamos que son
+constantes comparando $n=5$ y $n=6$ para $\ell=3$.
+
+\begin{table}[h]
+\centering
+\caption{Operadores por subconjunto de $w$ qutrits, $t^{(\ell)}_w$, y tamaño del pool en $n=9$.
+Para $\ell=4$ sólo se conoce $t_1$ y $t_2$ (la expansión de orden 7 es muy costosa).}
+\label{tab:tw}
+\small
+\begin{tabular}{crrrrrrr}
+\toprule
+$\ell$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $N_\ell(9)$ \\
+\midrule
+1 & 1 & 4 & & & & & 153 \\
+2 & 3 & 40 & 78 & 32 & & & 12\,051 \\
+3 & 7 & 208 & 1156 & 2132 & 1270 & 192 & 549\,435 \\
+4 & 13 & 756 & & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Dos regularidades aparecen en los datos, por ahora como conjeturas:
+\begin{itemize}
+\item operadores de un sitio: $t^{(\ell)}_1=1,3,7,13$, es decir $t^{(\ell)}_1=\ell^2-\ell+1$;
+\item soporte máximo: $t^{(\ell)}_{2\ell}=4,32,192$, es decir $t^{(\ell)}_{2\ell}=\ell\,4^\ell$ (verificado
+  hasta $\ell=3$).
+\end{itemize}
+Si la segunda se mantiene, el pool crece asintóticamente como
+$N_\ell\simeq\ell\,4^\ell n^{2\ell}/(2\ell)!$: $\tfrac43n^4$ para $\ell=2$ y $\tfrac4{15}n^6$ para
+$\ell=3$. Una fórmula cerrada para todos los $t^{(\ell)}_w$ requiere contar qué strings de momento
+angular sobreviven en cada conmutador, y queda abierta.
+
 \paragraph{Los pesos no cambian el pool.}
 El pool se construye una vez por $n$ con $K_n$ sin pesos y se reutiliza para todas las
 instancias. Para descartar cancelaciones que sólo ocurran con pesos iguales, lo reconstruimos
@@ -924,6 +966,180 @@ INTERP la comparación es más matizada: ADAPT concentra más probabilidad en la
 mejor con $n$, pero en $n\leq7$ INTERP logra un $\pex$ moderado en más instancias. Qué método
 ``gana'' depende de si interesa la probabilidad por disparo o la fracción de instancias con al
 menos una probabilidad baja de acierto.
+
+\subsection{Compuertas nativas}
+\label{sec:compuertas}
+
+Contamos las compuertas de cada corrida igual que en el Apéndice~B del paper: rotaciones de dos
+niveles $R^{(i,j)}$ (locales, de un qutrit) y compuertas Mølmer--Sørensen (no locales, de dos
+qutrits). Para ADAPT se toma el circuito en $k=\min(80,k_{\rm final})$. Para QAOA el número de
+compuertas no depende de la instancia ni de los ángulos, sólo de $n$ y $p$; se cuenta en su forma
+más barata (capa de costo en la base de Gell-Mann), como en la Tabla~IV del paper.
+
+\begin{table}[h]
+\centering
+\caption{Compuertas nativas: medianas sobre las 100 corridas de cada $n$ para ADAPT, y el valor
+(único) de QAOA con $p=40$.}
+\label{tab:compuertas}
+\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{rrrrrrrrrr}
+\toprule
+ & \multicolumn{3}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} & \multicolumn{3}{c}{QAOA $p=40$} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+$n$ & locales & MS & total & locales & MS & total & locales & MS & total \\
+\midrule
+\tabla{tabla_compuertas.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{compuertas}
+\caption{Compuertas nativas contra $n$: mediana (línea) y rango intercuartil (banda) de ADAPT, y
+QAOA con $p=40$.}
+\label{fig:compuertas}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{compuertas_pexito}
+\caption{Cada corrida: compuertas totales contra $\pex$. Los reinicios de QAOA tienen todos el mismo
+número de compuertas; se desplazan levemente en $x$ para verlos.}
+\label{fig:compuertaspex}
+\end{figure}
+
+\begin{itemize}
+\item ADAPT usa entre 13 y 60 veces menos compuertas que QAOA con 80 parámetros, tanto locales como
+  MS (tabla~\ref{tab:compuertas}). La razón es estructural: cada capa de QAOA aplica $H_C$ completo,
+  con un término por cada uno de los $\binom n2$ pares, mientras que cada parámetro de ADAPT es un
+  solo operador de 1 a 4 qutrits.
+\item Las compuertas de ADAPT $\ell=2$ se estancan en $\sim1500$ desde $n=8$ porque la mayoría de
+  sus corridas llega al tope de 80 operadores (fig.~\ref{fig:compuertas}).
+\item Con muchas menos compuertas, ADAPT alcanza $\pex$ que QAOA no alcanza
+  (fig.~\ref{fig:compuertaspex}). Las corridas de ADAPT que fallan, en cambio, quedan muy por debajo
+  del azar (sección~\ref{sec:bajoazar}).
+\end{itemize}
+
+\subsection{Comparación al estilo del paper}
+\label{sec:estilopaper}
+
+Las Figs.~1--3 del paper grafican, contra el número de parámetros, la mediana de QAOA sobre
+reinicios aleatorios con el rango intercuartil sombreado. Para hacer lo mismo corrimos QAOA con 10
+reinicios por instancia en $p=1,2,3,4,5,6,8,10,12,15,20,25,30,35$ y 40, para $n=5$--10
+(fig.~\ref{fig:estilopaper}). En ADAPT la mediana y el rango se toman sobre las 100 corridas en
+cada iteración $k$. Como $E_0=0$, en lugar del error relativo se usa $E/E_{\rm unif}$: la energía
+dividida por la de la superposición uniforme (el estado inicial). Vale 1 si el algoritmo no mejoró
+nada y tiende a 0 en la solución.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{estilo_paper}
+\caption{Mediana (línea) y rango intercuartil (banda) contra número de parámetros. Arriba, $\pex$;
+abajo, $E/E_{\rm unif}$. ADAPT: 100 corridas por curva. QAOA con reinicios: 200 por punto (20
+instancias $\times$ 10). La línea discontinua es la mediana de QAOA INTERP sobre las 20 instancias.}
+\label{fig:estilopaper}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{QAOA con reinicios aleatorios casi no baja la energía.} Su mediana de $E/E_{\rm unif}$
+  queda entre $\sim0.4$ ($n=6$) y $\sim1$ ($n=10$), y su $\pex$ se despega poco del azar. En $n=8$ y
+  10 es incluso peor con más capas: baja a $\sim0.5$ en $p=1$--2 y vuelve a $\sim1$ desde $p\approx4$,
+  porque con más parámetros el punto de partida aleatorio cae en un paisaje peor.
+\item \textbf{INTERP mejora de forma suave y consistente:} su energía baja con $p$ y su $\pex$ queda
+  siempre por encima del azar.
+\item \textbf{ADAPT baja la energía mucho más que ambos} ($E/E_{\rm unif}\sim10^{-2}$ o menos), pero su
+  $\pex$ es bimodal: la mediana sigue a la mitad que falla. En $n=10$ la mediana de $\pex$ de ADAPT
+  queda bajo el azar, mientras la de INTERP queda sobre él, aunque en $\pex$ \emph{medio} ADAPT
+  gana (fig.~\ref{fig:k80}b). La mediana describe la corrida típica y la media lo que se espera
+  medir en promedio; con ADAPT las dos cuentan historias distintas.
+\end{itemize}
+
+\subsection{Una métrica normalizada}
+\label{sec:metricag}
+
+Propuesta del grupo:
+\begin{equation}
+  G=\frac{p_f-p_i}{p_M-p_i},\qquad p_i=\frac{6}{3^n},\quad p_M=1,
+\end{equation}
+donde $p_f$ es el $\pex$ final, $p_i$ el de la superposición uniforme (el azar) y $p_M$ el máximo
+posible. $G=1$ es resolver con certeza, $G=0$ es no mejorar al azar y $G<0$ es empeorarlo. Como $p_i$
+es muy chico para $n\geq7$, el valor medio de $G$ es prácticamente el $\pex$ medio; lo que aporta $G$
+es el \emph{signo}: cuántas corridas terminan peor que el azar (fig.~\ref{fig:metricag}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{metrica_g}
+\caption{(a) $G$ medio contra $n$, en escala simétrica logarítmica. (b) Fracción de corridas o
+reinicios con $G<0$, es decir, peor que el azar.}
+\label{fig:metricag}
+\end{figure}
+
+\begin{itemize}
+\item En $G$ medio, ADAPT (con el mejor de sus dos pools) queda primero en todo $n$, e INTERP
+  segundo.
+\item Pero la fracción de corridas \emph{peor que el azar} crece con $n$ para ADAPT: más del 80\,\% en
+  $n\geq10$. INTERP nunca empeora el azar, y los reinicios de QAOA quedan en medio.
+\item ADAPT es una estrategia de alto riesgo y alto retorno: concentra el estado; si acierta gana
+  mucho, y si no, deja la solución con menos peso que el que tenía al partir.
+\end{itemize}
+
+\subsection{¿Por qué ADAPT puede terminar peor que el azar?}
+\label{sec:bajoazar}
+
+Llama la atención que en $n=12$ el $\pex$ medio de ADAPT $\ell=1$ quede bajo el azar
+(fig.~\ref{fig:k80}b): el máximo sobre sus 100 corridas es \DgPMax, contra \DgAzar{} del azar. No es
+que ADAPT esté maximizando la energía. En esas mismas corridas:
+\begin{itemize}
+\item la energía baja a una mediana de $E/E_{\rm unif}=\DgEunif$: ADAPT sí minimiza;
+\item las \DgTopN{} cadenas más probables suman una mediana del \DgTop\,\% de la probabilidad: el
+  estado está muy concentrado;
+\item esas cadenas son particiones \emph{casi} buenas: la más probable tiene un desbalance (suma de la
+  caja más llena menos la más vacía) típicamente entre \DgDesLo{} y \DgDesHi, contra 0 de la solución;
+\item el \DgConv\,\% de las corridas termina por el criterio de gradiente: es un mínimo local.
+\end{itemize}
+La superposición uniforme reparte la probabilidad en partes iguales, así que la solución tiene
+$6/3^n$. ADAPT concentra casi toda la probabilidad en unas pocas particiones de baja energía; si la
+solución no está entre ellas, su peso cae muy por debajo de $6/3^n$. Bajar la energía \emph{media}
+no obliga a acercarse a la solución exacta, porque el fondo del espectro es denso en particiones
+casi balanceadas. Es el mismo mecanismo de las ``respuestas perdidas'' (fig.~\ref{fig:trazas}): en
+esa corrida la solución llegó a tener $\pex=0.11$, y después el estado se concentró en otras
+particiones de energía aún menor en promedio, hasta dejarla en $\sim10^{-22}$.
+
+\subsection{Varios órdenes como reinicios}
+\label{sec:multiorden}
+
+Los 5 órdenes de cada instancia funcionan como 5 reinicios de ADAPT. Un experimento que no conoce
+la solución puede quedarse con el de menor energía final, igual que se hace con los reinicios de
+QAOA. La tabla~\ref{tab:multiorden} compara la tasa por orden con ese ``mejor de 5''.
+
+\begin{table}[h]
+\centering
+\caption{Fracción de instancias resueltas ($\pex\geq0.1$). ``Tasa'': promedio sobre órdenes.
+``Mejor de 5'': el orden de menor energía final, sin usar la solución. ``Alguno'': resuelve en al
+menos un orden (cota superior). Para QAOA, el reinicio de menor energía de 10.}
+\label{tab:multiorden}
+\small
+\begin{tabular}{rccccccc}
+\toprule
+ & \multicolumn{3}{c}{ADAPT $\ell=1$} & \multicolumn{3}{c}{ADAPT $\ell=2$} & QAOA $p=40$ \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-8}
+$n$ & tasa & mejor de 5 & alguno & tasa & mejor de 5 & alguno & mejor de 10 \\
+\midrule
+\tabla{tabla_multiorden.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item Elegir por energía recupera casi todos los éxitos posibles: ``mejor de 5'' queda muy cerca de
+  ``alguno''. Cuando una corrida resuelve, en general también es la de menor energía.
+\item En $n\geq9$ la tasa casi se duplica: el éxito de ADAPT en $n$ grande depende sobre todo de
+  acertar el desempate correcto, y probar varios órdenes es una forma barata de explorarlo.
+\item Con 5 corridas de ADAPT se resuelven más instancias que con 10 reinicios de QAOA en todo
+  $n\geq6$ (en $n=5$ empatan con $\ell=2$), y con muchas menos compuertas por corrida
+  (sección~\ref{sec:compuertas}).
+\end{itemize}
 
 \subsection{Sensibilidad al orden, a la máquina y al rango}
 \label{sec:sensibilidad}
