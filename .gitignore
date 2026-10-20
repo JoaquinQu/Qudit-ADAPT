@@ -47,26 +47,25 @@ Max-3-Cut/results/json/backups/
 /backups/
 *_backup_*
 
-# Trabajo exploratorio de multiway viejo (en español, toy n=5,6) — superado por
-# multiway_number_partitioning/, que es la version final y limpia de Herbert
+# Trabajo exploratorio de multiway viejo — superado por multiway_number_partitioning/
 multiway number partition/
 
 # Zips descargados del escrito
 *.zip
 
-# Tesis y documentos personales de postulación (no van al repo público)
+# Documentos personales (no van al repo público)
 revistas_candidatas.pdf
 Tesis_Joaquín_Molina.pdf
 
-# PDFs de papers de referencia (no van al repo público)
+# Material de referencia (no van al repo público)
 papers/
 
 # Análisis exploratorios de Max-3-Cut que no se citan en el escrito
 Max-3-Cut/analisis_kn.ipynb
 Max-3-Cut/analisis_localidad.ipynb
 
-# Informe técnico interno de Herbert sobre multiway (no es el escrito, no
-# está citado ni documentado en README/DATA.md/REPRODUCING.md)
+# Material exploratorio de multiway no citado ni documentado en
+# README/DATA.md/REPRODUCING.md
 informe/
 cluster/analizar_k80_qaoa.py
 cluster/analizar_mwnp.py
@@ -104,7 +103,7 @@ cluster/verificar_optimizaciones.py
 /data/mwnp_instancias.json
 /data/mwnp_instancias_5a12.json
 
-# Huérfanos / solo usados por el informe interno ya gitignorado arriba
+# Huérfanos / sin uso fuera de lo ya gitignorado arriba
 /data/mwnp_ordenes_10a12.json
 /data/mwnp_ordenes_5a9.json
 /data/mwnp_ordenes_n6.json
