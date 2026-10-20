@@ -21,7 +21,7 @@ import json
 
 import numpy as np
 
-from funciones.utilidades_mwnp import (D, energia_a_objetivo, hamiltoniano_diag,
+from functions.utilidades_mwnp import (D, energia_a_objetivo, hamiltoniano_diag,
                                        particion_desde_indice)
 
 
@@ -50,7 +50,7 @@ def main():
                       "particion_optima": "".join(map(str, c)),
                       "cajas_optimas": [[a[i] for i in range(n) if c[i] == k] for k in range(D)],
                       "p_azar": 6.0 / D ** n})
-    salida = PROJECT_ROOT / "datos" / f"mwnp_rango{R}_n{n}.json"
+    salida = PROJECT_ROOT / "data" / f"mwnp_rango{R}_n{n}.json"
     json.dump({"criterios": {"numeros_distintos": True, "rango": f"[1, {R}]",
                              "degeneracion": 6, "enumeracion": "exhaustiva"},
                "instancias": fuera}, open(salida, "w", encoding="utf-8"), indent=1)

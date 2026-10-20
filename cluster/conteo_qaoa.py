@@ -42,9 +42,9 @@ import argparse
 
 import numpy as np
 
-from funciones.utilidades_bp import conteo_compuertas, load_bp_result
+from functions.utilidades_bp import conteo_compuertas, load_bp_result
 
-JSON_DIR = PROJECT_ROOT / "resultados" / "json"
+JSON_DIR = PROJECT_ROOT / "results" / "json"
 
 # Instancias del manuscrito. G_1 es la de la Fig. 1a y de la Tabla I; G_2 es la
 # del apéndice, la misma sobre la que se comparan los pools.
@@ -99,8 +99,8 @@ def verificar_costo_gellmann(n, edges, tol=1e-10):
     """
     import qutip as qt
 
-    from funciones.utilidades import Hp_qutip
-    from funciones.utilidades_gellmann import GELLMANN
+    from functions.utilidades import Hp_qutip
+    from functions.utilidades_gellmann import GELLMANN
 
     def embeber(M, sitio):
         ops = [qt.qeye(3)] * n
@@ -162,7 +162,7 @@ def conteo_qaoa(n, edges, num_params, base="gellmann"):
 
 def conteo_adapt(archivo):
     """Compuertas nativas acumuladas del ansatz final de una corrida ADAPT."""
-    from funciones.utilidades_bp import conteo_compuertas_ansatz
+    from functions.utilidades_bp import conteo_compuertas_ansatz
 
     res = load_bp_result(archivo)
     c = conteo_compuertas_ansatz(res, acumulado=True)
@@ -178,7 +178,7 @@ def conteo_adapt(archivo):
 
 def conteo_adapt_en_k(archivo, k):
     """Compuertas acumuladas del ansatz truncado a los primeros k operadores."""
-    from funciones.utilidades_bp import conteo_compuertas_ansatz
+    from functions.utilidades_bp import conteo_compuertas_ansatz
 
     res = load_bp_result(archivo)
     c = conteo_compuertas_ansatz(res, acumulado=True)
@@ -214,14 +214,14 @@ def main():
 
     for nombre, edges in (("G_1", G1), ("G_2", G2)):
         ok = verificar_costo_gellmann(n, edges)
-        print(f"identidad H_C = l3 l3 + l8 l8 - (4/3)I verificada en {nombre}: {ok}")
+        print(f"identity H_C = l3 l3 + l8 l8 - (4/3)I verified for {nombre}: {ok}")
         if not ok:
             raise SystemExit("la identidad de Gell-Mann para H_C no se cumple")
 
     # ---------------------------------------------------------------- G_1 ---
     # Instancia de la Fig. 1a. Los presupuestos son los de la Tabla I: 21
     # parámetros con l = 1 y 40 con l = 2.
-    _cabecera(f"G_1  (Fig. 1a, {len(G1)} aristas)")
+    _cabecera(f"G_1  (Fig. 1a, {len(G1)} edges)")
     # Se usan las corridas de la Tabla I (`*_curva.json`): la de l = 2 del
     # barrido de BP se detuvo en 35 parámetros por su tope de iteraciones.
     for archivo, l, k in (("fig1a_l1_curva.json", 1, 21),
@@ -230,13 +230,13 @@ def main():
         q = conteo_qaoa(n, G1, k, base=args.base_qaoa)
         assert a["num_params"] == k, f"{archivo}: k={a['num_params']}, se esperaba {k}"
         print(_fila(f"Qudit-ADAPT  l={l}", a))
-        print(_fila(f"QAOA         ({q['capas']} capas)", q))
-        print(f"  {'':34s}{'':7s}{'razón':>10s}"
+        print(_fila(f"QAOA         ({q['capas']} layers)", q))
+        print(f"  {'':34s}{'':7s}{'ratio':>10s}"
               f"{q['ms'] / a['ms']:>7.1f}x{q['total'] / a['total']:>8.1f}x")
 
     # ---------------------------------------------------------------- G_2 ---
     # Instancia del apéndice. Los presupuestos son los de sus dos tablas.
-    _cabecera(f"G_2  (apéndice, {len(G2)} aristas)")
+    _cabecera(f"G_2  (appendix, {len(G2)} edges)")
     ang = conteo_adapt("bp_n6_l2_grafo2_r20_k30.json")
     gm21 = conteo_adapt_en_k("bp_n6_l2_grafo2_r20_k30_gellmann.json", 21)
     gm30 = conteo_adapt("bp_n6_l2_grafo2_r20_k30_gellmann.json")
@@ -246,11 +246,11 @@ def main():
     print(_fila("Qudit-ADAPT  Gell-Mann  (final)", gm30))
     for k in (16, 21, 30):
         q = conteo_qaoa(n, G2, k, base=args.base_qaoa)
-        print(_fila(f"QAOA  ({q['capas']} capas)", q))
+        print(_fila(f"QAOA  ({q['capas']} layers)", q))
 
     q16 = conteo_qaoa(n, G2, 16, base=args.base_qaoa)
     q21 = conteo_qaoa(n, G2, 21, base=args.base_qaoa)
-    print(f"\n  a igual presupuesto de parámetros:")
+    print(f"\n  at equal parameter budget:")
     print(f"    16 params: QAOA {q16['total']:5d}  vs  angular   {ang['total']:4d}"
           f"   ({q16['total'] / ang['total']:.1f}x)")
     print(f"    21 params: QAOA {q21['total']:5d}  vs  Gell-Mann {gm21['total']:4d}"
@@ -258,13 +258,13 @@ def main():
 
     # --------------------------------------------------------- desglose ---
     print("\n" + "=" * 70)
-    print("desglose por capa (G_2), en las dos decomposiciones del costo")
+    print("per-layer breakdown (G_2), in the two cost decompositions")
     print("=" * 70)
     for base in ("angular", "gellmann"):
         q = conteo_qaoa(n, G2, 2, base=base)
         print(f"  {base:10s} mixer  R={q['r_mixer_capa']:3d}  MS={q['ms_mixer_capa']:3d}"
-              f"   |  costo  R={q['r_costo_capa']:3d}  MS={q['ms_costo_capa']:3d}"
-              f"   |  capa  R={q['r_dos_niveles']:3d}  MS={q['ms']:3d}")
+              f"   |  cost  R={q['r_costo_capa']:3d}  MS={q['ms_costo_capa']:3d}"
+              f"   |  layer  R={q['r_dos_niveles']:3d}  MS={q['ms']:3d}")
 
 
 if __name__ == "__main__":

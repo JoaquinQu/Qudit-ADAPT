@@ -1,9 +1,10 @@
 # Data provenance and run environment
 
-Every dataset in `resultados/` is listed below with who produced it, on which
-machine, and which figure or table of the paper it supports. Runs marked
-*thesis material* are not used by the manuscript; they belong to the B.Sc.
-thesis this repository also accompanies.
+Every dataset is listed below with who produced it, on which machine, and
+which figure or table of the paper it supports. Figs. 1–4 and Table I live
+under `Max-3-Cut/results/`; Figs. 5–6 and Appendix B live under
+`local_minima/`. Runs marked *thesis material* are not used by the
+manuscript; they belong to the B.Sc. thesis this repository also accompanies.
 
 ## Machines
 
@@ -29,20 +30,24 @@ Qudit-ADAPT and QAOA on $G_1$–$G_4$ (irregular) and $G_5$, $K_6$ (regular).
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `resultados/json/resultados_completos_comparacion_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
-| `resultados/json/resultados_completos_regulares_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
-| `resultados/json/resultados_qaoa_n6_p20_jx_r25_grafos_1_all.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
-| `resultados/json/resultados_qaoa_regulares_n6_p20_jx_r25_grafos_1_4.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
+| `Max-3-Cut/results/json/resultados_completos_comparacion_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
+| `Max-3-Cut/results/json/resultados_completos_regulares_grado4_grado5_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
+| `Max-3-Cut/results/json/resultados_qaoa_n6_p20_jx_r25_grafos_1_all.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
+| `Max-3-Cut/results/json/resultados_qaoa_regulares_grado4_grado5_n6_p20_jx_r25.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
 
 QAOA uses $p=20$ layers and 25 random restarts per depth; the median is
 plotted and the shaded band is the interquartile range.
+
+**Exception — $K_6$, $l=2$:** the laptop run above does not reach the convergence reported in the
+paper. `Max-3-Cut/qaoa_comparison.ipynb` replaces that one curve with `local_minima/data/K6_l2.json`
+(H. Díaz-Moraga, BitWit, 18 parameters, machine precision — see Figures 5–6 below).
 
 ### Figure 4 — 300-graph ensemble
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `resultados/json/resultados_completos_n6_l{1,2}_1_300.json` | J. Molina | laptop | `cluster/main.py` |
-| `resultados/json/resultados_completos_n6_l{1,2}_common_budget.json` | J. Molina | laptop | `cluster/main.py` |
+| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_1_300.json` | J. Molina | laptop | `cluster/main.py` |
+| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_common_budget.json` | J. Molina | laptop | `cluster/main.py` |
 
 `_1_300` runs to convergence; `_common_budget` caps every instance at
 $k_{\max}=50$ ADAPT iterations so the two pools are compared under the same
@@ -56,13 +61,13 @@ independent random initializations.
 
 | File | Produced by | Where | Runtime | Script |
 |---|---|---|---|---|
-| `resultados/json/fig1a_l1_bp100.json` | H. Díaz-Moraga | BitWit | 0.1 min | `cluster/main_bp.py` |
-| `resultados/json/fig1a_l2_bp100.json` | H. Díaz-Moraga | BitWit | 139 min | `cluster/main_bp.py` |
-| `resultados/json/k6_l1_bp100.json` | H. Díaz-Moraga | BitWit | 189 min | `cluster/main_bp.py` |
-| `resultados/json/k6_l2_bp100.json` | H. Díaz-Moraga | BitWit | 24 min | `cluster/main_bp.py` |
+| `local_minima/data/G1_l1.json` | H. Díaz-Moraga | BitWit | 0.1 min | `cluster/main_bp.py` |
+| `local_minima/data/G1_l2.json` | H. Díaz-Moraga | BitWit | 139 min | `cluster/main_bp.py` |
+| `local_minima/data/K6_l1.json` | H. Díaz-Moraga | BitWit | 189 min | `cluster/main_bp.py` |
+| `local_minima/data/K6_l2.json` | H. Díaz-Moraga | BitWit | 24 min | `cluster/main_bp.py` |
 
 All four use `--n_random 100 --seed 0 --epsilon 1e-2`. Console logs are kept in
-`resultados/logs/`. Rendered with `cluster/figuras_paper.py`.
+`local_minima/logs/`. Rendered with `cluster/figuras_paper.py`.
 
 Note that $K_6$ with $\ell=2$ is the *fastest* of the three heavy runs despite
 having the largest pool (2724 operators): it converges after 18 parameters,
@@ -72,7 +77,7 @@ while $K_6$ with $\ell=1$ needs 31 and never reaches machine precision.
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `resultados/json/fig1a_l{1,2}_curva.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --n_random 0` |
+| `Max-3-Cut/results/json/fig1a_l{1,2}_curva.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --n_random 0` |
 
 Convergence curves without the random-restart cloud, used for the $G_1$ rows of
 Table I and as the ADAPT side of Table IV.
@@ -81,8 +86,8 @@ Table I and as the ADAPT side of Table IV.
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `resultados/json/bp_n6_l2_grafo2_r20_k30.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base angular` |
-| `resultados/json/bp_n6_l2_grafo2_r20_k30_gellmann.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base gellmann` |
+| `local_minima/data/bp_n6_l2_grafo2_r20_k30.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base angular` |
+| `local_minima/data/bp_n6_l2_grafo2_r20_k30_gellmann.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base gellmann` |
 
 Same instance ($G_2$, $\ell=2$), same algorithm, only the basis in which the
 nested commutators are decomposed differs. Table IV needs no run at all: the
@@ -91,16 +96,14 @@ layers, so `cluster/conteo_qaoa.py` computes it directly.
 
 ### Thesis material — not used by the paper
 
-Kept because this repository also accompanies J. Molina's B.Sc. thesis
-(`Tesis_Joaquín_Molina.pdf`).
+Kept because this repository also accompanies J. Molina's B.Sc. thesis, not included here.
 
 | File | Contents |
 |---|---|
-| `resultados/json/resultados_completos_n5_l{1,2}_*.json` | The same ensemble at $n=5$ |
-| `resultados/json/kn_l{1,2}_n4-10.json` | Scaling on complete graphs $K_n$, $n=4\ldots10$ |
-| `resultados/json/resultados_l2_controlado_por_iteraciones_l1.json` | $\ell=2$ capped at the iteration count $\ell=1$ needed |
-| `resultados/images/{01..11}_*.png`, `cb_*.png` | Ensemble analysis plots |
-| `cuadernillos/analisis_kn.ipynb`, `analisis_localidad.ipynb` | Their analysis |
+| `Max-3-Cut/results/json/resultados_completos_n5_l{1,2}_*.json` | The same ensemble at $n=5$ |
+| `Max-3-Cut/results/json/kn_l{1,2}_n4-10.json` | Scaling on complete graphs $K_n$, $n=4\ldots10$ |
+| `Max-3-Cut/results/json/resultados_l2_controlado_por_iteraciones_l1.json` | $\ell=2$ capped at the iteration count $\ell=1$ needed |
+| `Max-3-Cut/results/images/{01..11}_*.png`, `cb_*.png` | Ensemble analysis plots |
 
 ## Exploratory work not in the paper
 

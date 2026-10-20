@@ -27,4 +27,85 @@ Thumbs.db
 *.synctex.gz
 
 # Salidas temporales de pruebas
-resultados/**/_prueba_*
+results/**/_prueba_*
+
+# Escrito (zona de trabajo del paper en Overleaf, no se versiona acá)
+escrito_overleaf/
+
+# Backups y análisis huérfanos sin uso en el escrito
+Max-3-Cut/results/backup_qaoa_psi0_mixer_dependiente/
+Max-3-Cut/results/images/apendice_localidad/
+
+# Resultados separados que no se citan en el escrito (grafos regulares grado 2/3, etc.)
+Max-3-Cut/results/csv/no_usado_en_escrito/
+Max-3-Cut/results/json/no_usado_en_escrito/
+
+# Backups (versiones previas antes de cambios grandes, se guardan localmente, no en git)
+Max-3-Cut/backups/
+Max-3-Cut/results/csv/backups/
+Max-3-Cut/results/json/backups/
+/backups/
+*_backup_*
+
+# Trabajo exploratorio de multiway viejo (en español, toy n=5,6) — superado por
+# multiway_number_partitioning/, que es la version final y limpia de Herbert
+multiway number partition/
+
+# Zips descargados del escrito
+*.zip
+
+# Tesis y documentos personales de postulación (no van al repo público)
+revistas_candidatas.pdf
+Tesis_Joaquín_Molina.pdf
+
+# PDFs de papers de referencia (no van al repo público)
+papers/
+
+# Análisis exploratorios de Max-3-Cut que no se citan en el escrito
+Max-3-Cut/analisis_kn.ipynb
+Max-3-Cut/analisis_localidad.ipynb
+
+# Informe técnico interno de Herbert sobre multiway (no es el escrito, no
+# está citado ni documentado en README/DATA.md/REPRODUCING.md)
+informe/
+cluster/analizar_k80_qaoa.py
+cluster/analizar_mwnp.py
+cluster/analizar_ordenes_mwnp.py
+cluster/comparar_joaquin.py
+cluster/correr_mwnp_n13.py
+cluster/informe_mwnp.py
+cluster/instancias_ordenes_mwnp.py
+cluster/qaoa_joaquin.py
+cluster/rangos_mwnp.py
+cluster/sanidad_joaquin.py
+cluster/varianza_mapa_mwnp.py
+cluster/varianza_mwnp.py
+cluster/verificar_optimizaciones.py
+
+# results/ de la raíz: todo lo que no era específico de ningún tema (barrido
+# crudo de mwnp, logs del informe) ya se gitignora arriba o se trasladó a la
+# carpeta de su tema (Max-3-Cut/, local_minima/, multiway_number_partitioning/);
+# lo que queda son duplicados exactos de local_minima/data y local_minima/figures
+/results/
+
+# data/ de la raíz: los grafos fijos (grafos_comparacion.txt, grafos_regulares.txt,
+# grafo_completo_n6.txt) y las 2 imágenes de inset ya tienen su copia trackeada en
+# Max-3-Cut/data/ o local_minima/data/; se quedan acá sin trackear solo para que
+# cluster/main_bp.py (que resuelve rutas relativas a esta carpeta) siga encontrándolos
+/data/grafos_comparacion.txt
+/data/grafos_regulares.txt
+/data/grafo_completo_n6.txt
+/data/imagenes/
+
+# Instancias crudas de multiway (formato interno, claves en español) — input del
+# pipeline oficial pero regenerable de forma determinista con
+# cluster/generar_instancias_mwnp.py; no es el dato limpio que cita el escrito
+# (ese vive en multiway_number_partitioning/data/instances.json)
+/data/mwnp_instancias.json
+/data/mwnp_instancias_5a12.json
+
+# Huérfanos / solo usados por el informe interno ya gitignorado arriba
+/data/mwnp_ordenes_10a12.json
+/data/mwnp_ordenes_5a9.json
+/data/mwnp_ordenes_n6.json
+/data/mwnp_rango8_n6.json

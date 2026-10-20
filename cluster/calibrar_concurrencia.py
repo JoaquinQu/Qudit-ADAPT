@@ -27,11 +27,11 @@ from multiprocessing import get_context
 import numpy as np
 
 from funciones import qaoa_mwnp as Q
-from funciones.utilidades_mwnp import (energia_y_grad, estado_referencia, hamiltoniano_diag,
+from functions.utilidades_mwnp import (energia_y_grad, estado_referencia, hamiltoniano_diag,
                                        hamiltoniano_joaquin, preparar_pool)
 
 N = int(sys.argv[sys.argv.index("--n") + 1]) if "--n" in sys.argv else 12
-A = [i for i in json.load(open(PROJECT_ROOT / "datos" / "mwnp_instancias_5a12.json"))["instancias"]
+A = [i for i in json.load(open(PROJECT_ROOT / "data" / "mwnp_instancias_5a12.json"))["instancias"]
      if i["n"] == N][0]["a"]
 H = hamiltoniano_diag(A)
 HJ = hamiltoniano_joaquin(A)

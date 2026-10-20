@@ -33,7 +33,7 @@ PROJECT_ROOT = SCRIPT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from funciones.utilidades_QAOA import (  # noqa: E402
+from functions.utilidades_QAOA import (  # noqa: E402
     leer_grafos,
     scan_qaoa_p,
     qaoa_results_to_dataframe,
@@ -53,8 +53,8 @@ def parse_args():
     parser.add_argument(
         "--input_file",
         type=str,
-        default=str(PROJECT_ROOT / "datos" / "grafos_regulares.txt"),
-        help="Archivo .txt con los grafos. Default: datos/grafos_regulares.txt",
+        default=str(PROJECT_ROOT / "Max-3-Cut" / "data" / "grafos_regulares.txt"),
+        help="Archivo .txt con los grafos. Default: Max-3-Cut/data/grafos_regulares.txt",
     )
 
     parser.add_argument(
@@ -144,21 +144,21 @@ def parse_args():
         "--output_csv",
         type=str,
         default=None,
-        help="Ruta del CSV de salida. Default automático en resultados/csv/",
+        help="Ruta del CSV de salida. Default automático en Max-3-Cut/results/csv/",
     )
 
     parser.add_argument(
         "--output_json",
         type=str,
         default=None,
-        help="Ruta del JSON de salida. Default automático en resultados/json/",
+        help="Ruta del JSON de salida. Default automático en Max-3-Cut/results/json/",
     )
 
     return parser.parse_args()
 
 
 def build_default_output_paths(args):
-    resultados_dir = PROJECT_ROOT / "resultados"
+    resultados_dir = PROJECT_ROOT / "Max-3-Cut" / "results"
     csv_dir = resultados_dir / "csv"
     json_dir = resultados_dir / "json"
 

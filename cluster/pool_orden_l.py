@@ -14,14 +14,14 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 import sympy as sp
-from funciones.utilidades import Had, dHad_dlam, nested_commutators, canonical_op
+from functions.utilidades import Had, dHad_dlam, nested_commutators, canonical_op
 
 p = argparse.ArgumentParser()
 p.add_argument("--l", type=int, required=True)
 p.add_argument("--n", type=int, nargs="+", required=True)
 args = p.parse_args()
 lam = sp.symbols("lam", real=True)
-salida = PROJECT_ROOT / "resultados" / "json" / f"pool_l{args.l}.json"
+salida = PROJECT_ROOT / "results" / "json" / f"pool_l{args.l}.json"
 filas = json.load(open(salida)) if salida.exists() else []
 for n in args.n:
     edges = [(i, j) for i in range(1, n + 1) for j in range(i + 1, n + 1)]

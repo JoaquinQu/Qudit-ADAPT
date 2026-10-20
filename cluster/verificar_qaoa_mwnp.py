@@ -26,8 +26,8 @@ from functools import reduce
 import numpy as np
 from scipy.linalg import expm
 
-from funciones.qaoa_mwnp import GENERADORES, energia_y_grad, estado_uniforme, evolucionar
-from funciones.utilidades_mwnp import hamiltoniano_joaquin, instancia_unica
+from functions.qaoa_mwnp import GENERADORES, energia_y_grad, estado_uniforme, evolucionar
+from functions.utilidades_mwnp import hamiltoniano_joaquin, instancia_unica
 
 
 def denso(params, h, p, mezclador, n):

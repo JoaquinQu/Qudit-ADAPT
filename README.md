@@ -44,17 +44,25 @@ jupyter lab examples/
 ## Layout
 
 ```
-funciones/      algorithms — all the physics lives here
-cluster/        runnable scripts: one experiment or one figure each
-examples/       annotated notebooks, start here
-cuadernillos/   the analysis notebooks that produced the paper figures
-datos/          input graphs
-resultados/     outputs: json (full traces), csv (summaries), images, logs
-papers/         background literature
+functions/                     the engine — all the physics lives here, one package
+cluster/                       runnable scripts: one experiment or one figure each
+examples/                      annotated notebooks, start here
+Max-3-Cut/                     Figs. 1-4 and Table I, self-contained (see its own README)
+local_minima/                  Figs. 5-6 and Sec. III C, self-contained (see its own README)
+multiway_number_partitioning/  Sec. III B, self-contained (see its own README)
 ```
 
-Nothing in `cluster/` or `cuadernillos/` implements physics — they import from
-`funciones/` and orchestrate. The dependency graph is a tree, no cycles:
+The root also has `data/` and `results/` folders, neither part of the public repo: they are where
+`cluster/main_bp.py` and the mwnp scripts read and write by default, and `Max-3-Cut/`, `local_minima/`
+and `multiway_number_partitioning/` ship the tracked, cleaned copies of whatever they actually need.
+
+(`multiway number partition/` — an older, exploratory take on multiway, in Spanish, with a
+known broken import — is kept on disk but gitignored; `multiway_number_partitioning/` above
+is the one that is part of the paper.)
+
+Nothing in `cluster/`, `Max-3-Cut/`, `local_minima/` or `multiway_number_partitioning/`
+implements physics — they import from `functions/` and orchestrate. The dependency graph
+is a tree, no cycles:
 
 ```
 utilidades.py  ──────────┬──> utilidades_QAOA.py
@@ -62,7 +70,7 @@ utilidades.py  ──────────┬──> utilidades_QAOA.py
                                                  └──> utilidades_ringbauer.py
 ```
 
-### `funciones/` — the engine
+### `functions/` — the engine
 
 | Module | Contents |
 |---|---|
@@ -72,6 +80,14 @@ utilidades.py  ──────────┬──> utilidades_QAOA.py
 | `utilidades_gellmann.py` | The same pool rebuilt in the $\mathfrak{su}(3)$ Gell-Mann basis (Appendix B) |
 | `utilidades_ringbauer.py` | Decomposition of a single-qudit unitary into two-level rotations, following Ringbauer *et al.* |
 
+`utilidades.py` and `utilidades_QAOA.py` were translated to English, since they are what
+`Max-3-Cut/`'s notebooks import and the one piece of the paper-facing code meant to be read
+start to end by someone outside the group. The rest of the module keeps its Spanish
+comments. There used to be a second folder, `funciones/`, left behind as a compatibility
+shim while only `utilidades.py`/`utilidades_QAOA.py` had moved; it has since been folded
+back in — every module that depends on the engine now imports from `functions/` directly,
+`funciones/` no longer exists.
+
 ### `cluster/` — experiments
 
 | Script | Produces |
@@ -79,11 +95,21 @@ utilidades.py  ──────────┬──> utilidades_QAOA.py
 | `main_comparaciones.py` | Qudit-ADAPT on the benchmark graphs → Figs. 1–3, Table I |
 | `main_QAOA.py` | QAOA baseline on the same graphs → Figs. 1–3, Table I |
 | `main.py` | The 300-random-graph ensemble → Fig. 4 |
-| `main_bp.py` | Warm/cold/random-restart landscape scan → Figs. 5–6 |
+| `main_bp.py` | Warm/cold/random-restart landscape scan → Figs. 5–6 (writes to `data/`/`results/`, not `Max-3-Cut/`; its output is what `local_minima/` ships a cleaned copy of) |
 | `figuras_paper.py` | Renders Figs. 5–6 in the manuscript's typography |
 | `tablas_apendice.py` | Tables II and III |
 | `conteo_qaoa.py` | Table IV |
 | `lanzar_bp.sh` | Launcher for long unattended runs |
+
+`main_comparaciones.py`, `main_QAOA.py`, `main.py`, `main_n5.py` and `run_kn.py` read their
+input graphs from `Max-3-Cut/data/` and write to `Max-3-Cut/results/`. `main_bp.py` (and
+everything feeding `local_minima/`, `multiway_number_partitioning/` or Appendix B) still
+resolves relative paths against the root `data/`/`results/`, which is why those scripts keep
+their original filenames instead of moving under `Max-3-Cut/`. Neither root folder is part of
+the public repo, though: every file that is actually published — the fixed benchmark graphs,
+the figures, the run data — has a tracked copy inside the topic folder it belongs to
+(`Max-3-Cut/data/`, `local_minima/data/`, ...), and the root `data/`/`results/` only hold the
+untracked local copies these scripts need to run.
 
 ## Conventions
 
@@ -109,6 +135,12 @@ This is what lets the $\ell=2$ runs reach machine precision.
 Code comments are in Spanish, matching the authors. Documentation, examples and
 scripts added for the public release are in English. Both READMEs are kept in
 sync; the English one is authoritative.
+
+Exception: `functions/utilidades.py` and `functions/utilidades_QAOA.py` — the engine
+behind `Max-3-Cut/` — were translated to English, since that is the one piece of the
+paper-facing code meant to be read start to end by someone outside the group.
+`functions/utilidades_bp.py`, `utilidades_gellmann.py` and `utilidades_ringbauer.py` keep
+their Spanish comments, unchanged.
 
 ## Citation
 

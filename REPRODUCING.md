@@ -17,10 +17,10 @@ All scripts are run from the repository root.
 ```bash
 python cluster/main_comparaciones.py
 python cluster/main_QAOA.py
-jupyter nbconvert --execute --inplace cuadernillos/comparacion_QAOA.ipynb
+jupyter nbconvert --execute --inplace Max-3-Cut/qaoa_comparison.ipynb
 ```
 
-The two scripts write to `resultados/{json,csv}/`; the notebook reads them and
+The two scripts write to `Max-3-Cut/results/{json,csv}/`; the notebook reads them and
 draws the panels. `main_QAOA.py` is the slow one — 25 random restarts at every
 depth up to $p=20$, for six graphs.
 
@@ -28,7 +28,7 @@ depth up to $p=20$, for six graphs.
 
 ```bash
 python cluster/main.py
-jupyter nbconvert --execute --inplace cuadernillos/grafos_aleatorios_n6.ipynb
+jupyter nbconvert --execute --inplace Max-3-Cut/random_graphs_n6.ipynb
 ```
 
 Figure 4 uses the common-budget runs ($k_{\max}=50$), so that the $\ell=1$ and
@@ -56,6 +56,13 @@ python cluster/main_bp.py --input_file grafo_completo_n6.txt --grafo 1 --l 2 \
 
 python cluster/figuras_paper.py
 ```
+
+`--input_file` is resolved against the root `data/` (also not tracked; it keeps local copies
+of `grafos_comparacion.txt` and `grafo_completo_n6.txt` for this script's sake), and
+`main_bp.py` always writes under the root `results/json/` (not tracked either). The published
+copy of the four runs above lives in `local_minima/data/{G1,K6}_l{1,2}.json`, with the graph
+named explicitly and two internal bookkeeping fields removed — see
+[`local_minima/README.md`](local_minima/README.md).
 
 `main_bp.py` checkpoints after every iteration and resumes from the checkpoint
 by default, so a run can be interrupted and restarted without losing work. Pass
@@ -94,6 +101,9 @@ python cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 2 --l 2 \
 python cluster/tablas_apendice.py            # text
 python cluster/tablas_apendice.py --latex    # rows ready to paste
 ```
+
+Same note as above: the two runs land in the root `results/json/`; the published copy is
+`local_minima/data/bp_n6_l2_grafo2_r20_k30[_gellmann].json`.
 
 ## Appendix B — Table IV
 

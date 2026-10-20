@@ -48,11 +48,11 @@ from datetime import datetime, timezone
 
 import numpy as np
 
-from funciones.qaoa_mwnp import evolucionar, interp, optimizar, p_exito
-from funciones.utilidades_mwnp import hamiltoniano_joaquin, leer_estado
+from functions.qaoa_mwnp import evolucionar, interp, optimizar, p_exito
+from functions.utilidades_mwnp import hamiltoniano_joaquin, leer_estado
 
-INSTANCIAS = PROJECT_ROOT / "datos" / "mwnp_instancias_5a12.json"
-CARPETA = PROJECT_ROOT / "resultados" / "qaoa_p40"
+INSTANCIAS = PROJECT_ROOT / "data" / "mwnp_instancias_5a12.json"
+CARPETA = PROJECT_ROOT / "results" / "qaoa_p40"
 COTA = np.pi
 
 
@@ -164,7 +164,7 @@ def correr(tarea):
 def correr_interp(inst, hn, h, sigma, cfg, config):
     """Cadena INTERP de p = 1 a p = P, con barrido en grilla para p = 1."""
     p_max, mezclador, a = cfg["p"], cfg["mezclador"], inst["a"]
-    from funciones.qaoa_mwnp import energia_y_grad
+    from functions.qaoa_mwnp import energia_y_grad
     G, B = np.meshgrid(np.linspace(0.02, 3.0, 40), np.linspace(-COTA, COTA, 41))
     E = [energia_y_grad([g, b], hn, 1, mezclador)[0] for g, b in zip(G.ravel(), B.ravel())]
     x = np.array([G.ravel()[int(np.argmin(E))], B.ravel()[int(np.argmin(E))]])

@@ -35,7 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from funciones.utilidades import (
+from functions.utilidades import (
     cd_adapt_vqe_algorithm,
     generar_m_grafos,
     to_jsonable,
@@ -104,9 +104,9 @@ if l not in (1, 2):
 # ══════════════════════════════════════════════════════════════
 
 BASE_DIR   = PROJECT_ROOT
-DATOS_DIR  = BASE_DIR / "datos"
-CSV_DIR    = BASE_DIR / "resultados" / "csv"
-JSON_DIR   = BASE_DIR / "resultados" / "json"
+DATOS_DIR  = BASE_DIR / "Max-3-Cut" / "data"
+CSV_DIR    = BASE_DIR / "Max-3-Cut" / "results" / "csv"
+JSON_DIR   = BASE_DIR / "Max-3-Cut" / "results" / "json"
 
 DATOS_DIR.mkdir(parents=True, exist_ok=True)
 CSV_DIR.mkdir(parents=True, exist_ok=True)

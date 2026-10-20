@@ -8,9 +8,12 @@ local_minima/
 ├── local_minima.ipynb     regenerates Figs. 8–9 and the numbers of Sec. III C
 ├── figures/               the figures written by the notebook (one panel per file)
 ├── graphs/                the graph drawings used as insets
+├── logs/                  console logs of the four G1/K6 runs (provenance)
 └── data/
+    ├── grafo_completo_n6.txt     the K_6 input graph (G1 and G2 come from Max-3-Cut/data/)
     ├── G1_l1.json   G1_l2.json
-    └── K6_l1.json   K6_l2.json
+    ├── K6_l1.json   K6_l2.json
+    └── bp_n6_l2_grafo2_r20_k30.json   bp_n6_l2_grafo2_r20_k30_gellmann.json
 ```
 
 Run it with
@@ -47,7 +50,7 @@ identical gradients and never change the selected operator; the number of distin
 
 ## Provenance
 
-Produced on the BitWit workstation by H. Díaz-Moraga with `cluster/main_bp.py` (engine in
-`funciones/utilidades_bp.py`), with the commands listed in `REPRODUCING.md`. These files are the same runs as
-`resultados/json/fig1a_l{1,2}_bp100.json` and `resultados/json/k6_l{1,2}_bp100.json`, with the graph named
-explicitly and two internal bookkeeping fields removed.
+Produced on the BitWit workstation by H. Díaz-Moraga with `cluster/main_bp.py`, with the commands
+listed in `REPRODUCING.md`. The $G_2$ pair (`bp_n6_l2_grafo2_r20_k30[_gellmann].json`) is a second,
+unrelated run for Appendix B (Tables II–III), comparing the angular-momentum and Gell-Mann bases. See
+[`../DATA.md`](../DATA.md) for the full file-by-file breakdown.

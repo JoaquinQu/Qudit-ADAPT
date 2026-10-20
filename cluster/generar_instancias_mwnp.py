@@ -25,9 +25,9 @@ if str(PROJECT_ROOT) not in sys.path:
 import argparse
 import json
 
-from funciones.utilidades_mwnp import instancias_unicas
+from functions.utilidades_mwnp import instancias_unicas
 
-SALIDA = PROJECT_ROOT / "datos" / "mwnp_instancias.json"
+SALIDA = PROJECT_ROOT / "data" / "mwnp_instancias.json"
 
 
 def main():

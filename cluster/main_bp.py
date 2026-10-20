@@ -22,9 +22,9 @@ if str(PROJECT_ROOT) not in sys.path:
 import argparse
 import ast
 
-from funciones.utilidades_bp import adapt_bp_scan, save_bp_result
+from functions.utilidades_bp import adapt_bp_scan, save_bp_result
 
-DATOS_DIR = PROJECT_ROOT / "datos"
+DATOS_DIR = PROJECT_ROOT / "data"
 
 
 def leer_grafo(input_file, grafo_id):

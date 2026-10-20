@@ -33,7 +33,7 @@ import time
 import numpy as np
 from scipy.optimize import minimize
 
-from funciones.utilidades_mwnp import hamiltoniano_joaquin
+from functions.utilidades_mwnp import hamiltoniano_joaquin
 from qaoa_joaquin import estado_qaoa, jx_un_sitio
 
 P_MAX = 10
@@ -56,7 +56,7 @@ def main():
         psi = estado_qaoa(x, p, h, u_mezcla)
         return float(np.real(np.vdot(psi, h * psi)))
 
-    suyas = json.load(open(PROJECT_ROOT / "resultados" / "json" / "qaoa_joaquin.json"))["instancias"]
+    suyas = json.load(open(PROJECT_ROOT / "results" / "json" / "qaoa_joaquin.json"))["instancias"]
     filas = []
     for f in suyas:
         t0 = time.time()
@@ -82,7 +82,7 @@ def main():
         print(f"n={f['n']} {str(a):24s} E p=1 {curva[0]['E_j']:7.1f}  p={P_MAX} {curva[-1]['E_j']:6.1f}"
               f"   p_exito p={P_MAX} {curva[-1]['p_exito']:.3f}   ({time.time()-t0:.0f} s)", flush=True)
 
-    salida = PROJECT_ROOT / "resultados" / "json" / "qaoa_reoptimizado.json"
+    salida = PROJECT_ROOT / "results" / "json" / "qaoa_reoptimizado.json"
     json.dump({"metodo": "grilla en p=1 + INTERP + BFGS", "p_max": P_MAX, "instancias": filas},
               open(salida, "w", encoding="utf-8"), indent=1)
     print(f"\n{len(filas)} instancias -> {salida.relative_to(PROJECT_ROOT)}")

@@ -2,12 +2,12 @@
 Qudit-ADAPT on the benchmark graphs: Figs. 1-3 and the ADAPT columns of Table I.
 
 Runs the algorithm on the four irregular instances G_1..G_4 of
-`datos/grafos_comparacion.txt` and on the regular ones of
-`datos/grafos_regulares.txt`, for both pool truncations l = 1 and l = 2.
+`Max-3-Cut/data/grafos_comparacion.txt` and on the regular ones of
+`Max-3-Cut/data/grafos_regulares.txt`, for both pool truncations l = 1 and l = 2.
 
 Writes a summary CSV and a full JSON with the energy trace, the selected
-operators and the optimal parameters of every run, into `resultados/`. The
-figures themselves are drawn later by `cuadernillos/comparacion_QAOA.ipynb`,
+operators and the optimal parameters of every run, into `Max-3-Cut/results/`. The
+figures themselves are drawn later by `Max-3-Cut/qaoa_comparison.ipynb`,
 which overlays these curves with the QAOA baseline from `main_QAOA.py`.
 
 Configuration is the block of constants below rather than command-line flags:
@@ -26,7 +26,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from funciones.utilidades import cd_adapt_vqe_algorithm_profundo, to_jsonable
+from functions.utilidades import cd_adapt_vqe_algorithm_profundo, to_jsonable
 
 
 # ============================================================
@@ -62,7 +62,7 @@ if l not in [1, 2]:
     raise ValueError("El parámetro l debe ser 1 o 2.")
 
 # El nombre de salida se deriva del archivo de grafos, para que coincida
-# automáticamente con lo que esperan los cuadernillos de análisis
+# automáticamente con lo que esperan los notebooks de Max-3-Cut/
 # (grafos_comparacion.txt -> "..._comparacion_...", grafos_regulares.txt -> "..._regulares_...").
 LABEL = Path(GRAFOS_FILE).stem
 if LABEL.startswith("grafos_"):
@@ -73,8 +73,8 @@ if LABEL.startswith("grafos_"):
 # RUTAS
 # ============================================================
 
-DATOS_DIR = PROJECT_ROOT / "datos"
-RESULTADOS_DIR = PROJECT_ROOT / "resultados"
+DATOS_DIR = PROJECT_ROOT / "Max-3-Cut" / "data"
+RESULTADOS_DIR = PROJECT_ROOT / "Max-3-Cut" / "results"
 CSV_DIR = RESULTADOS_DIR / "csv"
 JSON_DIR = RESULTADOS_DIR / "json"
 

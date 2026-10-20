@@ -56,8 +56,8 @@ import multiprocessing
 
 import numpy as np
 
-INSTANCIAS = PROJECT_ROOT / "datos" / "mwnp_instancias.json"
-CARPETA = PROJECT_ROOT / "resultados" / "mwnp"
+INSTANCIAS = PROJECT_ROOT / "data" / "mwnp_instancias.json"
+CARPETA = PROJECT_ROOT / "results" / "mwnp"
 
 
 def commit_del_codigo():
@@ -92,7 +92,7 @@ def ruta_corrida(n, l, ident, carpeta=CARPETA, estrategia="warm"):
 
 def conteo_nativo(etiquetas):
     """Compuertas nativas acumuladas (Algoritmo 1 de Ringbauer), paso a paso."""
-    from funciones.utilidades_bp import conteo_compuertas
+    from functions.utilidades_bp import conteo_compuertas
     R, MS, no_prod = [0], [0], 0
     for lab in etiquetas:
         c = conteo_compuertas(lab, base="angular")
@@ -115,7 +115,7 @@ BARRIDOS = {}       # (n, l) -> preparar_barrido(pool, n), sólo con --barrido s
 
 def correr(tarea):
     """Una corrida. Devuelve un resumen corto; el detalle queda en disco."""
-    from funciones.utilidades_mwnp import adapt_mwnp, preparar_pool
+    from functions.utilidades_mwnp import adapt_mwnp, preparar_pool
 
     inst, l, eps_j, max_it, carpeta, estrategia = tarea[:6]
     barrido_modo = tarea[6] if len(tarea) > 6 else "operador"
@@ -212,7 +212,7 @@ def correr_fija0(inst, l, carpeta):
     tampoco se llega a la solución, el problema no era el punto de partida de
     BFGS sino qué operadores se eligieron.
     """
-    from funciones.utilidades_mwnp import reoptimizar_secuencia
+    from functions.utilidades_mwnp import reoptimizar_secuencia
 
     n, ident, a = inst["n"], inst["id"], inst["a"]
     origen = ruta_corrida(n, l, ident, carpeta, "warm")
@@ -329,7 +329,7 @@ def main():
                         " | fija0 (i): la secuencia warm reoptimizada desde theta=0")
     args = p.parse_args()
 
-    from funciones.utilidades_mwnp import etiquetas_pool, preparar_barrido, preparar_pool
+    from functions.utilidades_mwnp import etiquetas_pool, preparar_barrido, preparar_pool
 
     todas = json.load(open(args.instancias, encoding="utf-8"))["instancias"]
     ids = set(rango_ids(args.ids))

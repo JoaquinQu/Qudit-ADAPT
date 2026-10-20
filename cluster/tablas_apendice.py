@@ -29,7 +29,7 @@ import argparse
 
 import numpy as np
 
-from funciones.utilidades_bp import (
+from functions.utilidades_bp import (
     conteo_compuertas,
     conteo_compuertas_ansatz,
     costo_compuertas,

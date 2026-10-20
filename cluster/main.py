@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from funciones.utilidades import generar_m_grafos, ejecutar_grafos
+from functions.utilidades import generar_m_grafos, ejecutar_grafos
 
 # =========================
 # PARÁMETROS GENERALES
@@ -66,7 +66,7 @@ if l not in [1, 2]:
 # GENERAR GRAFOS SOLO SI NO EXISTE EL ARCHIVO
 # =========================
 
-ruta_grafos = PROJECT_ROOT / "datos" / GRAFOS_FILE
+ruta_grafos = PROJECT_ROOT / "Max-3-Cut" / "data" / GRAFOS_FILE
 
 if not ruta_grafos.exists():
     generar_m_grafos(

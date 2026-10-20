@@ -33,15 +33,15 @@ import numpy as np
 from matplotlib.colors import LogNorm
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
-from funciones.utilidades_bp import (
+from functions.utilidades_bp import (
     bp_error_cloud,
     bp_error_curves,
     layout_poligono,
     load_bp_result,
 )
 
-JSON_DIR = PROJECT_ROOT / "resultados" / "json"
-IMG_DIR = PROJECT_ROOT / "resultados" / "images"
+JSON_DIR = PROJECT_ROOT / "results" / "json"
+IMG_DIR = PROJECT_ROOT / "results" / "images"
 
 # Legend labels requested for the manuscript.
 _BM = r"\bm" if False else r"\boldsymbol"   # \bm sólo existe con usetex
@@ -69,7 +69,7 @@ PROPORCION = 0.88
 # Se usan las MISMAS imágenes de grafo que el manuscrito, ya renderizadas en
 # datos/imagenes/, en vez de volver a dibujarlas con networkx: así los insets
 # son idénticos a los de las figuras 1-3.
-IMG_GRAFOS = PROJECT_ROOT / "datos" / "imagenes"
+IMG_GRAFOS = PROJECT_ROOT / "data" / "imagenes"
 
 PANELES = [
     ("fig_bp_1a_l1", "fig1a_l1_bp100.json", "comparaciones/grafo_1.png"),
