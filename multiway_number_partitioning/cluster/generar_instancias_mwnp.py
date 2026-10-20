@@ -11,14 +11,14 @@ corridas use sólo las 10 primeras. Fijar la segunda tanda antes de ver
 resultados evita elegirla a posteriori. La generación es determinista por
 (seed, n, índice), así que regenerar reproduce exactamente el mismo archivo.
 
-    python cluster/generar_instancias_mwnp.py
-    python cluster/generar_instancias_mwnp.py --n_min 5 --n_max 10 --por_n 20
+    python multiway_number_partitioning/cluster/generar_instancias_mwnp.py
+    python multiway_number_partitioning/cluster/generar_instancias_mwnp.py --n_min 5 --n_max 10 --por_n 20
 """
 
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

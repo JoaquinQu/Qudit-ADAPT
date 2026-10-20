@@ -3,10 +3,10 @@
 # Lanza el estudio de entrenabilidad en un servidor SIN scheduler
 # (tipo BitWit: se entra por SSH y los trabajos son procesos sueltos).
 #
-#   bash cluster/lanzar_bp.sh              # las 4 configuraciones
-#   bash cluster/lanzar_bp.sh 3            # sólo la 3 (K6, l=2)
-#   bash cluster/lanzar_bp.sh estado       # ver avance
-#   bash cluster/lanzar_bp.sh detener      # detenerlas
+#   bash local_minima/cluster/lanzar_bp.sh              # las 4 configuraciones
+#   bash local_minima/cluster/lanzar_bp.sh 3            # sólo la 3 (K6, l=2)
+#   bash local_minima/cluster/lanzar_bp.sh estado       # ver avance
+#   bash local_minima/cluster/lanzar_bp.sh detener      # detenerlas
 #
 # Los procesos se lanzan con setsid+nohup, así que sobreviven a cerrar la
 # sesión SSH. No hace falta screen ni tmux.
@@ -17,8 +17,8 @@
 # =====================================================================
 
 set -uo pipefail
-cd "$(dirname "$0")/.."
-mkdir -p resultados/logs resultados/json
+cd "$(dirname "$0")/../.."
+mkdir -p results/logs results/json
 
 ARCHIVOS=(grafos_comparacion.txt grafos_comparacion.txt grafo_completo_n6.txt grafo_completo_n6.txt)
 ELES=(1 2 1 2)
@@ -38,7 +38,7 @@ export MKL_NUM_THREADS=1
 estado() {
     printf "%-10s %-12s %s\n" "corrida" "estado" "última línea"
     for i in 0 1 2 3; do
-        n="${NOMBRES[$i]}"; log="resultados/logs/$n.log"
+        n="${NOMBRES[$i]}"; log="results/logs/$n.log"
         if [ ! -f "$log" ]; then est="sin lanzar"; ult=""
         elif grep -qa "Resultado guardado" "$log"; then est="TERMINADA"; ult=$(grep -a "Operadores en el ansatz" "$log" | tail -1)
         elif pgrep -f "output ${n}_bp100.json" >/dev/null; then est="corriendo"; ult=$(tail -1 "$log")
@@ -57,11 +57,11 @@ lanzar() {
     if pgrep -f "output ${n}_bp100.json" >/dev/null; then
         echo "  $n ya está corriendo, no se relanza"; return
     fi
-    setsid nohup "$PY" -u cluster/main_bp.py \
+    setsid nohup "$PY" -u local_minima/cluster/main_bp.py \
         --input_file "${ARCHIVOS[$i]}" --grafo 1 --l "${ELES[$i]}" \
         --max_iteration "$MAX_ITER" --n_random "$N_RANDOM" \
         --seed 0 --n_jobs 1 --output "${n}_bp100.json" \
-        >> "resultados/logs/$n.log" 2>&1 < /dev/null &
+        >> "results/logs/$n.log" 2>&1 < /dev/null &
     echo "  $n lanzada (${ARCHIVOS[$i]}, l=${ELES[$i]})"
 }
 
@@ -69,7 +69,7 @@ case "${1:-todas}" in
     estado)  estado ;;
     detener) detener ;;
     todas)   echo "Lanzando las 4:"; for i in 0 1 2 3; do lanzar "$i"; done
-             echo; echo "Ver avance:  bash cluster/lanzar_bp.sh estado" ;;
+             echo; echo "Ver avance:  bash local_minima/cluster/lanzar_bp.sh estado" ;;
     [0-3])   lanzar "$1" ;;
     *)       echo "Uso: $0 [todas|0|1|2|3|estado|detener]"; exit 1 ;;
 esac

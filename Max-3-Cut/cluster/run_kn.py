@@ -26,7 +26,7 @@ import numpy as np
 # ---------------------------------------------------------------------------
 # Rutas del proyecto  (el script vive en la raíz del proyecto)
 # ---------------------------------------------------------------------------
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 RESULTADOS_DIR = PROJECT_ROOT / "Max-3-Cut" / "results"
 CSV_DIR = RESULTADOS_DIR / "csv"
 JSON_DIR = RESULTADOS_DIR / "json"

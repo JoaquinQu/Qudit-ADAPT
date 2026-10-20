@@ -6,6 +6,12 @@ complete graph $K_6$ (Max 3-Cut, six qutrits), with the $l=1$ and $l=2$ operator
 ```
 local_minima/
 ├── local_minima.ipynb     regenerates Figs. 8–9 and the numbers of Sec. III C
+├── cluster/
+│   ├── main_bp.py          the landscape scan behind every file in data/
+│   ├── figuras_paper.py    renders Figs. 5–6 in the manuscript's typography
+│   ├── tablas_apendice.py  Tables II and III
+│   ├── conteo_qaoa.py      Table IV
+│   └── lanzar_bp.sh        launcher for long unattended runs
 ├── figures/               the figures written by the notebook (one panel per file)
 ├── graphs/                the graph drawings used as insets
 ├── logs/                  console logs of the four G1/K6 runs (provenance)
@@ -16,11 +22,14 @@ local_minima/
     └── bp_n6_l2_grafo2_r20_k30.json   bp_n6_l2_grafo2_r20_k30_gellmann.json
 ```
 
-Run it with
+Run the notebook with
 
 ```bash
 jupyter lab local_minima/local_minima.ipynb
 ```
+
+Regenerating `data/` means re-running `local_minima/cluster/main_bp.py` — see
+[`../REPRODUCING.md`](../REPRODUCING.md) for the exact commands (run from the repository root).
 
 The figures and tables take a few seconds. The last cell recomputes the gradient variance at the random
 initial points with a small self-contained simulator and takes a few minutes. Only `numpy` and
@@ -50,7 +59,8 @@ identical gradients and never change the selected operator; the number of distin
 
 ## Provenance
 
-Produced on the BitWit workstation by H. Díaz-Moraga with `cluster/main_bp.py`, with the commands
+Produced on the BitWit workstation by H. Díaz-Moraga with `cluster/main_bp.py` (now at
+`local_minima/cluster/main_bp.py`), with the commands
 listed in `REPRODUCING.md`. The $G_2$ pair (`bp_n6_l2_grafo2_r20_k30[_gellmann].json`) is a second,
 unrelated run for Appendix B (Tables II–III), comparing the angular-momentum and Gell-Mann bases. See
 [`../DATA.md`](../DATA.md) for the full file-by-file breakdown.

@@ -12,7 +12,7 @@ would compare the two pools at different ansatz sizes, and the interesting
 question is what l = 2 buys you at equal ansatz growth -- which turns out to be
 nothing for the first ~30 iterations, and everything after.
 
-    python cluster/main.py
+    python Max-3-Cut/cluster/main.py
 
 Set MAX_ITERATION to None to run each instance to convergence instead.
 """
@@ -20,7 +20,7 @@ Set MAX_ITERATION to None to run each instance to convergence instead.
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

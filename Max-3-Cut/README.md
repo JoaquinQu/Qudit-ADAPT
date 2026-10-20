@@ -8,6 +8,10 @@ regular) and on an ensemble of 300 random graphs.
 Max-3-Cut/
 ├── qaoa_comparison.ipynb     regenerates Figs. 1–3 and Table I, on G1–G5 and K6
 ├── random_graphs_n6.ipynb    regenerates Fig. 4, on the 300-graph ensemble
+├── cluster/
+│   ├── main_comparaciones.py, main_QAOA.py    Qudit-ADAPT / QAOA on G1-G5, K6
+│   ├── main.py                                the 300-graph ensemble
+│   └── main_n5.py, run_kn.py                   thesis-only: n=5 ensemble, K_n scaling
 ├── data/
 │   ├── grafos_comparacion.txt, grafos_n5.txt, grafos_n6.txt    the fixed benchmark graphs
 │   ├── grafos_regulares.txt, grafos_regulares_grado{4,5}.txt   regular graphs by degree
@@ -18,14 +22,14 @@ Max-3-Cut/
     └── images/                the figures written by the notebooks
 ```
 
-Run with
+Run with (from the repository root)
 
 ```bash
-python cluster/main_comparaciones.py          # Qudit-ADAPT on G1-G5, K6 -> results/{csv,json}/
-python cluster/main_QAOA.py                   # QAOA on the same graphs
+python Max-3-Cut/cluster/main_comparaciones.py   # Qudit-ADAPT on G1-G5, K6 -> results/{csv,json}/
+python Max-3-Cut/cluster/main_QAOA.py            # QAOA on the same graphs
 jupyter nbconvert --execute --inplace Max-3-Cut/qaoa_comparison.ipynb
 
-python cluster/main.py                        # 300-graph ensemble -> results/{csv,json}/
+python Max-3-Cut/cluster/main.py                 # 300-graph ensemble -> results/{csv,json}/
 jupyter nbconvert --execute --inplace Max-3-Cut/random_graphs_n6.ipynb
 ```
 

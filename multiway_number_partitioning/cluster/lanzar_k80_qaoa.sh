@@ -5,7 +5,7 @@
 # BitWit tiene 8 bloques de 8 núcleos (bloque b: núcleos 8b..8b+7), cada uno
 # con 32 MB de L3. A n = 12 el estado pesa 8.5 MB y el rendimiento lo decide
 # ese caché: un proceso por bloque corre casi a velocidad libre, y dos se pisan.
-# A n = 11 rinden dos por bloque. Ver cluster/calibrar_concurrencia.py.
+# A n = 11 rinden dos por bloque. Ver multiway_number_partitioning/cluster/calibrar_concurrencia.py.
 #
 #   etapa 1: ADAPT n = 10, 11  +  QAOA n = 5..11  (+ INTERP n = 5..9, liviano)
 #   etapa 2: n = 12, ADAPT en 4 bloques y QAOA en los otros 4
@@ -13,19 +13,19 @@
 #
 # Cada lanzador salta lo que ya existe, así que el script se puede relanzar.
 #
-#   setsid nohup bash cluster/lanzar_k80_qaoa.sh > resultados/logs/etapas.log 2>&1 &
+#   setsid nohup bash multiway_number_partitioning/cluster/lanzar_k80_qaoa.sh > results/logs/etapas.log 2>&1 &
 
 set -u
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 PY=${PY:-$HOME/Qudit-ADAPT/.venv/bin/python}
-L=resultados/logs
+L=results/logs
 mkdir -p $L
 
 UNO="0,8,16,24,32,40,48,56"      # un núcleo por bloque
 DOS="1,9,17,25,33,41,49,57"      # un segundo núcleo por bloque
-ADAPT="cluster/benchmark_mwnp.py --l 1 2 --ids 0-1999 --instancias datos/mwnp_ordenes_10a12.json \
-       --carpeta resultados/mwnp_k80 --max_iteration 80 --barrido soporte --hilos 1"
-QAOA="cluster/qaoa_benchmark_mwnp.py --ids 0-19 --p 40 --reinicios 10 --carpeta resultados/qaoa_p40"
+ADAPT="multiway_number_partitioning/cluster/benchmark_mwnp.py --l 1 2 --ids 0-1999 --instancias data/mwnp_ordenes_10a12.json \
+       --carpeta results/mwnp_k80 --max_iteration 80 --barrido soporte --hilos 1"
+QAOA="multiway_number_partitioning/cluster/qaoa_benchmark_mwnp.py --ids 0-19 --p 40 --reinicios 10 --carpeta results/qaoa_p40"
 
 echo "etapa 1: ADAPT n = 10, 11 | QAOA n = 5..11 | INTERP n = 5..9   $(date)"
 $PY $ADAPT --n 10 11 --procesos 8 --nucleos $UNO > $L/etapa1_adapt.log 2>&1 &

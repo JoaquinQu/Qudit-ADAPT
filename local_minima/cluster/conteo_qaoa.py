@@ -28,13 +28,13 @@ off the matrix, exactly), a parametrised diagonal phase is applied, and the
 diagonalisations are undone, with 2(w-1) Mølmer-Sørensen gates for a generator
 supported on w sites.
 
-    python cluster/conteo_qaoa.py
+    python local_minima/cluster/conteo_qaoa.py
 """
 
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

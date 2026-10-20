@@ -45,24 +45,28 @@ jupyter lab examples/
 
 ```
 functions/                     the engine — all the physics lives here, one package
-cluster/                       runnable scripts: one experiment or one figure each
 examples/                      annotated notebooks, start here
 Max-3-Cut/                     Figs. 1-4 and Table I, self-contained (see its own README)
 local_minima/                  Figs. 5-6 and Sec. III C, self-contained (see its own README)
 multiway_number_partitioning/  Sec. III B, self-contained (see its own README)
 ```
 
-The root also has `data/` and `results/` folders, neither part of the public repo: they are where
-`cluster/main_bp.py` and the mwnp scripts read and write by default, and `Max-3-Cut/`, `local_minima/`
-and `multiway_number_partitioning/` ship the tracked, cleaned copies of whatever they actually need.
+Each of the three topic folders above has its own `cluster/` with the scripts that produce it
+(e.g. `Max-3-Cut/cluster/main_comparaciones.py`) — see that folder's own README for the list, or
+[`REPRODUCING.md`](REPRODUCING.md) for the exact command behind every figure.
+
+The root also has `data/`, `results/` and `cluster/` folders, none part of the public repo: they are
+where `main_bp.py` and the mwnp scripts read and write by default (most scripts resolve paths
+relative to the repository root, not to wherever they happen to live), and `Max-3-Cut/`,
+`local_minima/` and `multiway_number_partitioning/` ship the tracked, cleaned copies of whatever they
+actually need.
 
 (`multiway number partition/` — an older, exploratory take on multiway, in Spanish, with a
 known broken import — is kept on disk but gitignored; `multiway_number_partitioning/` above
 is the one that is part of the paper.)
 
-Nothing in `cluster/`, `Max-3-Cut/`, `local_minima/` or `multiway_number_partitioning/`
-implements physics — they import from `functions/` and orchestrate. The dependency graph
-is a tree, no cycles:
+Nothing in any `cluster/` subfolder implements physics — they import from `functions/` and
+orchestrate. The dependency graph is a tree, no cycles:
 
 ```
 utilidades.py  ──────────┬──> utilidades_QAOA.py
@@ -88,28 +92,29 @@ shim while only `utilidades.py`/`utilidades_QAOA.py` had moved; it has since bee
 back in — every module that depends on the engine now imports from `functions/` directly,
 `funciones/` no longer exists.
 
-### `cluster/` — experiments
+### `<topic>/cluster/` — experiments
 
 | Script | Produces |
 |---|---|
-| `main_comparaciones.py` | Qudit-ADAPT on the benchmark graphs → Figs. 1–3, Table I |
-| `main_QAOA.py` | QAOA baseline on the same graphs → Figs. 1–3, Table I |
-| `main.py` | The 300-random-graph ensemble → Fig. 4 |
-| `main_bp.py` | Warm/cold/random-restart landscape scan → Figs. 5–6 (writes to `data/`/`results/`, not `Max-3-Cut/`; its output is what `local_minima/` ships a cleaned copy of) |
-| `figuras_paper.py` | Renders Figs. 5–6 in the manuscript's typography |
-| `tablas_apendice.py` | Tables II and III |
-| `conteo_qaoa.py` | Table IV |
-| `lanzar_bp.sh` | Launcher for long unattended runs |
+| `Max-3-Cut/cluster/main_comparaciones.py` | Qudit-ADAPT on the benchmark graphs → Figs. 1–3, Table I |
+| `Max-3-Cut/cluster/main_QAOA.py` | QAOA baseline on the same graphs → Figs. 1–3, Table I |
+| `Max-3-Cut/cluster/main.py` | The 300-random-graph ensemble → Fig. 4 |
+| `local_minima/cluster/main_bp.py` | Warm/cold/random-restart landscape scan → Figs. 5–6 (writes to the root `data/`/`results/`; its output is what `local_minima/` ships a cleaned copy of) |
+| `local_minima/cluster/figuras_paper.py` | Renders Figs. 5–6 in the manuscript's typography |
+| `local_minima/cluster/tablas_apendice.py` | Tables II and III |
+| `local_minima/cluster/conteo_qaoa.py` | Table IV |
+| `local_minima/cluster/lanzar_bp.sh` | Launcher for long unattended runs |
 
-`main_comparaciones.py`, `main_QAOA.py`, `main.py`, `main_n5.py` and `run_kn.py` read their
-input graphs from `Max-3-Cut/data/` and write to `Max-3-Cut/results/`. `main_bp.py` (and
-everything feeding `local_minima/`, `multiway_number_partitioning/` or Appendix B) still
-resolves relative paths against the root `data/`/`results/`, which is why those scripts keep
-their original filenames instead of moving under `Max-3-Cut/`. Neither root folder is part of
-the public repo, though: every file that is actually published — the fixed benchmark graphs,
-the figures, the run data — has a tracked copy inside the topic folder it belongs to
-(`Max-3-Cut/data/`, `local_minima/data/`, ...), and the root `data/`/`results/` only hold the
-untracked local copies these scripts need to run.
+Scripts resolve paths relative to the repository root (`Path(__file__).resolve().parent.parent.parent`),
+not to wherever they happen to live, so moving a script under its topic folder's `cluster/` never
+breaks its own path logic. `main_comparaciones.py`, `main_QAOA.py`, `main.py`, `main_n5.py` and
+`run_kn.py` read their input graphs from `Max-3-Cut/data/` and write to `Max-3-Cut/results/`.
+`main_bp.py` (and everything feeding `local_minima/`, `multiway_number_partitioning/` or
+Appendix B) still resolves relative paths against the root `data/`/`results/`. Neither root
+folder is part of the public repo, though: every file that is actually published — the fixed
+benchmark graphs, the figures, the run data — has a tracked copy inside the topic folder it
+belongs to (`Max-3-Cut/data/`, `local_minima/data/`, ...), and the root `data/`/`results/` only
+hold the untracked local copies these scripts need to run.
 
 ## Conventions
 

@@ -7,11 +7,11 @@ el rango 3n de la fase 1, existen 967. Si nuestro motor resuelve las de [1, 8]
 tanto mejor que las de [1, 18], la dificultad extra de nuestras instancias viene
 de la magnitud de los números y no del criterio de solución única.
 
-    python cluster/instancias_rango_mwnp.py --n 6 --rango 8
+    python multiway_number_partitioning/cluster/instancias_rango_mwnp.py --n 6 --rango 8
 """
 from pathlib import Path
 import sys
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

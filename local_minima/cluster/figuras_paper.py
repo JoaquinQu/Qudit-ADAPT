@@ -10,13 +10,13 @@ at theta = 0, and for 100 independent random parameter initialisations.
 Formatting follows the manuscript: panel labels outside the axes, the graph
 instance as an inset, English axis labels and a Computer Modern math font.
 
-    python cluster/figuras_paper.py
+    python local_minima/cluster/figuras_paper.py
 """
 
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -67,7 +67,7 @@ PROPORCION = 0.88
 # Un archivo por panel: el manuscrito compone las figuras con `overpic` y
 # coloca las etiquetas a) / b) desde LaTeX, así que NO deben venir en el PDF.
 # Se usan las MISMAS imágenes de grafo que el manuscrito, ya renderizadas en
-# datos/imagenes/, en vez de volver a dibujarlas con networkx: así los insets
+# data/imagenes/, en vez de volver a dibujarlas con networkx: así los insets
 # son idénticos a los de las figuras 1-3.
 IMG_GRAFOS = PROJECT_ROOT / "data" / "imagenes"
 
@@ -131,7 +131,7 @@ def _transparentar(img, umbral=0.93):
     """
     Vuelve transparente el fondo blanco de la imagen del grafo.
 
-    Las imágenes de datos/imagenes/ no tienen canal alfa y traen fondo blanco,
+    Las imágenes de data/imagenes/ no tienen canal alfa y traen fondo blanco,
     que dentro del panel se ve como un recuadro. Se calcula el alfa con una
     rampa suave sobre el mínimo de los canales RGB —blanco puro da alfa 0 y
     cualquier píxel con algún canal por debajo del umbral da alfa 1— de modo

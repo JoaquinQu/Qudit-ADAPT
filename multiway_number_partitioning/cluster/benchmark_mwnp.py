@@ -2,8 +2,8 @@
 Benchmark de Qudit-ADAPT sobre multiway number partitioning, por lotes y en paralelo.
 
 Corre ADAPT sobre cada combinación (n, l, instancia) del conjunto fijado en
-`datos/mwnp_instancias.json` y guarda UN archivo por corrida en
-`resultados/mwnp/n{n}_l{l}_i{id}.json`. Con un archivo por corrida:
+`data/mwnp_instancias.json` y guarda UN archivo por corrida en
+`results/mwnp/n{n}_l{l}_i{id}.json`. Con un archivo por corrida:
 
   * los procesos en paralelo nunca escriben el mismo archivo;
   * el lote se puede interrumpir y relanzar: lo que ya terminó se salta;
@@ -21,8 +21,8 @@ porque es la honesta para este problema: E_J es la desviación cuadrática media
 de las sumas de las cajas, y vale exactamente 0 en una partición perfecta.
 El umbral --epsilon se interpreta también en esa escala, igual que en su código.
 
-    python cluster/benchmark_mwnp.py --n 5 6 7 --l 1 2 --ids 0-9
-    python cluster/benchmark_mwnp.py --n 10 --l 1 --ids 0-9 --procesos 16 --hilos 4
+    python multiway_number_partitioning/cluster/benchmark_mwnp.py --n 5 6 7 --l 1 2 --ids 0-9
+    python multiway_number_partitioning/cluster/benchmark_mwnp.py --n 10 --l 1 --ids 0-9 --procesos 16 --hilos 4
 """
 
 import os
@@ -42,7 +42,7 @@ for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
 
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

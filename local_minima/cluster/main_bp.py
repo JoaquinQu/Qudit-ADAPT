@@ -1,21 +1,21 @@
 """
 Estudio de barren plateaus / paisajes rugosos para Qudit-ADAPT-VQE.
 
-Corre `adapt_bp_scan` sobre un grafo de un archivo de `datos/` y guarda el
+Corre `adapt_bp_scan` sobre un grafo de un archivo de `data/` y guarda el
 resultado completo (curvas reciclada/fría + historias de coste de los
-reinicios aleatorios) en `resultados/json/`.
+reinicios aleatorios) en `results/json/`.
 
 Ejemplos:
 
-    python cluster/main_bp.py --grafo 2 --l 2 --max_iteration 30 --n_random 10
-    python cluster/main_bp.py --grafo 1 --l 1 --max_iteration 20 --n_random 10
-    python cluster/main_bp.py --input_file grafos_regulares.txt --grafo 3 --l 1
+    python local_minima/cluster/main_bp.py --grafo 2 --l 2 --max_iteration 30 --n_random 10
+    python local_minima/cluster/main_bp.py --grafo 1 --l 1 --max_iteration 20 --n_random 10
+    python local_minima/cluster/main_bp.py --input_file grafos_regulares.txt --grafo 3 --l 1
 """
 
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -28,7 +28,7 @@ DATOS_DIR = PROJECT_ROOT / "data"
 
 
 def leer_grafo(input_file, grafo_id):
-    """Lee la línea `grafo_id` (1-indexada) de un archivo de grafos de datos/."""
+    """Lee la línea `grafo_id` (1-indexada) de un archivo de grafos de data/."""
     path = Path(input_file)
     if not path.is_absolute():
         path = DATOS_DIR / path

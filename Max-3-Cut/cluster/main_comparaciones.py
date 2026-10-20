@@ -13,7 +13,7 @@ which overlays these curves with the QAOA baseline from `main_QAOA.py`.
 Configuration is the block of constants below rather than command-line flags:
 this is meant to be launched once and left alone.
 
-    python cluster/main_comparaciones.py
+    python Max-3-Cut/cluster/main_comparaciones.py
 """
 
 from pathlib import Path
@@ -22,7 +22,7 @@ import ast
 import json
 import csv
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

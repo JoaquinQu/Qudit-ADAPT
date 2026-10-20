@@ -7,6 +7,12 @@ $n=5,\dots,12$ qutrits.
 ```
 multiway_number_partitioning/
 ├── mwnp_results.ipynb               regenerates Figs. 6–7, the numbers of Sec. III B and the table of Appendix C
+├── cluster/
+│   ├── benchmark_mwnp.py, qaoa_benchmark_mwnp.py    the ADAPT and QAOA batch runs
+│   ├── generar_instancias_mwnp.py                   fixes the 160 benchmark instances
+│   ├── instancias_rango_mwnp.py, instancias_ordenes_mwnp.py, calibrar_concurrencia.py,
+│   │   verificar_qaoa_mwnp.py                        supporting/robustness scripts
+│   └── barrido_p.sh, lanzar_k80_qaoa.sh              launchers for unattended runs
 ├── figures/                         the figures written by the notebook
 └── data/
     ├── instances.json               the 160 instances (20 per size)
@@ -68,8 +74,9 @@ drawn uniformly in $[-\pi,\pi]$. Used in Sec. III B to motivate the INTERP initi
 ## Provenance
 
 The runs were produced on the BitWit workstation (AMD Threadripper 7980X) by H. Díaz-Moraga with
-`cluster/benchmark_mwnp.py` (Qudit-ADAPT, engine in `funciones/utilidades_mwnp.py`) and
-`cluster/qaoa_benchmark_mwnp.py` (QAOA, engine in `funciones/qaoa_mwnp.py`). The full raw outputs, including
-per-iteration diagnostics that the paper does not use, are in `resultados/mwnp_ordenes_5a9/`,
-`resultados/mwnp_k80/` and `resultados/qaoa_p40/`; the files in `data/` are a cleaned export of the fields
-the paper uses.
+`cluster/benchmark_mwnp.py` (Qudit-ADAPT, engine in `functions/utilidades_mwnp.py`) and
+`cluster/qaoa_benchmark_mwnp.py` (QAOA, engine in `functions/qaoa_mwnp.py`) — both now at
+`multiway_number_partitioning/cluster/`. The full raw outputs, including per-iteration diagnostics
+that the paper does not use, are in the root `results/mwnp_ordenes_5a9/`, `results/mwnp_k80/` and
+`results/qaoa_p40/` (not tracked); the files in `data/` are a cleaned export of the fields the paper
+uses.

@@ -6,7 +6,7 @@ Verificación del motor de QAOA (`funciones/qaoa_mwnp.py`) y medición de su cos
 2. El gradiente adjunto coincide con diferencias finitas centradas.
 3. Tiempo de una evaluación de energía + gradiente con p = 40, n = 10..12.
 
-    python cluster/verificar_qaoa_mwnp.py
+    python multiway_number_partitioning/cluster/verificar_qaoa_mwnp.py
 """
 
 import os
@@ -16,7 +16,7 @@ for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

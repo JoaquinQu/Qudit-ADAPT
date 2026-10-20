@@ -30,10 +30,10 @@ Qudit-ADAPT and QAOA on $G_1$–$G_4$ (irregular) and $G_5$, $K_6$ (regular).
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `Max-3-Cut/results/json/resultados_completos_comparacion_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
-| `Max-3-Cut/results/json/resultados_completos_regulares_grado4_grado5_n6_l{1,2}.json` | J. Molina | laptop | `cluster/main_comparaciones.py` |
-| `Max-3-Cut/results/json/resultados_qaoa_n6_p20_jx_r25_grafos_1_all.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
-| `Max-3-Cut/results/json/resultados_qaoa_regulares_grado4_grado5_n6_p20_jx_r25.json` | J. Molina | laptop | `cluster/main_QAOA.py` |
+| `Max-3-Cut/results/json/resultados_completos_comparacion_n6_l{1,2}.json` | J. Molina | laptop | `Max-3-Cut/cluster/main_comparaciones.py` |
+| `Max-3-Cut/results/json/resultados_completos_regulares_grado4_grado5_n6_l{1,2}.json` | J. Molina | laptop | `Max-3-Cut/cluster/main_comparaciones.py` |
+| `Max-3-Cut/results/json/resultados_qaoa_n6_p20_jx_r25_grafos_1_all.json` | J. Molina | laptop | `Max-3-Cut/cluster/main_QAOA.py` |
+| `Max-3-Cut/results/json/resultados_qaoa_regulares_grado4_grado5_n6_p20_jx_r25.json` | J. Molina | laptop | `Max-3-Cut/cluster/main_QAOA.py` |
 
 QAOA uses $p=20$ layers and 25 random restarts per depth; the median is
 plotted and the shaded band is the interquartile range.
@@ -46,8 +46,8 @@ paper. `Max-3-Cut/qaoa_comparison.ipynb` replaces that one curve with `local_min
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_1_300.json` | J. Molina | laptop | `cluster/main.py` |
-| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_common_budget.json` | J. Molina | laptop | `cluster/main.py` |
+| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_1_300.json` | J. Molina | laptop | `Max-3-Cut/cluster/main.py` |
+| `Max-3-Cut/results/json/resultados_completos_n6_l{1,2}_common_budget.json` | J. Molina | laptop | `Max-3-Cut/cluster/main.py` |
 
 `_1_300` runs to convergence; `_common_budget` caps every instance at
 $k_{\max}=50$ ADAPT iterations so the two pools are compared under the same
@@ -61,13 +61,13 @@ independent random initializations.
 
 | File | Produced by | Where | Runtime | Script |
 |---|---|---|---|---|
-| `local_minima/data/G1_l1.json` | H. Díaz-Moraga | BitWit | 0.1 min | `cluster/main_bp.py` |
-| `local_minima/data/G1_l2.json` | H. Díaz-Moraga | BitWit | 139 min | `cluster/main_bp.py` |
-| `local_minima/data/K6_l1.json` | H. Díaz-Moraga | BitWit | 189 min | `cluster/main_bp.py` |
-| `local_minima/data/K6_l2.json` | H. Díaz-Moraga | BitWit | 24 min | `cluster/main_bp.py` |
+| `local_minima/data/G1_l1.json` | H. Díaz-Moraga | BitWit | 0.1 min | `local_minima/cluster/main_bp.py` |
+| `local_minima/data/G1_l2.json` | H. Díaz-Moraga | BitWit | 139 min | `local_minima/cluster/main_bp.py` |
+| `local_minima/data/K6_l1.json` | H. Díaz-Moraga | BitWit | 189 min | `local_minima/cluster/main_bp.py` |
+| `local_minima/data/K6_l2.json` | H. Díaz-Moraga | BitWit | 24 min | `local_minima/cluster/main_bp.py` |
 
 All four use `--n_random 100 --seed 0 --epsilon 1e-2`. Console logs are kept in
-`local_minima/logs/`. Rendered with `cluster/figuras_paper.py`.
+`local_minima/logs/`. Rendered with `local_minima/cluster/figuras_paper.py`.
 
 Note that $K_6$ with $\ell=2$ is the *fastest* of the three heavy runs despite
 having the largest pool (2724 operators): it converges after 18 parameters,
@@ -77,7 +77,7 @@ while $K_6$ with $\ell=1$ needs 31 and never reaches machine precision.
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `Max-3-Cut/results/json/fig1a_l{1,2}_curva.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --n_random 0` |
+| `Max-3-Cut/results/json/fig1a_l{1,2}_curva.json` | H. Díaz-Moraga | BitWit | `local_minima/cluster/main_bp.py --n_random 0` |
 
 Convergence curves without the random-restart cloud, used for the $G_1$ rows of
 Table I and as the ADAPT side of Table IV.
@@ -86,13 +86,13 @@ Table I and as the ADAPT side of Table IV.
 
 | File | Produced by | Where | Script |
 |---|---|---|---|
-| `local_minima/data/bp_n6_l2_grafo2_r20_k30.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base angular` |
-| `local_minima/data/bp_n6_l2_grafo2_r20_k30_gellmann.json` | H. Díaz-Moraga | BitWit | `cluster/main_bp.py --base gellmann` |
+| `local_minima/data/bp_n6_l2_grafo2_r20_k30.json` | H. Díaz-Moraga | BitWit | `local_minima/cluster/main_bp.py --base angular` |
+| `local_minima/data/bp_n6_l2_grafo2_r20_k30_gellmann.json` | H. Díaz-Moraga | BitWit | `local_minima/cluster/main_bp.py --base gellmann` |
 
 Same instance ($G_2$, $\ell=2$), same algorithm, only the basis in which the
 nested commutators are decomposed differs. Table IV needs no run at all: the
 native gate count of a QAOA circuit is fixed by the graph and the number of
-layers, so `cluster/conteo_qaoa.py` computes it directly.
+layers, so `local_minima/cluster/conteo_qaoa.py` computes it directly.
 
 ### Thesis material — not used by the paper
 

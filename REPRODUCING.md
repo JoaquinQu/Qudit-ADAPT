@@ -15,8 +15,8 @@ All scripts are run from the repository root.
 ## Figures 1–3 and Table I — Qudit-ADAPT vs QAOA
 
 ```bash
-python cluster/main_comparaciones.py
-python cluster/main_QAOA.py
+python Max-3-Cut/cluster/main_comparaciones.py
+python Max-3-Cut/cluster/main_QAOA.py
 jupyter nbconvert --execute --inplace Max-3-Cut/qaoa_comparison.ipynb
 ```
 
@@ -27,7 +27,7 @@ depth up to $p=20$, for six graphs.
 ## Figure 4 — 300-graph ensemble
 
 ```bash
-python cluster/main.py
+python Max-3-Cut/cluster/main.py
 jupyter nbconvert --execute --inplace Max-3-Cut/random_graphs_n6.ipynb
 ```
 
@@ -43,18 +43,18 @@ ansatz size.
 
 ```bash
 # G_1  (Fig. 5a and 5b)
-python cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 1 --l 1 \
+python local_minima/cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 1 --l 1 \
     --n_random 100 --max_iteration 40 --output fig1a_l1_bp100.json
-python cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 1 --l 2 \
+python local_minima/cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 1 --l 2 \
     --n_random 100 --max_iteration 40 --output fig1a_l2_bp100.json
 
 # K_6  (Fig. 6a and 6b)
-python cluster/main_bp.py --input_file grafo_completo_n6.txt --grafo 1 --l 1 \
+python local_minima/cluster/main_bp.py --input_file grafo_completo_n6.txt --grafo 1 --l 1 \
     --n_random 100 --max_iteration 40 --output k6_l1_bp100.json
-python cluster/main_bp.py --input_file grafo_completo_n6.txt --grafo 1 --l 2 \
+python local_minima/cluster/main_bp.py --input_file grafo_completo_n6.txt --grafo 1 --l 2 \
     --n_random 100 --max_iteration 40 --output k6_l2_bp100.json
 
-python cluster/figuras_paper.py
+python local_minima/cluster/figuras_paper.py
 ```
 
 `--input_file` is resolved against the root `data/` (also not tracked; it keeps local copies
@@ -69,9 +69,9 @@ by default, so a run can be interrupted and restarted without losing work. Pass
 `--no_resume` to start over. For unattended execution:
 
 ```bash
-bash cluster/lanzar_bp.sh todas    # launches the four runs in the background
-bash cluster/lanzar_bp.sh estado   # progress
-bash cluster/lanzar_bp.sh detener  # stop them
+bash local_minima/cluster/lanzar_bp.sh todas    # launches the four runs in the background
+bash local_minima/cluster/lanzar_bp.sh estado   # progress
+bash local_minima/cluster/lanzar_bp.sh detener  # stop them
 ```
 
 `figuras_paper.py` renders with `text.usetex=True` and the `txfonts` package,
@@ -85,21 +85,21 @@ The approximation ratios come from the runs above. The $G_1$ rows and the
 parameter counts are printed by
 
 ```bash
-python cluster/figuras_paper.py     # prints k, pool size and final errors
+python local_minima/cluster/figuras_paper.py     # prints k, pool size and final errors
 ```
 
 ## Appendix B — Tables II and III
 
 ```bash
-python cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 2 --l 2 \
+python local_minima/cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 2 --l 2 \
     --n_random 20 --max_iteration 30 --base angular \
     --output bp_n6_l2_grafo2_r20_k30.json
-python cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 2 --l 2 \
+python local_minima/cluster/main_bp.py --input_file grafos_comparacion.txt --grafo 2 --l 2 \
     --n_random 20 --max_iteration 30 --base gellmann \
     --output bp_n6_l2_grafo2_r20_k30_gellmann.json
 
-python cluster/tablas_apendice.py            # text
-python cluster/tablas_apendice.py --latex    # rows ready to paste
+python local_minima/cluster/tablas_apendice.py            # text
+python local_minima/cluster/tablas_apendice.py --latex    # rows ready to paste
 ```
 
 Same note as above: the two runs land in the root `results/json/`; the published copy is
@@ -112,7 +112,7 @@ graph and the number of layers, so no optimization and no optimal angles are
 involved:
 
 ```bash
-python cluster/conteo_qaoa.py
+python local_minima/cluster/conteo_qaoa.py
 ```
 
 It also verifies numerically the identity of Eq. (B4),

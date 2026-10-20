@@ -24,8 +24,8 @@ Un archivo por tarea en `--carpeta`:
     n{n}_i{id}_r{reinicio}.json   y   n{n}_i{id}_interp.json
 Lo que ya existe se salta, así que el lote se puede interrumpir y relanzar.
 
-    python cluster/qaoa_benchmark_mwnp.py --n 5 6 --ids 0-19 --procesos 8
-    python cluster/qaoa_benchmark_mwnp.py --n 5 6 7 8 9 10 11 12 --interp --procesos 16
+    python multiway_number_partitioning/cluster/qaoa_benchmark_mwnp.py --n 5 6 --ids 0-19 --procesos 8
+    python multiway_number_partitioning/cluster/qaoa_benchmark_mwnp.py --n 5 6 7 8 9 10 11 12 --interp --procesos 16
 """
 
 import os
@@ -35,7 +35,7 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXP
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 

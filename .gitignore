@@ -73,13 +73,17 @@ cluster/analizar_ordenes_mwnp.py
 cluster/comparar_joaquin.py
 cluster/correr_mwnp_n13.py
 cluster/informe_mwnp.py
-cluster/instancias_ordenes_mwnp.py
 cluster/qaoa_joaquin.py
+cluster/qaoa_mwnp.py
 cluster/rangos_mwnp.py
 cluster/sanidad_joaquin.py
 cluster/varianza_mapa_mwnp.py
 cluster/varianza_mwnp.py
 cluster/verificar_optimizaciones.py
+
+# Conteo de operadores del pool (t_w), material de tesis sin carpeta de tema
+cluster/pool_numerico.py
+cluster/pool_orden_l.py
 
 # results/ de la raíz: todo lo que no era específico de ningún tema (barrido
 # crudo de mwnp, logs del informe) ya se gitignora arriba o se trasladó a la

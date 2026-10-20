@@ -6,7 +6,7 @@ Corre K copias a la vez de la operación que domina cada lote a n = 12
 tiempo por evaluación de cada copia. El rendimiento total es K / tiempo:
 pasado cierto K la memoria se satura y más procesos no rinden más.
 
-    python cluster/calibrar_concurrencia.py
+    python multiway_number_partitioning/cluster/calibrar_concurrencia.py
 """
 
 import os
@@ -16,7 +16,7 @@ for v in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 from pathlib import Path
 import sys
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
